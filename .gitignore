@@ -19,17 +19,17 @@ venv/
 # IDEs
 .vscode/
 .idea/
-.DS_Store
+**/.DS_Store
 
 # logs
 logs/**
 !logs/**/.gitkeep
 !logs/**/README.md
 
-# checkpoints
-checkpoints/**
-!checkpoints/**/.gitkeep
-!checkpoints/**/README.md
+# run artifacts
+runs/**
+!runs/**/.gitkeep
+!runs/**/README.md
 
 # datasets
 datasets/**
