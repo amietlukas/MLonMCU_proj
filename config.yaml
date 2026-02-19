@@ -17,6 +17,8 @@ train:
   batch_size: 64
   num_workers: 4
   shuffle: true
+  max_train_batches: 50 # for quicker testing, set to null for full training
+  max_val_batches: 20 # for quicker testing, set to null for full validation
   epochs: 3
   lr: 1e-3
 

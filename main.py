@@ -1,12 +1,11 @@
 """
 The orchestrator of the full pipeline.
-From project root, run this file, together with a name.
+From project root, run this file: python main.py --name <name>
 """
 
 import argparse
 from pathlib import Path
 
-import torch
 import torch.optim as optim
 import torch.nn as nn
 
@@ -29,6 +28,9 @@ def main():
 
     project_root = Path(__file__).resolve().parent  # IMPORTANT: main.py needs to be in the project root
     cfg = load_config(project_root / "config.yaml", project_root)  # load config and check global assumptions
+    # for quick debugging, you can set max_train_batches and max_val_batches in config.yaml
+    max_train_batches = cfg["train"].get("max_train_batches", None)
+    max_val_batches = cfg["train"].get("max_val_batches", None)
 
     run = make_run_info(project_root, args.name)
     save_config_snapshot(cfg, run.config_snapshot_path)
@@ -61,10 +63,15 @@ def main():
     # ========== train loop ==========
     best_val_acc = -1.0
     for epoch in range(1, epochs + 1):
+
         # train one epoch
-        train_metrics = train_one_epoch(model, train_loader, optimizer, criterion)
+        train_metrics = train_one_epoch(
+            model, train_loader, optimizer, criterion, max_batches=max_train_batches
+        )
         # evaluete on val set after each epoch
-        val_metrics = evaluate(model, val_loader, criterion)
+        val_metrics = evaluate(
+            model, val_loader, criterion, max_batches=max_val_batches
+        )
 
         print(
             f"epoch {epoch:02d}/{epochs} | "

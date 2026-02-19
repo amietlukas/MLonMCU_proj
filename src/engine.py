@@ -13,7 +13,8 @@ def train_one_epoch(
     loader: DataLoader,
     optimizer: torch.optim.Optimizer,
     criterion: nn.Module,
-) -> dict: 
+    max_batches: int | None = None, # None -> full training
+) -> dict:
     
     model.train() # train mode
 
@@ -22,7 +23,12 @@ def train_one_epoch(
     total = 0
 
     # iterate over batches
-    for xb, yb, _paths in loader:
+    for batch_idx, (xb, yb, _paths) in enumerate(loader):
+        
+        # for faster training during development
+        if max_batches is not None and batch_idx >= max_batches:
+            break
+
         # forward
         logits = model(xb)
         loss = criterion(logits, yb)
@@ -51,6 +57,7 @@ def evaluate(
     model: nn.Module,
     loader: DataLoader,
     criterion: nn.Module,
+    max_batches: int | None = None # None -> full evaluation
 ) -> dict:
     
     model.eval() # eval mode
@@ -58,9 +65,14 @@ def evaluate(
     total_loss = 0.0
     correct = 0
     total = 0
-    
+
     # iterate over batches
-    for xb, yb, _paths in loader:
+    for batch_idx, (xb, yb, _paths) in enumerate(loader):
+        
+        # for faster evaluation during development
+        if max_batches is not None and batch_idx >= max_batches:
+            break
+        
         logits = model(xb)
         loss = criterion(logits, yb)
 
