@@ -16,6 +16,7 @@ from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot
 from src.checkpoint import save_checkpoint
 from src.metrics import init_metrics_csv, append_metrics_csv
+from src.model_utils import save_model_summary
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -40,7 +41,7 @@ def main():
     print(f"Run dir:        {run.run_dir}")
     print(f"Config snapshot:{run.config_snapshot_path}")
     print(f"Metrics CSV:    {run.metrics_csv_path}")
-    print(f"Best ckpt:      {run.best_ckpt_path}")
+    print(f"Best ckpt:      {run.best_ckpt_path}", "\n")
 
     # ========== build dataloaders ==========
     train_loader, val_loader, test_loader = build_dataloaders(cfg)
@@ -52,6 +53,8 @@ def main():
 
     # ========== init model ==========
     model = BaselineCNN(cfg)
+    save_model_summary(run.model_summary_path, model, cfg)
+    print(f"Model summary:  {run.model_summary_path}")
 
     # ========== loss + optimizer ==========
     lr = float(cfg["train"]["lr"])
@@ -75,8 +78,8 @@ def main():
 
         print(
             f"epoch {epoch:02d}/{epochs} | "
-            f"train loss {train_metrics['loss']:.4f} acc {train_metrics['acc']:.3f} | "
-            f"val loss {val_metrics['loss']:.4f} acc {val_metrics['acc']:.3f}"
+            f"train loss {train_metrics['loss']:.4f}; acc {train_metrics['acc']:.3f} | "
+            f"val loss {val_metrics['loss']:.4f}; acc {val_metrics['acc']:.3f}"
         )
 
         # save metrics
@@ -106,7 +109,7 @@ def main():
             )
             print(f"  saved best -> {run.best_ckpt_path} (val acc {best_val_acc:.3f})")
 
-    print(f"------ FINISHED ------")
+    print("\n", "------ FINISHED ------", "\n", "\n")
 
 if __name__ == "__main__":
     main()

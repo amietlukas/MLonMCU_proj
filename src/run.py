@@ -14,6 +14,7 @@ class RunInfo:
     timestamp: str      # YYYYMMDD-HHMMSS
     run_id: str         # name-timestamp
     run_dir: Path
+    model_summary_path: Path # model architecture
     ckpt_dir: Path
     log_dir: Path
     best_ckpt_path: Path
@@ -29,6 +30,7 @@ def make_run_info(project_root: Path, name: str) -> RunInfo:
     run_dir = project_root / "runs" / run_id
     ckpt_dir = run_dir / "checkpoints"
     log_dir = run_dir / "logs"
+    model_summary_path = run_dir / "model_summary.txt"
 
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -42,6 +44,7 @@ def make_run_info(project_root: Path, name: str) -> RunInfo:
         timestamp=timestamp,
         run_id=run_id,
         run_dir=run_dir,
+        model_summary_path=model_summary_path,
         ckpt_dir=ckpt_dir,
         log_dir=log_dir,
         best_ckpt_path=best_ckpt_path,
