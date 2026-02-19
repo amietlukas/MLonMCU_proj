@@ -15,6 +15,8 @@ from src.data import build_dataloaders
 from src.model import BaselineCNN
 from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot
+from src.checkpoint import save_checkpoint
+from src.metrics import init_metrics_csv, append_metrics_csv
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -30,8 +32,13 @@ def main():
 
     run = make_run_info(project_root, args.name)
     save_config_snapshot(cfg, run.config_snapshot_path)
+    init_metrics_csv(run.metrics_csv_path)
+
     print(f"Run: {run.run_id}")
-    print(f"Run dir: {run.run_dir}")
+    print(f"Run dir:        {run.run_dir}")
+    print(f"Config snapshot:{run.config_snapshot_path}")
+    print(f"Metrics CSV:    {run.metrics_csv_path}")
+    print(f"Best ckpt:      {run.best_ckpt_path}")
 
     # ========== build dataloaders ==========
     train_loader, val_loader, test_loader = build_dataloaders(cfg)
@@ -65,24 +72,34 @@ def main():
             f"val loss {val_metrics['loss']:.4f} acc {val_metrics['acc']:.3f}"
         )
 
+        # save metrics
+        append_metrics_csv(
+            run.metrics_csv_path,
+            epoch=epoch,
+            train_loss=float(train_metrics["loss"]),
+            train_acc=float(train_metrics["acc"]),
+            val_loss=float(val_metrics["loss"]),
+            val_acc=float(val_metrics["acc"]),
+        )
+
+        # new best model?
         val_acc = float(val_metrics["acc"])
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             # save current best version
-            torch.save(
-                {
-                    "run_id": run.run_id,
-                    "epoch": epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "cfg": cfg,
-                    "val_metrics": val_metrics,
-                    "train_metrics": train_metrics,
-                },
+            save_checkpoint(
                 run.best_ckpt_path,
+                run_id=run.run_id,
+                epoch=epoch,
+                model=model,
+                optimizer=optimizer,
+                cfg=cfg,
+                train_metrics=train_metrics,
+                val_metrics=val_metrics,
             )
             print(f"  saved best -> {run.best_ckpt_path} (val acc {best_val_acc:.3f})")
 
+    print(f"------ FINISHED ------")
 
 if __name__ == "__main__":
     main()
