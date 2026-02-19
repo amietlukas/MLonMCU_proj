@@ -86,8 +86,8 @@ def main():
 
         print(
             f"epoch {epoch:02d}/{epochs} | "
-            f"train loss {train_metrics['loss']:.4f}; acc {train_metrics['acc']:.3f} | "
-            f"val loss {val_metrics['loss']:.4f}; acc {val_metrics['acc']:.3f}"
+            f"TRAIN: loss {train_metrics['loss']:.4f}, acc {train_metrics['acc']:.3f} | "
+            f"VAL: loss {val_metrics['loss']:.4f}, acc {val_metrics['acc']:.3f}"
         )
 
         # save metrics
@@ -115,9 +115,9 @@ def main():
                 train_metrics=train_metrics,
                 val_metrics=val_metrics,
             )
-            print(f" ->  NEW saved best: val acc {best_val_acc:.3f}")
+            print(f" ->  new best: val acc {best_val_acc:.3f}")
         else:
-            print(f" ->  NO NEW BEST; current best: {best_val_acc:.3f}")
+            print(f" ->  now improvement, current best: {best_val_acc:.3f}")
     
     # ===== per-class metrics on BEST checkpoint (val set) =====
     ckpt = torch.load(run.best_ckpt_path, map_location="cpu")
