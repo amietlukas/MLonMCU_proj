@@ -17,6 +17,8 @@ train:
   batch_size: 64
   num_workers: 4
   shuffle: true
+  epochs: 3
+  lr: 1e-3
 
 model:
   type: baseline_cnn

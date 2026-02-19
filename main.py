@@ -14,7 +14,7 @@ from src.config import load_config
 from src.data import build_dataloaders
 from src.model import BaselineCNN
 from src.engine import train_one_epoch, evaluate
-from src.run import make_run_info
+from src.run import make_run_info, save_config_snapshot
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -29,7 +29,9 @@ def main():
     cfg = load_config(project_root / "config.yaml", project_root)  # load config and check global assumptions
 
     run = make_run_info(project_root, args.name)
+    save_config_snapshot(cfg, run.config_snapshot_path)
     print(f"Run: {run.run_id}")
+    print(f"Run dir: {run.run_dir}")
 
     # ========== build dataloaders ==========
     train_loader, val_loader, test_loader = build_dataloaders(cfg)
@@ -77,9 +79,9 @@ def main():
                     "val_metrics": val_metrics,
                     "train_metrics": train_metrics,
                 },
-                run.checkpoint_path,
+                run.best_ckpt_path,
             )
-            print(f"  saved best -> {run.checkpoint_path} (val acc {best_val_acc:.3f})")
+            print(f"  saved best -> {run.best_ckpt_path} (val acc {best_val_acc:.3f})")
 
 
 if __name__ == "__main__":
