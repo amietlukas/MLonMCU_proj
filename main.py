@@ -6,22 +6,30 @@ From project root, run this file: python main.py --name <name>
 import argparse
 from pathlib import Path
 
+import torch
 import torch.optim as optim
 import torch.nn as nn
 
 from src.config import load_config
-from src.data import build_dataloaders
+from src.data import build_dataloaders, CLASS_NAMES
 from src.model import BaselineCNN
 from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot
 from src.checkpoint import save_checkpoint
 from src.metrics import init_metrics_csv, append_metrics_csv
 from src.model_utils import save_model_summary
+from src.per_class_metrics import (
+    compute_confusion_matrix,
+    compute_per_class_metrics,
+    save_confusion_matrix_csv,
+    save_per_class_metrics_csv,
+)
 
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--name", type=str, required=True, help="Run name, e.g. --name baseline128")
     return p.parse_args()
+
 
 ############## Pipeline starts here ##############
 def main():
@@ -41,7 +49,7 @@ def main():
     print(f"Run dir:        {run.run_dir}")
     print(f"Config snapshot:{run.config_snapshot_path}")
     print(f"Metrics CSV:    {run.metrics_csv_path}")
-    print(f"Best ckpt:      {run.best_ckpt_path}", "\n")
+    print(f"Best ckpt:      {run.best_ckpt_path}")
 
     # ========== build dataloaders ==========
     train_loader, val_loader, test_loader = build_dataloaders(cfg)
@@ -54,7 +62,7 @@ def main():
     # ========== init model ==========
     model = BaselineCNN(cfg)
     save_model_summary(run.model_summary_path, model, cfg)
-    print(f"Model summary:  {run.model_summary_path}")
+    print(f"Model summary:  {run.model_summary_path}", "\n")
 
     # ========== loss + optimizer ==========
     lr = float(cfg["train"]["lr"])
@@ -107,7 +115,23 @@ def main():
                 train_metrics=train_metrics,
                 val_metrics=val_metrics,
             )
-            print(f"  saved best -> {run.best_ckpt_path} (val acc {best_val_acc:.3f})")
+            print(f" ->  NEW saved best: val acc {best_val_acc:.3f}")
+        else:
+            print(f" ->  NO NEW BEST; current best: {best_val_acc:.3f}")
+    
+    # ===== per-class metrics on BEST checkpoint (val set) =====
+    ckpt = torch.load(run.best_ckpt_path, map_location="cpu")
+    model.load_state_dict(ckpt["model_state_dict"])
+
+    cm = compute_confusion_matrix(model, val_loader, num_classes=int(cfg["data"]["num_classes"]))
+    save_confusion_matrix_csv(run.log_dir / "confusion_matrix.csv", cm, CLASS_NAMES)
+
+    per_class = compute_per_class_metrics(cm)
+    save_per_class_metrics_csv(run.log_dir / "per_class_metrics.csv", per_class, CLASS_NAMES)
+
+    print("\n", f"Saved confusion matrix -> {run.log_dir / 'confusion_matrix.csv'}")
+    print(f"Saved per-class metrics -> {run.log_dir / 'per_class_metrics.csv'}")
+
 
     print("\n", "------ FINISHED ------", "\n", "\n")
 
