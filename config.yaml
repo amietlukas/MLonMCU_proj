@@ -1,0 +1,21 @@
+# config.yaml
+# here we set all the parameters.
+
+data:
+  dataset_root: datasets/HAGRID/hagrid_0_1_classification
+  input_size: 128 # the grayscale images are resized to 128x128
+  num_classes: 6
+
+preprocess:
+  type: letterbox        # may add different methods in future
+  fill: 0                # padding value for letterbox
+  normalize:
+    mean: 0.5 # TODO, get train values
+    std: 0.5 # TODO, get train values
+
+train:
+  batch_size: 64
+  num_workers: 4
+  shuffle: true
+
+seed: 42
