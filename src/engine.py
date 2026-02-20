@@ -28,6 +28,10 @@ def train_one_epoch(
         # for faster training during development
         if max_batches is not None and batch_idx >= max_batches:
             break
+        
+        if batch_idx == 0: # debug
+            print("[DEBBUG] xb stats:", xb.min().item(), xb.max().item(), xb.mean().item(), xb.std().item())
+            print("[DEBBUG] yb stats:", yb.min().item(), yb.max().item())
 
         # forward
         logits = model(xb)
@@ -36,6 +40,7 @@ def train_one_epoch(
         # backward + step
         optimizer.zero_grad()
         loss.backward()
+        #print("grad mean:", model.classifier.weight.grad.abs().mean().item())
         optimizer.step()
 
         # stats

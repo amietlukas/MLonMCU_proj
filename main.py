@@ -40,6 +40,7 @@ def main():
     # for quick debugging, you can set max_train_batches and max_val_batches in config.yaml
     max_train_batches = cfg["train"].get("max_train_batches", None)
     max_val_batches = cfg["train"].get("max_val_batches", None)
+    print("[DEBBUG] max_train_batches:", max_train_batches, "max_val_batches:", max_val_batches)
 
     run = make_run_info(project_root, args.name)
     save_config_snapshot(cfg, run.config_snapshot_path)
@@ -117,7 +118,7 @@ def main():
             )
             print(f" ->  new best: val acc {best_val_acc:.3f}")
         else:
-            print(f" ->  now improvement, current best: {best_val_acc:.3f}")
+            print(f" ->  no improvement, current best: {best_val_acc:.3f}")
     
     # ===== per-class metrics on BEST checkpoint (val set) =====
     ckpt = torch.load(run.best_ckpt_path, map_location="cpu")
@@ -129,7 +130,7 @@ def main():
     per_class = compute_per_class_metrics(cm)
     save_per_class_metrics_csv(run.log_dir / "per_class_metrics.csv", per_class, CLASS_NAMES)
 
-    print("\n", f"Saved confusion matrix -> {run.log_dir / 'confusion_matrix.csv'}")
+    print("\n",f"Saved confusion matrix -> {run.log_dir / 'confusion_matrix.csv'}")
     print(f"Saved per-class metrics -> {run.log_dir / 'per_class_metrics.csv'}")
 
 

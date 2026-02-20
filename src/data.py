@@ -108,7 +108,7 @@ def build_transform(cfg: Dict[str, Any], train: bool) -> T.Compose:
         T.Grayscale(num_output_channels=1),
         spatial,
         T.ToTensor(), # [0,1], shape [1,H,W]
-        T.Normalize(mean=[mean], std=[std]),
+        #T.Normalize(mean=[mean], std=[std]),
     ])
     return  tf # callable transform object
 
