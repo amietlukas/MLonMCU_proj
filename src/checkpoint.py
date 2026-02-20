@@ -30,7 +30,7 @@ def save_checkpoint(
             "epoch": epoch,
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
-            "cfg": cfg,
+            #"cfg": cfg,            # NOTE: isse with pytorch
             "train_metrics": train_metrics,
             "val_metrics": val_metrics,
         },
