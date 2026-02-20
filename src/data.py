@@ -21,6 +21,7 @@ CLASS_NAMES: List[str] = [
     "others",  # OTHER / background class       5
 ]
 
+
 CLASS_TO_IDX: Dict[str, int] = {c: i for i, c in enumerate(CLASS_NAMES)}
 IDX_TO_CLASS: Dict[int, str] = {i: c for c, i in CLASS_TO_IDX.items()}
 
