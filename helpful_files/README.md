@@ -1,0 +1,1 @@
+could be that the script do not directly work in this folder, since they got moved from src, to keep src clean
