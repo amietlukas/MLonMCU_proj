@@ -11,13 +11,14 @@ import torch.optim as optim
 import torch.nn as nn
 
 from src.config import load_config
-from src.data import build_dataloaders, CLASS_NAMES
+from src.data import build_dataloaders, build_datasets, build_transform, CLASS_NAMES
 from src.model import BaselineCNN
 from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot
 from src.checkpoint import save_checkpoint
 from src.metrics import init_metrics_csv, append_metrics_csv
 from src.model_utils import save_model_summary
+from src.viz import save_transform_preview
 from src.per_class_metrics import (
     compute_confusion_matrix,
     compute_per_class_metrics,
@@ -59,6 +60,25 @@ def main():
     xb, yb, _ = next(iter(train_loader))
     assert xb.ndim == 4 and xb.shape[1] == 1, xb.shape
     assert yb.ndim == 1, yb.shape
+
+    # ===== debug: plot transformed images =====
+    if cfg.get("debug", {}).get("plot_images", False):
+        # build datasets so we can access raw paths + transform deterministically
+        train_ds, _, _ = build_datasets(cfg)
+
+        n_per_class = int(cfg.get("debug", {}).get("n_plot_per_class", 5))
+        out_path = run.log_dir / "transform_preview_train.png"
+
+        # IMPORTANT: use the same transform as training
+        save_transform_preview(
+            train_samples=train_ds.samples,
+            class_names=CLASS_NAMES,
+            transform=train_ds.transform,
+            out_path=out_path,
+            n_per_class=n_per_class,
+            seed=int(cfg.get("seed", 0)),
+        )
+        print(f"[DEBUG] saved transform preview -> {out_path}")
 
     # ========== init model ==========
     model = BaselineCNN(cfg)

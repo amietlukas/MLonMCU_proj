@@ -9,9 +9,9 @@ data:
 preprocess:
   type: letterbox        # may add different methods in future
   fill: 0                # padding value for letterbox
-  normalize:
-    mean: 0.5 # TODO, get train values
-    std: 0.5 # TODO, get train values
+  # normalize:
+  #   mean: 0.5 # TODO, get train values
+  #   std: 0.5 # TODO, get train values
 
 train:
   batch_size: 64
@@ -32,5 +32,9 @@ model:
   # convs per stage (1 = Conv-ReLU-Pool, 2 = Conv-ReLU-Conv-ReLU-Pool)
   blocks_per_stage: 2
   kernel_size: 3
+
+debug:
+  plot_images: true # set false to disable plotting images during training
+  n_plot_per_class: 5
 
 seed: 42
