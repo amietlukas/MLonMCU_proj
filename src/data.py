@@ -98,6 +98,7 @@ def build_transform(cfg: Dict[str, Any], train: bool) -> T.Compose:
     norm = pp.get("normalize", {})
     mean = float(norm.get("mean", 0.5))
     std = float(norm.get("std", 0.5))
+    in_channels = int(cfg["data"]["input_channels"])
 
     if pp_type == "letterbox":
         
@@ -105,15 +106,35 @@ def build_transform(cfg: Dict[str, Any], train: bool) -> T.Compose:
     else:
         raise ValueError(f"Unknown preprocess.type: {pp_type}")
 
+    # tf = T.Compose([
+    #     T.Grayscale(num_output_channels=1),
+    #     spatial,
+    #     T.ToTensor(), # [0,1], shape [1,H,W]
+    #     T.Normalize(mean=[mean], std=[std]),
+    # ])
+    # return  tf # callable transform object
+
+    # channel handling + normalization
+    if in_channels == 1:
+        to_channels = T.Grayscale(num_output_channels=1)
+        norm_mean = [mean]
+        norm_std = [std]
+    elif in_channels == 3:
+        # ensure RGB
+        to_channels = T.Lambda(lambda img: img.convert("RGB"))
+        # TODO: do separate mean/std for each channel in config
+        norm_mean = [mean, mean, mean]
+        norm_std = [std, std, std]
+    else:
+        raise ValueError(f"Unsupported input_channels: {in_channels}")
+
     tf = T.Compose([
-        T.Grayscale(num_output_channels=1),
+        to_channels,      # either grayscale(1) or convert RGB(3)
         spatial,
-        T.ToTensor(), # [0,1], shape [1,H,W]
-        T.Normalize(mean=[mean], std=[std]),
+        T.ToTensor(),     # [0,1], shape [C,H,W]
+        T.Normalize(mean=norm_mean, std=norm_std),
     ])
-    return  tf # callable transform object
-
-
+    return tf
 
 # =========== Dataset ===========
 class HagridGestureDataset(Dataset):
