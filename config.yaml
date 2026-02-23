@@ -2,7 +2,7 @@
 # here we set all the parameters.
 
 data:
-  dataset_root: datasets/HAGRID/hagrid_0_1_classification
+  dataset_root: datasets/HAGRID/hagrid_more_than_15
   input_size: 128 # the grayscale images are resized to 128x128
   num_classes: 6
 
@@ -19,12 +19,12 @@ train:
   shuffle: true
   max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
-  epochs: 30
-  lr: 3e-3
+  epochs: 35
+  lr: 1e-3
 
 model:
   type: baseline_cnn
-  in_channels: 1 # grayscale
+  in_channels: 3 # 1 = grayscale, 3 = RGB
   num_classes: 6 # match data.num_classes!
 
   # stages define channel widths after each downsampling
