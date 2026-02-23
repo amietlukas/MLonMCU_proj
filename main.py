@@ -59,8 +59,9 @@ def main():
 
     # check dataloader
     xb, yb, _ = next(iter(train_loader))
-    assert xb.ndim == 4 and xb.shape[1] == 1, xb.shape
+    assert xb.ndim == 4 and (xb.shape[1] == 1 or xb.shape[1] == 3), xb.shape
     assert yb.ndim == 1, yb.shape
+    print(f"[DEBUG] Train batch shape: {xb.shape}, labels shape: {yb.shape}")
 
     # ===== DEBUG: Check class distribution =====
     from collections import Counter

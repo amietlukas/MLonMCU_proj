@@ -10,7 +10,7 @@ preprocess:
   type: letterbox        # may add different methods in future
   fill: 0                # padding value for letterbox
   normalize:
-    mean: 0.5 # grayscale single channel
+    mean: 0.5
     std: 0.5
 
 train:
@@ -34,7 +34,9 @@ model:
   kernel_size: 3
 
 debug:
-  plot_images: true # set false to disable plotting images during training
+  # TODO: can't plot RGB -> set to false
+  # can't plot if in_channels=3!
+  plot_images: false # set false to disable plotting images during training
   n_plot_per_class: 5
 
 seed: 42
