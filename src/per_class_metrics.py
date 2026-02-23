@@ -14,6 +14,7 @@ def compute_confusion_matrix(
     model: nn.Module,
     loader: DataLoader,
     num_classes: int,
+    device: torch.device,
 ) -> torch.Tensor:
     """
     Returns confusion matrix cm with shape [C, C] where:
@@ -23,6 +24,8 @@ def compute_confusion_matrix(
     cm = torch.zeros((num_classes, num_classes), dtype=torch.int64)
 
     for xb, yb, _paths in loader:
+        xb = xb.to(device)
+        yb = yb.to(device)
         logits = model(xb)
         preds = logits.argmax(dim=1)
 

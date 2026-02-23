@@ -2,25 +2,34 @@
 # here we set all the parameters.
 
 data:
+<<<<<<< HEAD
   dataset_root: datasets/HAGRID/hagrid_more_than_15
+=======
+  dataset_root: datasets/hagrid_balanced_classification
+>>>>>>> bc40094475bac1b3396a1fa6a7e4d19f3125ae6c
   input_size: 128 # the grayscale images are resized to 128x128
   num_classes: 6
 
 preprocess:
   type: letterbox        # may add different methods in future
   fill: 0                # padding value for letterbox
-  # normalize:
-  #   mean: 0.5 # TODO, get train values
-  #   std: 0.5 # TODO, get train values
+  normalize:
+    mean: 0.5 # grayscale single channel
+    std: 0.5
 
 train:
-  batch_size: 64
-  num_workers: 4
+  batch_size: 512        # Increased from 128 for better GPU utilization
+  num_workers: 8         # Reduced from 32 for balanced I/O
   shuffle: true
   max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
+<<<<<<< HEAD
   epochs: 35
   lr: 1e-3
+=======
+  epochs: 1000
+  lr: 3e-3               # Increased from 1e-5 for faster convergence
+>>>>>>> bc40094475bac1b3396a1fa6a7e4d19f3125ae6c
 
 model:
   type: baseline_cnn

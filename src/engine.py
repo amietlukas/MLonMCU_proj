@@ -13,6 +13,7 @@ def train_one_epoch(
     loader: DataLoader,
     optimizer: torch.optim.Optimizer,
     criterion: nn.Module,
+    device: torch.device,
     max_batches: int | None = None, # None -> full training
 ) -> dict:
     
@@ -34,6 +35,8 @@ def train_one_epoch(
             print("[DEBBUG] yb stats:", yb.min().item(), yb.max().item())
 
         # forward
+        xb = xb.to(device)
+        yb = yb.to(device)
         logits = model(xb)
         loss = criterion(logits, yb)
 
@@ -62,6 +65,7 @@ def evaluate(
     model: nn.Module,
     loader: DataLoader,
     criterion: nn.Module,
+    device: torch.device,
     max_batches: int | None = None # None -> full evaluation
 ) -> dict:
     
@@ -78,6 +82,8 @@ def evaluate(
         if max_batches is not None and batch_idx >= max_batches:
             break
         
+        xb = xb.to(device)
+        yb = yb.to(device)
         logits = model(xb)
         loss = criterion(logits, yb)
 
