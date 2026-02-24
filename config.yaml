@@ -51,3 +51,4 @@ LR_scheduler:
 early_stopping:
   enabled: true
   patience: 20 # stop if no improvement in validation loss for 10 epochs
+  min_delta: 1e-4 # dont count noise as improvement TODO: find noise level

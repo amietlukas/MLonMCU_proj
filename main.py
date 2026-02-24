@@ -66,20 +66,20 @@ def main():
     xb, yb, _ = next(iter(train_loader))
     assert xb.ndim == 4 and (xb.shape[1] == 1 or xb.shape[1] == 3), xb.shape
     assert yb.ndim == 1, yb.shape
-    print(f"[DEBUG] Train batch shape: {xb.shape}, labels shape: {yb.shape}")
+    print(f"[INFO] Train batch shape: {xb.shape}, labels shape: {yb.shape}")
 
     # ===== DEBUG: Check class distribution =====
     train_labels = []
     for _, labels, _ in train_loader:
         train_labels.extend(labels.tolist())
     train_dist = Counter(train_labels)
-    print("[DEBUG] Train set class distribution:", dict(sorted(train_dist.items())))
+    print("[INFO] Train set class distribution:", dict(sorted(train_dist.items())))
     
     val_labels = []
     for _, labels, _ in val_loader:
         val_labels.extend(labels.tolist())
     val_dist = Counter(val_labels)
-    print("[DEBUG] Val set class distribution:", dict(sorted(val_dist.items())))
+    print("[INFO] Val set class distribution:", dict(sorted(val_dist.items())))
 
     # ===== debug: plot transformed images =====
     if cfg.get("debug", {}).get("plot_images", False):
@@ -123,10 +123,11 @@ def main():
         eta_min = float(cfg["LR_scheduler"].get("eta_min", 0))
         scheduler = lr_scheduler.CosineAnnealingLR(optimizer, eta_min=eta_min, T_max=epochs)
         print(
-            f"[DEBUG] Scheduler: {scheduler.__class__.__name__} | "
-            f"initial_lr={optimizer.param_groups[0]['lr']:.3e}"
-            f"T_max={scheduler.T_max} | eta_min={scheduler.eta_min} | "
+            f"[INFO] Scheduler: {scheduler.__class__.__name__} | "
+            f"initial_lr={optimizer.param_groups[0]['lr']:.3e} | "
+            f"T_max={scheduler.T_max} | eta_min={scheduler.eta_min}"
         )
+
     else:
         raise ValueError(f"Unsupported LR scheduler type: {scheduler_type}")
 
@@ -158,16 +159,28 @@ def main():
     start_epoch = 1
     best_val_acc = -1.0
 
+    # early stopping config
+    is_es = bool(cfg["early_stopping"]["enabled"])
+    patience = int(cfg["early_stopping"]["patience"])
+    min_delta = float(cfg["early_stopping"]["min_delta"])
+    if is_es:
+        print(f"[INFO] EarlyStopping enabled | patience={patience} | min_delta={min_delta}")
+    else:
+        print("[INFO] EarlyStopping disabled")
+
+    best_val_loss = float("inf")
+    bad_epochs = 0
+
     # ========== train loop ==========
     for epoch in range(start_epoch, epochs + 1):
 
         lr_used = optimizer.param_groups[0]["lr"]  # LR used for this epoch
 
-        # train one epoch
+        ## train one epoch
         train_metrics = train_one_epoch(
             model, train_loader, optimizer, criterion, device=device, max_batches=max_train_batches
         )
-        # evaluete on val set after each epoch
+        ## evaluete on val set after each epoch
         val_metrics = evaluate(
             model, val_loader, criterion, device=device, max_batches=max_val_batches
         )
@@ -179,6 +192,7 @@ def main():
             f"TRAIN: loss {train_metrics['loss']:.4f}, acc {train_metrics['acc']:.3f} | "
             f"VAL: loss {val_metrics['loss']:.4f}, acc {val_metrics['acc']:.3f}"
         )
+
 
         # save metrics
         append_metrics_csv(
@@ -193,7 +207,8 @@ def main():
         # plot metrics
         plot_loss_acc(run.metrics_csv_path)
 
-         # new best model?
+        ## new best model?
+        # evaluate based on validation accuracy!
         val_acc = float(val_metrics["acc"])
         if val_acc > best_val_acc:
             best_val_acc = val_acc
@@ -212,13 +227,29 @@ def main():
         else:
             print(f" ->  no improvement, current best: {best_val_acc:.3f}")
         
+        ## early stopping
+        # evaluate based on validation loss!
+        val_loss = float(val_metrics["loss"])
+        if is_es:
+            if val_loss < (best_val_loss) - min_delta:
+                best_val_loss = val_loss
+                bad_epochs = 0
+                print(f" -> earlystop: new best val_loss {best_val_loss:.4f}")
+            else:
+                bad_epochs += 1
+                print(f" -> earlystop: no val_loss improvement ({bad_epochs}/{patience})")
 
-        # update LR for next epoch
+            if bad_epochs >= patience:
+                print(f"[EARLY STOP] Stop at epoch {epoch} | best val_loss {best_val_loss:.4f}")
+                break
+        
+
+        ## update LR for next epoch
         scheduler.step()
 
 
 
-    # ========== validation on Best Model
+    # ========== validation on Best Model ==========
     # per-class metrics on best checkpoint (val set) =====
     ckpt = torch.load(run.best_ckpt_path, map_location=device)
     model.load_state_dict(ckpt["model_state_dict"])
