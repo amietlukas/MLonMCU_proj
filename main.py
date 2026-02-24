@@ -182,7 +182,7 @@ def main():
         val_metrics = evaluate(
             model, val_loader, criterion, device=device, max_batches=max_val_batches
         )
-        
+
         lr_used = optimizer.param_groups[0]["lr"]  # LR used for this epoch
 
         # print metrics
@@ -192,7 +192,6 @@ def main():
             f"TRAIN: loss {train_metrics['loss']:.4f}, acc {train_metrics['acc']:.3f} | "
             f"VAL: loss {val_metrics['loss']:.4f}, acc {val_metrics['acc']:.3f}"
         )
-
 
         # save metrics
         append_metrics_csv(
@@ -231,7 +230,7 @@ def main():
         # evaluate based on validation loss!
         val_loss = float(val_metrics["loss"])
         if is_es:
-            if val_loss < (best_val_loss) - min_delta:
+            if val_loss < best_val_loss - min_delta:
                 best_val_loss = val_loss
                 bad_epochs = 0
                 print(f" -> earlystop: new best val_loss {best_val_loss:.4f}")
