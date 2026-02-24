@@ -53,6 +53,7 @@ def main():
     print(f"Run: {run.run_id}")
     print(f"Run dir:        {run.run_dir}")
     print(f"Config snapshot:{run.config_snapshot_path}")
+    print(f"Code snapshot:{run.code_snapshot_path}")
     print(f"Metrics CSV:    {run.metrics_csv_path}")
     print(f"Best ckpt:      {run.best_ckpt_path}")
 
