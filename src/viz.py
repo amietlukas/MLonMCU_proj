@@ -1,3 +1,7 @@
+"""
+visualizes the transform. currenty just if "in_channel=1 (grayscale)"
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -103,4 +107,4 @@ def save_transform_preview(
 
     plt.tight_layout()
     fig.savefig(out_path, dpi=150)
-    plt.close(fig)
+    plt.close(fig)  

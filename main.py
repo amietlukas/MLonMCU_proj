@@ -16,7 +16,7 @@ from src.model import BaselineCNN
 from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot
 from src.checkpoint import save_checkpoint
-from src.metrics import init_metrics_csv, append_metrics_csv
+from src.metrics import init_metrics_csv, append_metrics_csv, plot_loss_acc
 from src.model_utils import save_model_summary
 from src.viz import save_transform_preview
 from src.per_class_metrics import (
@@ -25,6 +25,7 @@ from src.per_class_metrics import (
     save_confusion_matrix_csv,
     save_per_class_metrics_csv,
 )
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -46,6 +47,7 @@ def main():
 
     run = make_run_info(project_root, args.name)
     save_config_snapshot(cfg, run.config_snapshot_path)
+    save_code_snapshot
     init_metrics_csv(run.metrics_csv_path)
 
     print(f"Run: {run.run_id}")
@@ -151,6 +153,7 @@ def main():
             model, val_loader, criterion, device=device, max_batches=max_val_batches
         )
 
+        # print epoch metrics
         print(
             f"epoch {epoch:02d}/{epochs} | "
             f"TRAIN: loss {train_metrics['loss']:.4f}, acc {train_metrics['acc']:.3f} | "
@@ -166,6 +169,9 @@ def main():
             val_loss=float(val_metrics["loss"]),
             val_acc=float(val_metrics["acc"]),
         )
+
+        # plot metrics
+        plot_loss_acc(run.metrics_csv_path)
 
         # new best model?
         val_acc = float(val_metrics["acc"])
