@@ -124,8 +124,8 @@ def main():
         scheduler = lr_scheduler.CosineAnnealingLR(optimizer, eta_min=eta_min, T_max=epochs)
         print(
             f"[DEBUG] Scheduler: {scheduler.__class__.__name__} | "
-            f"T_max={scheduler.T_max} | eta_min={scheduler.eta_min} | "
             f"initial_lr={optimizer.param_groups[0]['lr']:.3e}"
+            f"T_max={scheduler.T_max} | eta_min={scheduler.eta_min} | "
         )
     else:
         raise ValueError(f"Unsupported LR scheduler type: {scheduler_type}")
