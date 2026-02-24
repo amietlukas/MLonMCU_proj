@@ -14,7 +14,7 @@ from src.config import load_config
 from src.data import build_dataloaders, build_datasets, build_transform, CLASS_NAMES
 from src.model import BaselineCNN
 from src.engine import train_one_epoch, evaluate
-from src.run import make_run_info, save_config_snapshot
+from src.run import make_run_info, save_config_snapshot, save_code_snapshot
 from src.checkpoint import save_checkpoint
 from src.metrics import init_metrics_csv, append_metrics_csv, plot_loss_acc
 from src.model_utils import save_model_summary
@@ -47,7 +47,7 @@ def main():
 
     run = make_run_info(project_root, args.name)
     save_config_snapshot(cfg, run.config_snapshot_path)
-    save_code_snapshot
+    save_code_snapshot(project_root, run.code_snapshot_path)
     init_metrics_csv(run.metrics_csv_path)
 
     print(f"Run: {run.run_id}")

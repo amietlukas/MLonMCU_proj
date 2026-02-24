@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 import yaml
-
+import zipfile
 
 
 @dataclass(frozen=True)
@@ -19,6 +19,7 @@ class RunInfo:
     log_dir: Path
     best_ckpt_path: Path
     config_snapshot_path: Path
+    code_snapshot_path: Path 
     metrics_csv_path: Path
 
 
@@ -37,6 +38,7 @@ def make_run_info(project_root: Path, name: str) -> RunInfo:
 
     best_ckpt_path = ckpt_dir / "best.pt"
     config_snapshot_path = run_dir / "config_snapshot.yaml"
+    code_snapshot_path = run_dir / "code_snapshot.zip"
     metrics_csv_path = log_dir / "metrics.csv"
 
     return RunInfo(
@@ -49,6 +51,7 @@ def make_run_info(project_root: Path, name: str) -> RunInfo:
         log_dir=log_dir,
         best_ckpt_path=best_ckpt_path,
         config_snapshot_path=config_snapshot_path,
+        code_snapshot_path=code_snapshot_path,
         metrics_csv_path=metrics_csv_path,
     )
 
@@ -67,3 +70,33 @@ def save_config_snapshot(cfg: Dict[str, Any], path: Path) -> None:
 
     with path.open("w", encoding="utf-8") as f:
         yaml.safe_dump(_to_serializable(cfg), f, sort_keys=False)
+
+
+def save_code_snapshot(project_root: Path, out_zip_path: Path) -> None:
+    """
+    Zip only:
+      - main.py
+      - src/ (entire folder)
+    """
+    project_root = Path(project_root).resolve()
+    out_zip_path = Path(out_zip_path)
+    out_zip_path.parent.mkdir(parents=True, exist_ok=True)
+
+    main_py = project_root / "main.py"
+    src_dir = project_root / "src"
+
+    if not main_py.exists():
+        raise FileNotFoundError(f"Not found: {main_py}")
+    if not src_dir.exists():
+        raise FileNotFoundError(f"Not found: {src_dir}")
+
+    with zipfile.ZipFile(out_zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        # add main.py
+        zf.write(main_py, arcname="main.py")
+
+        # add src/ recursively
+        for fp in src_dir.rglob("*"):
+            if fp.is_dir():
+                continue
+            arcname = fp.relative_to(project_root).as_posix()  # keeps "src/..."
+            zf.write(fp, arcname=arcname)
