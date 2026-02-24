@@ -102,7 +102,7 @@ def main():
 
     # ========== device setup ==========
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}\n")
+    print(f"[INFO] Using device: {device}\n")
 
     # ========== init model ==========
     model = BaselineCNN(cfg)
@@ -173,9 +173,7 @@ def main():
 
     # ========== train loop ==========
     for epoch in range(start_epoch, epochs + 1):
-
-        lr_used = optimizer.param_groups[0]["lr"]  # LR used for this epoch
-
+        
         ## train one epoch
         train_metrics = train_one_epoch(
             model, train_loader, optimizer, criterion, device=device, max_batches=max_train_batches
@@ -184,6 +182,8 @@ def main():
         val_metrics = evaluate(
             model, val_loader, criterion, device=device, max_batches=max_val_batches
         )
+        
+        lr_used = optimizer.param_groups[0]["lr"]  # LR used for this epoch
 
         # print metrics
         print(
@@ -246,6 +246,7 @@ def main():
 
         ## update LR for next epoch
         scheduler.step()
+        print("\n")
 
 
 
