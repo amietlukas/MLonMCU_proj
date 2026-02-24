@@ -1,5 +1,6 @@
 # config.yaml
 # here we set all the parameters.
+seed: 42
 
 data:
   dataset_root: datasets/HAGRID/hagrid_more_than_15
@@ -14,13 +15,13 @@ preprocess:
     std: 0.5
 
 train:
-  batch_size: 512        # Increased from 128 for better GPU utilization
+  batch_size: 256        # Increased from 128 for better GPU utilization
   num_workers: 8         # Reduced from 32 for balanced I/O
   shuffle: true
   max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
-  epochs: 1000
-  lr: 3e-3               # Increased from 1e-5 for faster convergence
+  epochs: 150
+  
 
 model:
   type: baseline_cnn
@@ -39,4 +40,14 @@ debug:
   plot_images: false # set false to disable plotting images during training
   n_plot_per_class: 5
 
-seed: 42
+# currently implemented:
+# "CosineAnnealingLR"
+LR_scheduler:
+  type: CosineAnnealingLR
+  lr: 1e-3
+  # for CosineAnnealingLR:
+  eta_min: 1e-5 
+
+early_stopping:
+  enabled: true
+  patience: 20 # stop if no improvement in validation loss for 10 epochs

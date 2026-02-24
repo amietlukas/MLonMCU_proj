@@ -5,9 +5,11 @@ From project root, run this file: python main.py --name <name>
 
 import argparse
 from pathlib import Path
+from collections import Counter
 
 import torch
 import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
 import torch.nn as nn
 
 from src.config import load_config
@@ -67,7 +69,6 @@ def main():
     print(f"[DEBUG] Train batch shape: {xb.shape}, labels shape: {yb.shape}")
 
     # ===== DEBUG: Check class distribution =====
-    from collections import Counter
     train_labels = []
     for _, labels, _ in train_loader:
         train_labels.extend(labels.tolist())
@@ -109,41 +110,58 @@ def main():
     save_model_summary(run.model_summary_path, model, cfg)
     print(f"Model summary:  {run.model_summary_path}", "\n")
 
-    # ========== loss + optimizer ==========
-    lr = float(cfg["train"]["lr"])
+    # ========== loss + LRScheduler + optimizer ==========
+    lr = float(cfg["LR_scheduler"]["lr"])
     epochs = int(cfg["train"]["epochs"])
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
-    # ========== load checkpoint if specified ==========
+    scheduler_type = cfg["LR_scheduler"]["type"]
+
+    if scheduler_type == "CosineAnnealingLR":
+        eta_min = float(cfg["LR_scheduler"].get("eta_min", 0))
+        scheduler = lr_scheduler.CosineAnnealingLR(optimizer, eta_min=eta_min, T_max=epochs)
+        print(
+            f"[DEBUG] Scheduler: {scheduler.__class__.__name__} | "
+            f"T_max={scheduler.T_max} | eta_min={scheduler.eta_min} | "
+            f"initial_lr={optimizer.param_groups[0]['lr']:.3e}"
+        )
+    else:
+        raise ValueError(f"Unsupported LR scheduler type: {scheduler_type}")
+
+    # TODO: currently wrong since new scheduler -> adapt if needed correctly
+    # # ========== load checkpoint if specified ==========
+    # start_epoch = 1
+    # best_val_acc = -1.0
+    
+    # if args.checkpoint is not None:
+    #     checkpoint_dir = project_root / "runs" / args.checkpoint
+    #     checkpoint_path = checkpoint_dir / "checkpoints" / "best.pt"
+        
+    #     if not checkpoint_path.exists():
+    #         raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+        
+    #     print(f"Loading checkpoint from: {checkpoint_path}")
+    #     ckpt = torch.load(checkpoint_path, map_location=device)
+        
+    #     model.load_state_dict(ckpt["model_state_dict"])
+    #     optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+        
+    #     # Get metrics from checkpoint
+    #     start_epoch = ckpt.get("epoch", 0) + 1
+    #     best_val_acc = ckpt.get("val_metrics", {}).get("acc", -1.0)
+        
+    #     print(f"Resuming from epoch {start_epoch}, best val acc: {best_val_acc:.3f}\n")
+        
+    # Set start_epoch to 1
     start_epoch = 1
     best_val_acc = -1.0
-    
-    if args.checkpoint is not None:
-        checkpoint_dir = project_root / "runs" / args.checkpoint
-        checkpoint_path = checkpoint_dir / "checkpoints" / "best.pt"
-        
-        if not checkpoint_path.exists():
-            raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
-        
-        print(f"Loading checkpoint from: {checkpoint_path}")
-        ckpt = torch.load(checkpoint_path, map_location=device)
-        
-        model.load_state_dict(ckpt["model_state_dict"])
-        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
-        
-        # Get metrics from checkpoint
-        start_epoch = ckpt.get("epoch", 0) + 1
-        best_val_acc = ckpt.get("val_metrics", {}).get("acc", -1.0)
-        
-        print(f"Resuming from epoch {start_epoch}, best val acc: {best_val_acc:.3f}\n")
-        
-        # Set start_epoch to 1
-        start_epoch = 1
 
     # ========== train loop ==========
     for epoch in range(start_epoch, epochs + 1):
+
+        lr_used = optimizer.param_groups[0]["lr"]  # LR used for this epoch
 
         # train one epoch
         train_metrics = train_one_epoch(
@@ -154,9 +172,10 @@ def main():
             model, val_loader, criterion, device=device, max_batches=max_val_batches
         )
 
-        # print epoch metrics
+        # print metrics
         print(
             f"epoch {epoch:02d}/{epochs} | "
+            f"lr_used {lr_used:.3e} | "
             f"TRAIN: loss {train_metrics['loss']:.4f}, acc {train_metrics['acc']:.3f} | "
             f"VAL: loss {val_metrics['loss']:.4f}, acc {val_metrics['acc']:.3f}"
         )
@@ -174,7 +193,7 @@ def main():
         # plot metrics
         plot_loss_acc(run.metrics_csv_path)
 
-        # new best model?
+         # new best model?
         val_acc = float(val_metrics["acc"])
         if val_acc > best_val_acc:
             best_val_acc = val_acc
@@ -192,8 +211,15 @@ def main():
             print(f" ->  new best: val acc {best_val_acc:.3f}")
         else:
             print(f" ->  no improvement, current best: {best_val_acc:.3f}")
-    
-    # ===== per-class metrics on BEST checkpoint (val set) =====
+        
+
+        # update LR for next epoch
+        scheduler.step()
+
+
+
+    # ========== validation on Best Model
+    # per-class metrics on best checkpoint (val set) =====
     ckpt = torch.load(run.best_ckpt_path, map_location=device)
     model.load_state_dict(ckpt["model_state_dict"])
 

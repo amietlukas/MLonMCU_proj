@@ -31,8 +31,8 @@ def train_one_epoch(
             break
         
         if batch_idx == 0: # debug
-            print("[DEBBUG] xb stats:", xb.min().item(), xb.max().item(), xb.mean().item(), xb.std().item())
-            print("[DEBBUG] yb stats:", yb.min().item(), yb.max().item())
+            print("[DEBUG] xb stats:", xb.min().item(), xb.max().item(), xb.mean().item(), xb.std().item())
+            print("[DEBUG] yb stats:", yb.min().item(), yb.max().item())
 
         # forward
         xb = xb.to(device)
