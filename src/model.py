@@ -6,18 +6,24 @@ import torch
 import torch.nn as nn
 from typing import Any, Dict, List
 
+def vprint(msg: str, cfg: Dict[str, Any]) -> None:
+    """Print if debug.verbose is True, otherwise silent."""
+    if cfg.get("debug", {}).get("verbose", False):
+        print(msg)
 # build one stage / block
 def make_stage(in_ch: int, out_ch: int, k: int, blocks: int) -> nn.Sequential:
     layers = []
     pad = k // 2  # keeps spatial size for stride=1
 
-    # first conv
-    layers += [nn.Conv2d(in_ch, out_ch, kernel_size=k, padding=pad, bias=True),
+    # first conv (bias=False because BatchNorm has its own bias)
+    layers += [nn.Conv2d(in_ch, out_ch, kernel_size=k, padding=pad, bias=False),
+               nn.BatchNorm2d(out_ch),
                nn.ReLU(inplace=True)]
     
     # optional extra convs in the same stage (if model.blocks_per_stage > 1)
     for _ in range(blocks - 1):
-        layers += [nn.Conv2d(out_ch, out_ch, kernel_size=k, padding=pad, bias=True),
+        layers += [nn.Conv2d(out_ch, out_ch, kernel_size=k, padding=pad, bias=False),
+                   nn.BatchNorm2d(out_ch),
                    nn.ReLU(inplace=True)]
 
     # downsample

@@ -16,7 +16,7 @@ import torch.nn as nn
 
 from src.config import load_config
 from src.data import build_dataloaders, build_datasets, build_transform, CLASS_NAMES
-from src.model import BaselineCNN
+from src.model import BaselineCNN, vprint
 from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot, save_code_snapshot
 from src.checkpoint import save_checkpoint
@@ -46,7 +46,7 @@ def main():
     # for quick debugging, you can set max_train_batches and max_val_batches in config.yaml
     max_train_batches = cfg["train"].get("max_train_batches", None)
     max_val_batches = cfg["train"].get("max_val_batches", None)
-    print("[DEBUG] max_train_batches:", max_train_batches, "max_val_batches:", max_val_batches)
+    vprint(f"[DEBUG] max_train_batches: {max_train_batches}, max_val_batches: {max_val_batches}", cfg)
 
     run = make_run_info(project_root, args.name)
     save_config_snapshot(cfg, run.config_snapshot_path)
@@ -69,10 +69,10 @@ def main():
     train_counts = Counter([y for _, y in train_loader.dataset.samples])
     val_counts   = Counter([y for _, y in val_loader.dataset.samples])
 
-    print("[DEBUG] train labels unique:", sorted(train_counts.keys()))
-    print("[DEBUG] val labels unique:", sorted(val_counts.keys()))
-    print("[DEBUG] num_classes cfg:", cfg["data"]["num_classes"], "len(CLASS_NAMES):", len(CLASS_NAMES))
-    print("[DEBUG] CLASS_NAMES:", CLASS_NAMES)
+    vprint(f"[DEBUG] train labels unique: {sorted(train_counts.keys())}", cfg)
+    vprint(f"[DEBUG] val labels unique: {sorted(val_counts.keys())}", cfg)
+    vprint(f"[DEBUG] num_classes cfg: {cfg['data']['num_classes']}, len(CLASS_NAMES): {len(CLASS_NAMES)}", cfg)
+    vprint(f"[DEBUG] CLASS_NAMES: {CLASS_NAMES}", cfg)
 
     from collections import Counter, defaultdict
 
@@ -89,8 +89,8 @@ def main():
             m[int(y)][cls] += 1
         return {y: m[y].most_common(3) for y in sorted(m.keys())}
 
-    print("[DEBUG] train label->folder top3:", infer_mapping_from_samples(train_loader.dataset.samples, seed=0))
-    print("[DEBUG] val   label->folder top3:", infer_mapping_from_samples(val_loader.dataset.samples, seed=1))
+    vprint(f"[DEBUG] train label->folder top3: {infer_mapping_from_samples(train_loader.dataset.samples, seed=0)}", cfg)
+    vprint(f"[DEBUG] val   label->folder top3: {infer_mapping_from_samples(val_loader.dataset.samples, seed=1)}", cfg)
     # show a few sample paths per label (does the path name match the label meaning?)
     from collections import defaultdict
     examples = defaultdict(list)
@@ -142,19 +142,19 @@ def main():
     # ========== device setup ==========
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Using device: {device}\n")
-    print("[DEBUG] torch.cuda.is_available():", torch.cuda.is_available())
-    print("[DEBUG] cuda device count:", torch.cuda.device_count())
+    vprint(f"[DEBUG] torch.cuda.is_available(): {torch.cuda.is_available()}", cfg)
+    vprint(f"[DEBUG] cuda device count: {torch.cuda.device_count()}", cfg)
     if torch.cuda.is_available():
         d = torch.cuda.current_device()
-        print("[DEBUG] current cuda device:", d)
-        print("[DEBUG] cuda device name:", torch.cuda.get_device_name(d), "\n")
+        vprint(f"[DEBUG] current cuda device: {d}", cfg)
+        vprint(f"[DEBUG] cuda device name: {torch.cuda.get_device_name(d)}", cfg)
 
     # ========== init model ==========
     model = BaselineCNN(cfg)
     model = model.to(device)
     save_model_summary(run.model_summary_path, model, cfg)
     print(f"Model summary:  {run.model_summary_path}", "\n")
-    print("[DEBUG] model param device:", next(model.parameters()).device)
+    vprint(f"[DEBUG] model param device: {next(model.parameters()).device}", cfg)
 
     # ========== loss + LRScheduler + optimizer ==========
     lr = float(cfg["LR_scheduler"]["lr"])
@@ -322,8 +322,8 @@ def main():
     # ===== DEBUG: Print confusion matrix details =====
     print("\n[DEBUG] Confusion Matrix:")
     print(cm)
-    print("[DEBUG] Predictions per class (column sums):", cm.sum(dim=0).tolist())
-    print("[DEBUG] True instances per class (row sums):", cm.sum(dim=1).tolist())
+    vprint(f"[DEBUG] Predictions per class (column sums): {cm.sum(dim=0).tolist()}", cfg)
+    vprint(f"[DEBUG] True instances per class (row sums): {cm.sum(dim=1).tolist()}", cfg)
 
     per_class = compute_per_class_metrics(cm)
     save_per_class_metrics_csv(run.log_dir / "per_class_metrics.csv", per_class, CLASS_NAMES)

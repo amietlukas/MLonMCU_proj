@@ -35,6 +35,7 @@ model:
   kernel_size: 3
 
 debug:
+  verbose: false # set to true to see all [DEBUG] and [INFO] prints
   # TODO: can't plot RGB -> set to false
   # can't plot if in_channels=3!
   plot_images: false # set false to disable plotting images during training
@@ -50,5 +51,5 @@ LR_scheduler:
 
 early_stopping:
   enabled: true
-  patience: 20 # stop if no improvement in validation loss for 10 epochs
+  patience: 50 # stop if no improvement in validation loss for 10 epochs
   min_delta: 1e-4 # dont count noise as improvement TODO: find noise level
