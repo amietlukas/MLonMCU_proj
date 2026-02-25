@@ -3,7 +3,7 @@
 seed: 42
 
 data:
-  dataset_root: datasets/HAGRID/hagrid_more_than_15
+  dataset_root: datasets/HAGRID/hagrid_full
   input_size: 128 # the grayscale images are resized to 128x128
   num_classes: 6
 
@@ -18,7 +18,7 @@ train:
   batch_size: 256        # Increased from 128 for better GPU utilization
   num_workers: 8         # Reduced from 32 for balanced I/O
   shuffle: true
-  max_train_batches: null # set to a int for quicker testing, set to null for full training
+  max_train_batches: 2 # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
   epochs: 150
   
@@ -44,7 +44,7 @@ debug:
 # "CosineAnnealingLR"
 LR_scheduler:
   type: CosineAnnealingLR
-  lr: 1e-3
+  lr: 3e-3
   # for CosineAnnealingLR:
   eta_min: 1e-5 
 

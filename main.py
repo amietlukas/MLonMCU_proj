@@ -7,6 +7,8 @@ import argparse
 from pathlib import Path
 from collections import Counter
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0" # since only one GPU is supported
 import torch
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
@@ -27,7 +29,6 @@ from src.per_class_metrics import (
     save_confusion_matrix_csv,
     save_per_class_metrics_csv,
 )
-
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -61,7 +62,45 @@ def main():
 
     # ========== build dataloaders ==========
     train_loader, val_loader, test_loader = build_dataloaders(cfg)
+    # debug--------
+    from collections import Counter
 
+    # dataset label sanity (works for your custom dataset)
+    train_counts = Counter([y for _, y in train_loader.dataset.samples])
+    val_counts   = Counter([y for _, y in val_loader.dataset.samples])
+
+    print("[DEBUG] train labels unique:", sorted(train_counts.keys()))
+    print("[DEBUG] val labels unique:", sorted(val_counts.keys()))
+    print("[DEBUG] num_classes cfg:", cfg["data"]["num_classes"], "len(CLASS_NAMES):", len(CLASS_NAMES))
+    print("[DEBUG] CLASS_NAMES:", CLASS_NAMES)
+
+    from collections import Counter, defaultdict
+
+    import random
+
+
+    def infer_mapping_from_samples(samples, n=5000, seed=0):
+        rng = random.Random(seed)
+        idxs = rng.sample(range(len(samples)), min(n, len(samples)))
+        m = defaultdict(Counter)
+        for i in idxs:
+            p, y = samples[i]
+            cls = Path(p).parent.name  # uses the Path you already imported at file top
+            m[int(y)][cls] += 1
+        return {y: m[y].most_common(3) for y in sorted(m.keys())}
+
+    print("[DEBUG] train label->folder top3:", infer_mapping_from_samples(train_loader.dataset.samples, seed=0))
+    print("[DEBUG] val   label->folder top3:", infer_mapping_from_samples(val_loader.dataset.samples, seed=1))
+    # show a few sample paths per label (does the path name match the label meaning?)
+    from collections import defaultdict
+    examples = defaultdict(list)
+    for path, y in train_loader.dataset.samples[:5000]:  # scan first 5k only
+        if len(examples[y]) < 2:
+            examples[y].append(path)
+
+    for y in range(cfg["data"]["num_classes"]):
+        print(f"[DEBUG] label {y} -> {CLASS_NAMES[y]} examples:", examples[y])
+    # debug--------
     # check dataloader
     xb, yb, _ = next(iter(train_loader))
     assert xb.ndim == 4 and (xb.shape[1] == 1 or xb.shape[1] == 3), xb.shape
@@ -103,12 +142,19 @@ def main():
     # ========== device setup ==========
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[INFO] Using device: {device}\n")
+    print("[DEBUG] torch.cuda.is_available():", torch.cuda.is_available())
+    print("[DEBUG] cuda device count:", torch.cuda.device_count())
+    if torch.cuda.is_available():
+        d = torch.cuda.current_device()
+        print("[DEBUG] current cuda device:", d)
+        print("[DEBUG] cuda device name:", torch.cuda.get_device_name(d), "\n")
 
     # ========== init model ==========
     model = BaselineCNN(cfg)
     model = model.to(device)
     save_model_summary(run.model_summary_path, model, cfg)
     print(f"Model summary:  {run.model_summary_path}", "\n")
+    print("[DEBUG] model param device:", next(model.parameters()).device)
 
     # ========== loss + LRScheduler + optimizer ==========
     lr = float(cfg["LR_scheduler"]["lr"])
@@ -172,8 +218,20 @@ def main():
     bad_epochs = 0
 
     # ========== train loop ==========
+    # debug----------
+    import math
+
+    def param_norm(m):
+        s = 0.0
+        for p in m.parameters():
+            s += p.detach().float().norm().item() ** 2
+        return math.sqrt(s)
+    # debug----------
+
     for epoch in range(start_epoch, epochs + 1):
-        
+        # debug----------
+        w0 = param_norm(model)
+        # debug----------
         ## train one epoch
         train_metrics = train_one_epoch(
             model, train_loader, optimizer, criterion, device=device, max_batches=max_train_batches
@@ -182,6 +240,10 @@ def main():
         val_metrics = evaluate(
             model, val_loader, criterion, device=device, max_batches=max_val_batches
         )
+        # debug----------
+        w1 = param_norm(model)
+        print(f"[DEBUG] param_norm: {w0:.6f} -> {w1:.6f}")
+        # debug----------
 
         lr_used = optimizer.param_groups[0]["lr"]  # LR used for this epoch
 
