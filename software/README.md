@@ -17,7 +17,9 @@ This project trains a Convolutional Neural Network (CNN) to classify 6 hand gest
 
 ## 📁 Project Structure
 
-```
+changed! write new structure TO DO
+
+<!-- ```
 MLonMCU_proj/
 ├── config.yaml              # All hyperparameters and settings
 ├── main.py                  # Main training orchestrator
@@ -49,7 +51,7 @@ MLonMCU_proj/
             ├── confusion_matrix.csv
             ├── per_class_metrics.csv
             └── transform_preview_train.png
-```
+``` -->
 
 ## 🚀 Quick Start
 

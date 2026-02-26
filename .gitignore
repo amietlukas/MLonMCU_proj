@@ -11,6 +11,8 @@ __pycache__/
 # venv
 venv/
 .venv/
+**/venv/
+**/.venv/
 .env/
 
 # jupiter
@@ -22,16 +24,16 @@ venv/
 **/.DS_Store
 
 # logs
-logs/**
-!logs/**/.gitkeep
-!logs/**/README.md
+**/logs/**
+!**/logs/**/.gitkeep
+!**/logs/**/README.md
 
 # run artifacts
-runs/**
-!runs/**/.gitkeep
-!runs/**/README.md
+**/runs/**
+!**/runs/**/.gitkeep
+!**/runs/**/README.md
 
 # datasets
-datasets/**
-!datasets/**/.gitkeep
-!datasets/**/README.md
+**/datasets/**
+!**/datasets/**/.gitkeep
+!**/datasets/**/README.md

@@ -3,7 +3,7 @@
 seed: 42
 
 data:
-  dataset_root: datasets/HAGRID/hagrid_full
+  dataset_root: ../datasets/HAGRID/hagrid_more_than_15
   input_size: 128 # the grayscale images are resized to 128x128
   num_classes: 6
 
