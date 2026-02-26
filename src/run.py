@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict
 import yaml
 import zipfile
+import sys
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class RunInfo:
     config_snapshot_path: Path
     code_snapshot_path: Path 
     metrics_csv_path: Path
+    terminal_log_path: Path
 
 
 
@@ -40,6 +42,7 @@ def make_run_info(project_root: Path, name: str) -> RunInfo:
     config_snapshot_path = run_dir / "config_snapshot.yaml"
     code_snapshot_path = run_dir / "code_snapshot.zip"
     metrics_csv_path = log_dir / "metrics.csv"
+    terminal_log_path = log_dir / "terminal.log"
 
     return RunInfo(
         name=name,
@@ -53,10 +56,11 @@ def make_run_info(project_root: Path, name: str) -> RunInfo:
         config_snapshot_path=config_snapshot_path,
         code_snapshot_path=code_snapshot_path,
         metrics_csv_path=metrics_csv_path,
+        terminal_log_path=terminal_log_path,
     )
 
 
-
+# ===== save the config =====
 def save_config_snapshot(cfg: Dict[str, Any], path: Path) -> None:
     # cfg contains Path objects (dataset_root). YAML can't serialize Path nicely.
     def _to_serializable(x):
@@ -72,6 +76,7 @@ def save_config_snapshot(cfg: Dict[str, Any], path: Path) -> None:
         yaml.safe_dump(_to_serializable(cfg), f, sort_keys=False)
 
 
+# ===== save the code snapshot =====
 def save_code_snapshot(project_root: Path, out_zip_path: Path) -> None:
     """
     Zip only:
@@ -100,3 +105,32 @@ def save_code_snapshot(project_root: Path, out_zip_path: Path) -> None:
                 continue
             arcname = fp.relative_to(project_root).as_posix()  # keeps "src/..."
             zf.write(fp, arcname=arcname)
+
+
+
+# ===== save the terminal log =====
+class Tee:
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, data):
+        for s in self.streams:
+            s.write(data)
+            s.flush()
+
+    def flush(self):
+        for s in self.streams:
+            s.flush()
+
+def setup_terminal_logging(log_path: Path):
+    """
+    Redirect stdout+stderr to log_path while keeping terminal output visible.
+    Returns the opened file handle (keep it alive, close at end).
+    """
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    f = open(log_path, "a", buffering=1, encoding="utf-8")  # line-buffered
+
+    sys.stdout = Tee(sys.__stdout__, f)
+    sys.stderr = Tee(sys.__stderr__, f)
+
+    return f

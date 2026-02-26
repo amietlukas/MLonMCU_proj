@@ -18,7 +18,7 @@ from src.config import load_config
 from src.data import build_dataloaders, build_datasets, build_transform, CLASS_NAMES
 from src.model import BaselineCNN, vprint
 from src.engine import train_one_epoch, evaluate
-from src.run import make_run_info, save_config_snapshot, save_code_snapshot
+from src.run import make_run_info, save_config_snapshot, save_code_snapshot, setup_terminal_logging
 from src.checkpoint import save_checkpoint
 from src.metrics import init_metrics_csv, append_metrics_csv, plot_loss_acc
 from src.model_utils import save_model_summary
@@ -43,22 +43,28 @@ def main():
 
     project_root = Path(__file__).resolve().parent  # IMPORTANT: main.py needs to be in the project root
     cfg = load_config(project_root / "config.yaml", project_root)  # load config and check global assumptions
+
+    run = make_run_info(project_root, args.name)
+
+    # start terminal logging
+    terminal_fh = setup_terminal_logging(run.terminal_log_path)
+    print(f"[INFO] Terminal log: {run.terminal_log_path}")  
+
     # for quick debugging, you can set max_train_batches and max_val_batches in config.yaml
     max_train_batches = cfg["train"].get("max_train_batches", None)
     max_val_batches = cfg["train"].get("max_val_batches", None)
     vprint(f"[DEBUG] max_train_batches: {max_train_batches}, max_val_batches: {max_val_batches}", cfg)
-
-    run = make_run_info(project_root, args.name)
+    
     save_config_snapshot(cfg, run.config_snapshot_path)
     save_code_snapshot(project_root, run.code_snapshot_path)
     init_metrics_csv(run.metrics_csv_path)
 
-    print(f"Run: {run.run_id}")
-    print(f"Run dir:        {run.run_dir}")
-    print(f"Config snapshot:{run.config_snapshot_path}")
-    print(f"Code snapshot:{run.code_snapshot_path}")
-    print(f"Metrics CSV:    {run.metrics_csv_path}")
-    print(f"Best ckpt:      {run.best_ckpt_path}")
+    print(f"[INFO] Run: {run.run_id}")
+    print(f"[INFO] Run dir:        {run.run_dir}")
+    print(f"[INFO] Config snapshot:{run.config_snapshot_path}")
+    print(f"[INFO] Code snapshot:{run.code_snapshot_path}")
+    print(f"[INFO] Metrics CSV:    {run.metrics_csv_path}")
+    print(f"[INFO] Best ckpt:      {run.best_ckpt_path}")
 
     # ========== build dataloaders ==========
     train_loader, val_loader, test_loader = build_dataloaders(cfg)
@@ -352,6 +358,7 @@ def main():
     # print(f"Saved test per-class metrics -> {run.log_dir / 'per_class_metrics_test.csv'}")
 
     print("\n", "------ FINISHED ------", "\n", "\n")
+    terminal_fh.close() # close terminal
 
 if __name__ == "__main__":
     main()
