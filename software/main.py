@@ -149,10 +149,12 @@ def main():
 
     # ========== loss + LRScheduler + optimizer ==========
     lr = float(cfg["LR_scheduler"]["lr"])
+    weight_decay = float(cfg.get("optimizer", {}).get("weight_decay", 0.0))
     epochs = int(cfg["train"]["epochs"])
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    print(f"[INFO] Optimizer: Adam | lr={lr:.3e} | weight_decay={weight_decay:.1e}")
 
     scheduler_type = cfg["LR_scheduler"]["type"]
 

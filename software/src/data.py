@@ -86,52 +86,137 @@ class LetterboxSquare:
 
         return img
 
+
+def _parse_norm(norm_cfg: dict, in_channels: int):
+    """
+    Parse normalize config into mean/std lists.
+    Supports:
+      - scalar:  mean: 0.5           -> [0.5] or [0.5, 0.5, 0.5]
+      - list:    mean: [0.485, ...]  -> used directly (length must match in_channels)
+    """
+    raw_mean = norm_cfg.get("mean", 0.5)
+    raw_std  = norm_cfg.get("std", 0.5)
+
+    def _to_list(v, n):
+        if isinstance(v, (list, tuple)):
+            if len(v) == n:
+                return [float(x) for x in v]
+            if len(v) == 1:
+                return [float(v[0])] * n
+            raise ValueError(
+                f"normalize list length {len(v)} doesn't match in_channels={n}"
+            )
+        return [float(v)] * n
+
+    return _to_list(raw_mean, in_channels), _to_list(raw_std, in_channels)
+
+
 # apply the transform
 def build_transform(cfg: Dict[str, Any], train: bool) -> T.Compose:
-    # with argument "train" we can later add data augmentation for training set
+    """
+    Build a torchvision transform pipeline.
 
-    # look up config for transform parameters
+    preprocess.type controls the strategy:
+        "letterbox"  – resize + letterbox pad (no augmentation)
+        "augmented"  – augmentation pipeline for train, letterbox-only for eval
+    """
+
     size = int(cfg["data"]["input_size"])
     pp = cfg.get("preprocess", {})
     pp_type = pp.get("type", "letterbox")
     fill = int(pp.get("fill", 0))
-    norm = pp.get("normalize", {})
-    mean = float(norm.get("mean", 0.5))
-    std = float(norm.get("std", 0.5))
     in_channels = int(cfg["model"]["in_channels"])
 
+    # --- normalization (per-channel or uniform) ---
+    norm_cfg = pp.get("normalize", {})
+    norm_mean, norm_std = _parse_norm(norm_cfg, in_channels)
+
+    # --- spatial base: letterbox is always the foundation ---
+    spatial = LetterboxSquare(size=size, fill=fill)
+
+    # --- channel handling ---
+    if in_channels == 1:
+        channel_tf = [T.Grayscale(num_output_channels=1)]
+    elif in_channels == 3:
+        channel_tf = []  # already RGB
+    else:
+        raise ValueError(f"Unsupported in_channels: {in_channels}")
+
+    # --- build pipeline depending on type ---
     if pp_type == "letterbox":
-        spatial = LetterboxSquare(size=size, fill=fill) # callable object 
+        # pure letterbox for both train and eval
+        tf = T.Compose(
+            channel_tf + [
+                spatial,
+                T.ToTensor(),
+                T.Normalize(mean=norm_mean, std=norm_std),
+            ]
+        )
+
+    elif pp_type == "augmented":
+        if train:
+            # augmentation settings from config
+            aug = pp.get("augmentation", {})
+            h_flip      = float(aug.get("horizontal_flip", 0.0))
+            rot_deg     = float(aug.get("rotation_degrees", 0))
+            translate   = aug.get("translate", None)
+            scale       = aug.get("scale", None)
+            cj          = aug.get("color_jitter", {})
+            erase_prob  = float(aug.get("erasing_prob", 0.0))
+
+            aug_list: list = []
+
+            # color jitter (before spatial transforms — works on PIL)
+            if cj:
+                aug_list.append(
+                    T.ColorJitter(
+                        brightness=float(cj.get("brightness", 0)),
+                        contrast=float(cj.get("contrast", 0)),
+                        saturation=float(cj.get("saturation", 0)),
+                        hue=float(cj.get("hue", 0)),
+                    )
+                )
+
+            # random horizontal flip (no vertical — hand gestures are not vertically symmetric)
+            if h_flip > 0:
+                aug_list.append(T.RandomHorizontalFlip(p=h_flip))
+
+            # affine: rotation + translation + scale  (makes model invariant to hand position / angle)
+            if rot_deg > 0 or translate is not None or scale is not None:
+                aug_list.append(
+                    T.RandomAffine(
+                        degrees=rot_deg,
+                        translate=tuple(translate) if translate else None,
+                        scale=tuple(scale) if scale else None,
+                        fill=fill,
+                    )
+                )
+
+            tf = T.Compose(
+                channel_tf + [
+                    spatial,           # letterbox first (deterministic resize)
+                ] + aug_list + [       # then stochastic augmentations
+                    T.ToTensor(),
+                    T.Normalize(mean=norm_mean, std=norm_std),
+                ] + (
+                    # random erasing operates on tensors
+                    [T.RandomErasing(p=erase_prob, scale=(0.02, 0.2), ratio=(0.3, 3.3))]
+                    if erase_prob > 0 else []
+                )
+            )
+        else:
+            # eval path: same as letterbox (no augmentation)
+            tf = T.Compose(
+                channel_tf + [
+                    spatial,
+                    T.ToTensor(),
+                    T.Normalize(mean=norm_mean, std=norm_std),
+                ]
+            )
+
     else:
         raise ValueError(f"Unknown preprocess.type: {pp_type}")
 
-    # tf = T.Compose([
-    #     T.Grayscale(num_output_channels=1),
-    #     spatial,
-    #     T.ToTensor(), # [0,1], shape [1,H,W]
-    #     T.Normalize(mean=[mean], std=[std]),
-    # ])
-    # return  tf # callable transform object
-
-    # channel handling + normalization
-    if in_channels == 1:
-        channel_tf = [T.Grayscale(num_output_channels=1)]
-        norm_mean = [mean]
-        norm_std  = [std]
-    elif in_channels == 3:
-        channel_tf = []  # already RGB
-        norm_mean = [mean, mean, mean]
-        norm_std  = [std, std, std]
-    else:
-        raise ValueError(f"Unsupported input_channels: {in_channels}")
-
-    tf = T.Compose( # expects one list
-        channel_tf + [
-            spatial,
-            T.ToTensor(),
-            T.Normalize(mean=norm_mean, std=norm_std),
-        ]
-    )
     return tf
 
 # =========== Dataset ===========

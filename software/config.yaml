@@ -8,11 +8,32 @@ data:
   num_classes: 6
 
 preprocess:
-  type: letterbox        # may add different methods in future
+  type: augmented        # "letterbox" = resize only | "augmented" = augmentation + letterbox (train only)
   fill: 0                # padding value for letterbox
   normalize:
-    mean: 0.5
-    std: 0.5
+    # Per-channel normalization (use lists for per-channel, scalar for uniform)
+    # For 3-channel RGB (ImageNet-style):
+    mean: [0.485, 0.456, 0.406]
+    std:  [0.229, 0.224, 0.225]
+    # For 1-channel grayscale, use:
+    # mean: [0.5]
+    # std:  [0.5]
+    # For uniform (old style), use:
+    # mean: 0.5
+    # std:  0.5
+
+  # augmentation settings (only used when preprocess.type == "augmented", applied to train only)
+  augmentation:
+    horizontal_flip: 0.5       # probability of random horizontal flip
+    rotation_degrees: 15       # random rotation range [-deg, +deg]
+    translate: [0.1, 0.1]      # max fraction of total width/height for horizontal/vertical shift
+    scale: [0.85, 1.15]        # random zoom range
+    color_jitter:
+      brightness: 0.3
+      contrast: 0.3
+      saturation: 0.2
+      hue: 0.05
+    erasing_prob: 0.15         # random erasing (cutout) probability
 
 train:
   batch_size: 256        # Increased from 128 for better GPU utilization
@@ -20,7 +41,7 @@ train:
   shuffle: true
   max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
-  epochs: 50
+  epochs: 150
   
 
 model:
@@ -29,11 +50,11 @@ model:
   num_classes: 6 # match data.num_classes!
 
   # stages define channel widths after each downsampling
-  channels: [16, 32, 64, 128]
+  channels: [16, 32, 64, 64]
   # convs per stage (1 = Conv-ReLU-Pool, 2 = Conv-ReLU-Conv-ReLU-Pool)
   blocks_per_stage: 1
   kernel_size: 3
-  dropout_rate: 0.2
+  dropout_rate: 0.1
 
 debug:
   verbose: false # set to true to see all [DEBUG] prints
@@ -48,7 +69,10 @@ LR_scheduler:
   type: CosineAnnealingLR
   lr: 3e-3
   # for CosineAnnealingLR:
-  eta_min: 1e-5 
+  eta_min: 1e-5
+
+optimizer:
+  weight_decay: 1e-4     # L2 regularization strength
 
 early_stopping:
   enabled: true
