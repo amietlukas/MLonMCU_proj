@@ -3,7 +3,7 @@
 seed: 42
 
 data:
-  dataset_root: ../datasets/HAGRID/hagrid_more_than_15
+  dataset_root: ../datasets/HAGRID/hagrid_full
   input_size: 128 # the grayscale images are resized to 128x128
   num_classes: 6
 
@@ -18,9 +18,9 @@ train:
   batch_size: 256        # Increased from 128 for better GPU utilization
   num_workers: 8         # Reduced from 32 for balanced I/O
   shuffle: true
-  max_train_batches: 2 # set to a int for quicker testing, set to null for full training
+  max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
-  epochs: 150
+  epochs: 50
   
 
 model:
@@ -31,11 +31,12 @@ model:
   # stages define channel widths after each downsampling
   channels: [16, 32, 64, 128]
   # convs per stage (1 = Conv-ReLU-Pool, 2 = Conv-ReLU-Conv-ReLU-Pool)
-  blocks_per_stage: 2
+  blocks_per_stage: 1
   kernel_size: 3
+  dropout_rate: 0.2
 
 debug:
-  verbose: false # set to true to see all [DEBUG] and [INFO] prints
+  verbose: false # set to true to see all [DEBUG] prints
   # TODO: can't plot RGB -> set to false
   # can't plot if in_channels=3!
   plot_images: false # set false to disable plotting images during training
@@ -51,5 +52,5 @@ LR_scheduler:
 
 early_stopping:
   enabled: true
-  patience: 50 # stop if no improvement in validation loss for 10 epochs
+  patience: 10 # stop if no improvement in validation loss for 10 epochs
   min_delta: 1e-4 # dont count noise as improvement TODO: find noise level

@@ -4,8 +4,10 @@ From project root, run this file: python main.py --name <name>
 """
 
 import argparse
+import math
+import random
 from pathlib import Path
-from collections import Counter
+from collections import Counter, defaultdict
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0" # since only one GPU is supported
@@ -16,7 +18,8 @@ import torch.nn as nn
 
 from src.config import load_config
 from src.data import build_dataloaders, build_datasets, build_transform, CLASS_NAMES
-from src.model import BaselineCNN, vprint
+from src.model import BaselineCNN
+from src.helper_func import vprint, param_norm, infer_mapping_from_samples
 from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot, save_code_snapshot, setup_terminal_logging
 from src.checkpoint import save_checkpoint
@@ -68,10 +71,8 @@ def main():
 
     # ========== build dataloaders ==========
     train_loader, val_loader, test_loader = build_dataloaders(cfg)
-    # debug--------
-    from collections import Counter
 
-    # dataset label sanity (works for your custom dataset)
+    # ----- dataloader sanity checks -----
     train_counts = Counter([y for _, y in train_loader.dataset.samples])
     val_counts   = Counter([y for _, y in val_loader.dataset.samples])
 
@@ -80,40 +81,24 @@ def main():
     vprint(f"[DEBUG] num_classes cfg: {cfg['data']['num_classes']}, len(CLASS_NAMES): {len(CLASS_NAMES)}", cfg)
     vprint(f"[DEBUG] CLASS_NAMES: {CLASS_NAMES}", cfg)
 
-    from collections import Counter, defaultdict
-
-    import random
-
-
-    def infer_mapping_from_samples(samples, n=5000, seed=0):
-        rng = random.Random(seed)
-        idxs = rng.sample(range(len(samples)), min(n, len(samples)))
-        m = defaultdict(Counter)
-        for i in idxs:
-            p, y = samples[i]
-            cls = Path(p).parent.name  # uses the Path you already imported at file top
-            m[int(y)][cls] += 1
-        return {y: m[y].most_common(3) for y in sorted(m.keys())}
-
     vprint(f"[DEBUG] train label->folder top3: {infer_mapping_from_samples(train_loader.dataset.samples, seed=0)}", cfg)
     vprint(f"[DEBUG] val   label->folder top3: {infer_mapping_from_samples(val_loader.dataset.samples, seed=1)}", cfg)
-    # show a few sample paths per label (does the path name match the label meaning?)
-    from collections import defaultdict
+
+    # show a few sample paths per label
     examples = defaultdict(list)
-    for path, y in train_loader.dataset.samples[:5000]:  # scan first 5k only
+    for path, y in train_loader.dataset.samples[:5000]:
         if len(examples[y]) < 2:
             examples[y].append(path)
-
     for y in range(cfg["data"]["num_classes"]):
-        print(f"[DEBUG] label {y} -> {CLASS_NAMES[y]} examples:", examples[y])
-    # debug--------
-    # check dataloader
+        vprint(f"[DEBUG] label {y} -> {CLASS_NAMES[y]} examples: {examples[y]}", cfg)
+
+    # quick shape check
     xb, yb, _ = next(iter(train_loader))
     assert xb.ndim == 4 and (xb.shape[1] == 1 or xb.shape[1] == 3), xb.shape
     assert yb.ndim == 1, yb.shape
     print(f"[INFO] Train batch shape: {xb.shape}, labels shape: {yb.shape}")
 
-    # ===== DEBUG: Check class distribution =====
+    # ----- class distribution -----
     train_labels = []
     for _, labels, _ in train_loader:
         train_labels.extend(labels.tolist())
@@ -143,7 +128,7 @@ def main():
             n_per_class=n_per_class,
             seed=int(cfg.get("seed", 0)),
         )
-        print(f"[DEBUG] saved transform preview -> {out_path}")
+        vprint(f"[DEBUG] saved transform preview -> {out_path}", cfg)
 
     # ========== device setup ==========
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -224,32 +209,20 @@ def main():
     bad_epochs = 0
 
     # ========== train loop ==========
-    # debug----------
-    import math
-
-    def param_norm(m):
-        s = 0.0
-        for p in m.parameters():
-            s += p.detach().float().norm().item() ** 2
-        return math.sqrt(s)
-    # debug----------
-
     for epoch in range(start_epoch, epochs + 1):
-        # debug----------
         w0 = param_norm(model)
-        # debug----------
+
         ## train one epoch
         train_metrics = train_one_epoch(
-            model, train_loader, optimizer, criterion, device=device, max_batches=max_train_batches
+            model, train_loader, optimizer, criterion, device=device, max_batches=max_train_batches, cfg=cfg
         )
-        ## evaluete on val set after each epoch
+        ## evaluate on val set after each epoch
         val_metrics = evaluate(
             model, val_loader, criterion, device=device, max_batches=max_val_batches
         )
-        # debug----------
+
         w1 = param_norm(model)
-        print(f"[DEBUG] param_norm: {w0:.6f} -> {w1:.6f}")
-        # debug----------
+        vprint(f"[DEBUG] param_norm: {w0:.6f} -> {w1:.6f}", cfg)
 
         lr_used = optimizer.param_groups[0]["lr"]  # LR used for this epoch
 
@@ -326,8 +299,8 @@ def main():
     save_confusion_matrix_csv(run.log_dir / "confusion_matrix.csv", cm, CLASS_NAMES)
 
     # ===== DEBUG: Print confusion matrix details =====
-    print("\n[DEBUG] Confusion Matrix:")
-    print(cm)
+    vprint("\n[DEBUG] Confusion Matrix:", cfg)
+    vprint(str(cm), cfg)
     vprint(f"[DEBUG] Predictions per class (column sums): {cm.sum(dim=0).tolist()}", cfg)
     vprint(f"[DEBUG] True instances per class (row sums): {cm.sum(dim=1).tolist()}", cfg)
 
