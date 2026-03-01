@@ -25,7 +25,7 @@ from src.run import make_run_info, save_config_snapshot, save_code_snapshot, set
 from src.checkpoint import save_checkpoint
 from src.metrics import init_metrics_csv, append_metrics_csv, plot_loss_acc
 from src.model_utils import save_model_summary
-from src.viz import save_transform_preview
+from src.viz import save_transform_preview, save_augmentation_preview
 from src.per_class_metrics import (
     compute_confusion_matrix,
     compute_per_class_metrics,
@@ -98,28 +98,17 @@ def main():
     assert yb.ndim == 1, yb.shape
     print(f"[INFO] Train batch shape: {xb.shape}, labels shape: {yb.shape}")
 
-    # ----- class distribution -----
-    train_labels = []
-    for _, labels, _ in train_loader:
-        train_labels.extend(labels.tolist())
-    train_dist = Counter(train_labels)
-    print("[INFO] Train set class distribution:", dict(sorted(train_dist.items())))
-    
-    val_labels = []
-    for _, labels, _ in val_loader:
-        val_labels.extend(labels.tolist())
-    val_dist = Counter(val_labels)
-    print("[INFO] Val set class distribution:", dict(sorted(val_dist.items())))
+    # ----- class distribution (from samples list — no image loading) -----
+    print("[INFO] Train set class distribution:", dict(sorted(train_counts.items())))
+    print("[INFO] Val set class distribution:",   dict(sorted(val_counts.items())))
 
-    # ===== debug: plot transformed images =====
+    # ===== plot transformed images =====
     if cfg.get("debug", {}).get("plot_images", False):
-        # build datasets so we can access raw paths + transform deterministically
         train_ds, _, _ = build_datasets(cfg)
-
         n_per_class = int(cfg.get("debug", {}).get("n_plot_per_class", 5))
-        out_path = run.log_dir / "transform_preview_train.png"
 
-        # IMPORTANT: use the same transform as training
+        # 1) raw vs transformed pairs
+        out_path = run.log_dir / "transform_preview_train.png"
         save_transform_preview(
             train_samples=train_ds.samples,
             class_names=CLASS_NAMES,
@@ -128,7 +117,20 @@ def main():
             n_per_class=n_per_class,
             seed=int(cfg.get("seed", 0)),
         )
-        vprint(f"[DEBUG] saved transform preview -> {out_path}", cfg)
+        print(f"[INFO] Saved transform preview -> {out_path}")
+
+        # 2) augmentation variety (same image, multiple random augmentations)
+        if cfg.get("preprocess", {}).get("type") == "augmented":
+            aug_path = run.log_dir / "augmentation_preview_train.png"
+            save_augmentation_preview(
+                train_samples=train_ds.samples,
+                class_names=CLASS_NAMES,
+                transform=train_ds.transform,
+                out_path=aug_path,
+                n_augmentations=8,
+                seed=int(cfg.get("seed", 0)),
+            )
+            print(f"[INFO] Saved augmentation preview -> {aug_path}")
 
     # ========== device setup ==========
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -170,33 +172,31 @@ def main():
     else:
         raise ValueError(f"Unsupported LR scheduler type: {scheduler_type}")
 
-    # TODO: currently wrong since new scheduler -> adapt if needed correctly
-    # # ========== load checkpoint if specified ==========
-    # start_epoch = 1
-    # best_val_acc = -1.0
-    
-    # if args.checkpoint is not None:
-    #     checkpoint_dir = project_root / "runs" / args.checkpoint
-    #     checkpoint_path = checkpoint_dir / "checkpoints" / "best.pt"
-        
-    #     if not checkpoint_path.exists():
-    #         raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
-        
-    #     print(f"Loading checkpoint from: {checkpoint_path}")
-    #     ckpt = torch.load(checkpoint_path, map_location=device)
-        
-    #     model.load_state_dict(ckpt["model_state_dict"])
-    #     optimizer.load_state_dict(ckpt["optimizer_state_dict"])
-        
-    #     # Get metrics from checkpoint
-    #     start_epoch = ckpt.get("epoch", 0) + 1
-    #     best_val_acc = ckpt.get("val_metrics", {}).get("acc", -1.0)
-        
-    #     print(f"Resuming from epoch {start_epoch}, best val acc: {best_val_acc:.3f}\n")
-        
-    # Set start_epoch to 1
+    # ========== load checkpoint if specified ==========
     start_epoch = 1
     best_val_acc = -1.0
+
+    if args.checkpoint is not None:
+        checkpoint_dir = project_root / "runs" / args.checkpoint
+        checkpoint_path = checkpoint_dir / "checkpoints" / "best.pt"
+
+        if not checkpoint_path.exists():
+            raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+
+        print(f"[INFO] Loading checkpoint from: {checkpoint_path}")
+        ckpt = torch.load(checkpoint_path, map_location=device)
+
+        model.load_state_dict(ckpt["model_state_dict"])
+        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+
+        if "scheduler_state_dict" in ckpt:
+            scheduler.load_state_dict(ckpt["scheduler_state_dict"])
+            print(f"[INFO] Restored scheduler state")
+
+        start_epoch = ckpt.get("epoch", 0) + 1
+        best_val_acc = ckpt.get("val_metrics", {}).get("acc", -1.0)
+
+        print(f"[INFO] Resuming from epoch {start_epoch}, best val acc: {best_val_acc:.3f}\n")
 
     # early stopping config
     is_es = bool(cfg["early_stopping"]["enabled"])
@@ -261,6 +261,7 @@ def main():
                 epoch=epoch,
                 model=model,
                 optimizer=optimizer,
+                scheduler=scheduler,
                 cfg=cfg,
                 train_metrics=train_metrics,
                 val_metrics=val_metrics,

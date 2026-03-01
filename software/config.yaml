@@ -8,13 +8,12 @@ data:
   num_classes: 6
 
 preprocess:
-  type: augmented        # "letterbox" = resize only | "augmented" = augmentation + letterbox (train only)
+  type: letterbox        # "letterbox" = resize only | "augmented" = augmentation + letterbox (train only)
   fill: 0                # padding value for letterbox
   normalize:
-    # Per-channel normalization (use lists for per-channel, scalar for uniform)
-    # For 3-channel RGB (ImageNet-style):
-    mean: [0.485, 0.456, 0.406]
-    std:  [0.229, 0.224, 0.225]
+    # Per-channel normalization computed from training set (141 258 images)
+    mean: [0.3912, 0.3612, 0.3425]
+    std:  [0.3270, 0.3131, 0.3042]
     # For 1-channel grayscale, use:
     # mean: [0.5]
     # std:  [0.5]
@@ -24,7 +23,7 @@ preprocess:
 
   # augmentation settings (only used when preprocess.type == "augmented", applied to train only)
   augmentation:
-    horizontal_flip: 0.5       # probability of random horizontal flip
+    horizontal_flip: 0.0       # probability of random horizontal flip
     rotation_degrees: 15       # random rotation range [-deg, +deg]
     translate: [0.1, 0.1]      # max fraction of total width/height for horizontal/vertical shift
     scale: [0.85, 1.15]        # random zoom range
@@ -33,7 +32,7 @@ preprocess:
       contrast: 0.3
       saturation: 0.2
       hue: 0.05
-    erasing_prob: 0.15         # random erasing (cutout) probability
+    erasing_prob: 0.0         # random erasing (cutout) probability
 
 train:
   batch_size: 256        # Increased from 128 for better GPU utilization
@@ -50,7 +49,7 @@ model:
   num_classes: 6 # match data.num_classes!
 
   # stages define channel widths after each downsampling
-  channels: [16, 32, 64, 64]
+  channels: [16, 32, 64, 128]
   # convs per stage (1 = Conv-ReLU-Pool, 2 = Conv-ReLU-Conv-ReLU-Pool)
   blocks_per_stage: 1
   kernel_size: 3
@@ -58,9 +57,7 @@ model:
 
 debug:
   verbose: false # set to true to see all [DEBUG] prints
-  # TODO: can't plot RGB -> set to false
-  # can't plot if in_channels=3!
-  plot_images: false # set false to disable plotting images during training
+  plot_images: true  # saves transform + augmentation preview grids to logs/
   n_plot_per_class: 5
 
 # currently implemented:
@@ -76,5 +73,5 @@ optimizer:
 
 early_stopping:
   enabled: true
-  patience: 10 # stop if no improvement in validation loss for 10 epochs
+  patience: 20 # stop if no improvement in validation loss for 10 epochs
   min_delta: 1e-4 # dont count noise as improvement TODO: find noise level
