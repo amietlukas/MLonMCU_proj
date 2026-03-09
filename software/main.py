@@ -22,7 +22,7 @@ from src.model import BaselineCNN
 from src.helper_func import vprint, param_norm, infer_mapping_from_samples
 from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot, save_code_snapshot, setup_terminal_logging
-from src.checkpoint import save_checkpoint
+from src.checkpoint import save_checkpoint, export_best_model_fp32_and_int8_qdq # save checkpoints. and POSTTRAINING export inkl. quantization
 from src.metrics import init_metrics_csv, append_metrics_csv, plot_loss_acc
 from src.model_utils import save_model_summary
 from src.viz import save_transform_preview, save_augmentation_preview
@@ -32,6 +32,8 @@ from src.per_class_metrics import (
     save_confusion_matrix_csv,
     save_per_class_metrics_csv,
 )
+
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -51,7 +53,7 @@ def main():
 
     # start terminal logging
     terminal_fh = setup_terminal_logging(run.terminal_log_path)
-    print(f"[INFO] Terminal log: {run.terminal_log_path}")  
+    print(f"\n[INFO] Terminal log: {run.terminal_log_path}")  
 
     # for quick debugging, you can set max_train_batches and max_val_batches in config.yaml
     max_train_batches = cfg["train"].get("max_train_batches", None)
@@ -68,9 +70,11 @@ def main():
     print(f"[INFO] Code snapshot:{run.code_snapshot_path}")
     print(f"[INFO] Metrics CSV:    {run.metrics_csv_path}")
     print(f"[INFO] Best ckpt:      {run.best_ckpt_path}")
+    print(f"[INFO] ONNX dir:       {run.onnx_dir}")
+
 
     # ========== build dataloaders ==========
-    train_loader, val_loader, test_loader = build_dataloaders(cfg)
+    train_loader, val_loader, test_loader = build_dataloaders(cfg) # test_loader currently unused
 
     # ----- dataloader sanity checks -----
     train_counts = Counter([y for _, y in train_loader.dataset.samples])
@@ -211,6 +215,7 @@ def main():
     bad_epochs = 0
 
     # ========== train loop ==========
+    print("\n[INFO] Starting training loop...")
     for epoch in range(start_epoch, epochs + 1):
         w0 = param_norm(model)
 
@@ -332,6 +337,24 @@ def main():
     # 
     # print(f"Saved test confusion matrix -> {run.log_dir / 'confusion_matrix_test.csv'}")
     # print(f"Saved test per-class metrics -> {run.log_dir / 'per_class_metrics_test.csv'}")
+
+    # Export best checkpoint as FP32 ONNX + INT8 QDQ ONNX
+    
+    print("--- Finished training and evaluation ---\n")
+    print("[INFO] Posttraining export to ONNX (FP32 + INT8 QDQ)")
+
+    best_epoch = int(ckpt.get("epoch", -1))
+    export_best_model_fp32_and_int8_qdq(
+        model=model,
+        cfg=cfg,
+        device=device,
+        run_id=run.run_id,
+        out_dir=run.onnx_dir,
+        best_epoch=best_epoch,
+        calibration_loader=val_loader,   # representative dataset for static calibration
+        calibration_batches=32,
+    )
+    
 
     print("\n", "------ FINISHED ------", "\n", "\n")
     terminal_fh.close() # close terminal

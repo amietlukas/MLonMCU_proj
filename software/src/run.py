@@ -17,6 +17,7 @@ class RunInfo:
     run_dir: Path
     model_summary_path: Path # model architecture
     ckpt_dir: Path
+    onnx_dir: Path
     log_dir: Path
     best_ckpt_path: Path
     config_snapshot_path: Path
@@ -32,10 +33,12 @@ def make_run_info(project_root: Path, name: str) -> RunInfo:
 
     run_dir = project_root / "runs" / run_id
     ckpt_dir = run_dir / "checkpoints"
+    onnx_dir = ckpt_dir / "onnx"
     log_dir = run_dir / "logs"
     model_summary_path = run_dir / "model_summary.txt"
 
     ckpt_dir.mkdir(parents=True, exist_ok=True)
+    onnx_dir.mkdir(parents=True, exist_ok=True)
     log_dir.mkdir(parents=True, exist_ok=True)
 
     best_ckpt_path = ckpt_dir / "best.pt"
@@ -51,6 +54,7 @@ def make_run_info(project_root: Path, name: str) -> RunInfo:
         run_dir=run_dir,
         model_summary_path=model_summary_path,
         ckpt_dir=ckpt_dir,
+        onnx_dir=onnx_dir,
         log_dir=log_dir,
         best_ckpt_path=best_ckpt_path,
         config_snapshot_path=config_snapshot_path,

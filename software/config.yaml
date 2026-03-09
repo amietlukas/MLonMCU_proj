@@ -35,8 +35,8 @@ preprocess:
     erasing_prob: 0.0         # random erasing (cutout) probability
 
 train:
-  batch_size: 256        # Increased from 128 for better GPU utilization
-  num_workers: 8         # Reduced from 32 for balanced I/O
+  batch_size: 256
+  num_workers: 8 
   shuffle: true
   max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
@@ -56,8 +56,8 @@ model:
   dropout_rate: 0.1
 
 debug:
-  verbose: false # set to true to see all [DEBUG] prints
-  plot_images: true  # saves transform + augmentation preview grids to logs/
+  verbose: true # set to true to see all [DEBUG] prints
+  plot_images: false  # saves transform + augmentation preview grids to logs/
   n_plot_per_class: 5
 
 # currently implemented:
