@@ -4,8 +4,10 @@ From project root, run this file: python main.py --name <name>
 """
 
 import argparse
+import math
+import random
 from pathlib import Path
-from collections import Counter
+from collections import Counter, defaultdict
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0" # since only one GPU is supported
@@ -16,13 +18,14 @@ import torch.nn as nn
 
 from src.config import load_config
 from src.data import build_dataloaders, build_datasets, build_transform, CLASS_NAMES
-from src.model import BaselineCNN, vprint
+from src.model import BaselineCNN
+from src.helper_func import vprint, param_norm, infer_mapping_from_samples
 from src.engine import train_one_epoch, evaluate
 from src.run import make_run_info, save_config_snapshot, save_code_snapshot, setup_terminal_logging
 from src.checkpoint import save_checkpoint
 from src.metrics import init_metrics_csv, append_metrics_csv, plot_loss_acc
 from src.model_utils import save_model_summary
-from src.viz import save_transform_preview
+from src.viz import save_transform_preview, save_augmentation_preview
 from src.per_class_metrics import (
     compute_confusion_matrix,
     compute_per_class_metrics,
@@ -68,10 +71,8 @@ def main():
 
     # ========== build dataloaders ==========
     train_loader, val_loader, test_loader = build_dataloaders(cfg)
-    # debug--------
-    from collections import Counter
 
-    # dataset label sanity (works for your custom dataset)
+    # ----- dataloader sanity checks -----
     train_counts = Counter([y for _, y in train_loader.dataset.samples])
     val_counts   = Counter([y for _, y in val_loader.dataset.samples])
 
@@ -80,61 +81,34 @@ def main():
     vprint(f"[DEBUG] num_classes cfg: {cfg['data']['num_classes']}, len(CLASS_NAMES): {len(CLASS_NAMES)}", cfg)
     vprint(f"[DEBUG] CLASS_NAMES: {CLASS_NAMES}", cfg)
 
-    from collections import Counter, defaultdict
-
-    import random
-
-
-    def infer_mapping_from_samples(samples, n=5000, seed=0):
-        rng = random.Random(seed)
-        idxs = rng.sample(range(len(samples)), min(n, len(samples)))
-        m = defaultdict(Counter)
-        for i in idxs:
-            p, y = samples[i]
-            cls = Path(p).parent.name  # uses the Path you already imported at file top
-            m[int(y)][cls] += 1
-        return {y: m[y].most_common(3) for y in sorted(m.keys())}
-
     vprint(f"[DEBUG] train label->folder top3: {infer_mapping_from_samples(train_loader.dataset.samples, seed=0)}", cfg)
     vprint(f"[DEBUG] val   label->folder top3: {infer_mapping_from_samples(val_loader.dataset.samples, seed=1)}", cfg)
-    # show a few sample paths per label (does the path name match the label meaning?)
-    from collections import defaultdict
+
+    # show a few sample paths per label
     examples = defaultdict(list)
-    for path, y in train_loader.dataset.samples[:5000]:  # scan first 5k only
+    for path, y in train_loader.dataset.samples[:5000]:
         if len(examples[y]) < 2:
             examples[y].append(path)
-
     for y in range(cfg["data"]["num_classes"]):
-        print(f"[DEBUG] label {y} -> {CLASS_NAMES[y]} examples:", examples[y])
-    # debug--------
-    # check dataloader
+        vprint(f"[DEBUG] label {y} -> {CLASS_NAMES[y]} examples: {examples[y]}", cfg)
+
+    # quick shape check
     xb, yb, _ = next(iter(train_loader))
     assert xb.ndim == 4 and (xb.shape[1] == 1 or xb.shape[1] == 3), xb.shape
     assert yb.ndim == 1, yb.shape
     print(f"[INFO] Train batch shape: {xb.shape}, labels shape: {yb.shape}")
 
-    # ===== DEBUG: Check class distribution =====
-    train_labels = []
-    for _, labels, _ in train_loader:
-        train_labels.extend(labels.tolist())
-    train_dist = Counter(train_labels)
-    print("[INFO] Train set class distribution:", dict(sorted(train_dist.items())))
-    
-    val_labels = []
-    for _, labels, _ in val_loader:
-        val_labels.extend(labels.tolist())
-    val_dist = Counter(val_labels)
-    print("[INFO] Val set class distribution:", dict(sorted(val_dist.items())))
+    # ----- class distribution (from samples list — no image loading) -----
+    print("[INFO] Train set class distribution:", dict(sorted(train_counts.items())))
+    print("[INFO] Val set class distribution:",   dict(sorted(val_counts.items())))
 
-    # ===== debug: plot transformed images =====
+    # ===== plot transformed images =====
     if cfg.get("debug", {}).get("plot_images", False):
-        # build datasets so we can access raw paths + transform deterministically
         train_ds, _, _ = build_datasets(cfg)
-
         n_per_class = int(cfg.get("debug", {}).get("n_plot_per_class", 5))
-        out_path = run.log_dir / "transform_preview_train.png"
 
-        # IMPORTANT: use the same transform as training
+        # 1) raw vs transformed pairs
+        out_path = run.log_dir / "transform_preview_train.png"
         save_transform_preview(
             train_samples=train_ds.samples,
             class_names=CLASS_NAMES,
@@ -143,7 +117,20 @@ def main():
             n_per_class=n_per_class,
             seed=int(cfg.get("seed", 0)),
         )
-        print(f"[DEBUG] saved transform preview -> {out_path}")
+        print(f"[INFO] Saved transform preview -> {out_path}")
+
+        # 2) augmentation variety (same image, multiple random augmentations)
+        if cfg.get("preprocess", {}).get("type") == "augmented":
+            aug_path = run.log_dir / "augmentation_preview_train.png"
+            save_augmentation_preview(
+                train_samples=train_ds.samples,
+                class_names=CLASS_NAMES,
+                transform=train_ds.transform,
+                out_path=aug_path,
+                n_augmentations=8,
+                seed=int(cfg.get("seed", 0)),
+            )
+            print(f"[INFO] Saved augmentation preview -> {aug_path}")
 
     # ========== device setup ==========
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -164,10 +151,12 @@ def main():
 
     # ========== loss + LRScheduler + optimizer ==========
     lr = float(cfg["LR_scheduler"]["lr"])
+    weight_decay = float(cfg.get("optimizer", {}).get("weight_decay", 0.0))
     epochs = int(cfg["train"]["epochs"])
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    print(f"[INFO] Optimizer: Adam | lr={lr:.3e} | weight_decay={weight_decay:.1e}")
 
     scheduler_type = cfg["LR_scheduler"]["type"]
 
@@ -183,33 +172,31 @@ def main():
     else:
         raise ValueError(f"Unsupported LR scheduler type: {scheduler_type}")
 
-    # TODO: currently wrong since new scheduler -> adapt if needed correctly
-    # # ========== load checkpoint if specified ==========
-    # start_epoch = 1
-    # best_val_acc = -1.0
-    
-    # if args.checkpoint is not None:
-    #     checkpoint_dir = project_root / "runs" / args.checkpoint
-    #     checkpoint_path = checkpoint_dir / "checkpoints" / "best.pt"
-        
-    #     if not checkpoint_path.exists():
-    #         raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
-        
-    #     print(f"Loading checkpoint from: {checkpoint_path}")
-    #     ckpt = torch.load(checkpoint_path, map_location=device)
-        
-    #     model.load_state_dict(ckpt["model_state_dict"])
-    #     optimizer.load_state_dict(ckpt["optimizer_state_dict"])
-        
-    #     # Get metrics from checkpoint
-    #     start_epoch = ckpt.get("epoch", 0) + 1
-    #     best_val_acc = ckpt.get("val_metrics", {}).get("acc", -1.0)
-        
-    #     print(f"Resuming from epoch {start_epoch}, best val acc: {best_val_acc:.3f}\n")
-        
-    # Set start_epoch to 1
+    # ========== load checkpoint if specified ==========
     start_epoch = 1
     best_val_acc = -1.0
+
+    if args.checkpoint is not None:
+        checkpoint_dir = project_root / "runs" / args.checkpoint
+        checkpoint_path = checkpoint_dir / "checkpoints" / "best.pt"
+
+        if not checkpoint_path.exists():
+            raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+
+        print(f"[INFO] Loading checkpoint from: {checkpoint_path}")
+        ckpt = torch.load(checkpoint_path, map_location=device)
+
+        model.load_state_dict(ckpt["model_state_dict"])
+        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+
+        if "scheduler_state_dict" in ckpt:
+            scheduler.load_state_dict(ckpt["scheduler_state_dict"])
+            print(f"[INFO] Restored scheduler state")
+
+        start_epoch = ckpt.get("epoch", 0) + 1
+        best_val_acc = ckpt.get("val_metrics", {}).get("acc", -1.0)
+
+        print(f"[INFO] Resuming from epoch {start_epoch}, best val acc: {best_val_acc:.3f}\n")
 
     # early stopping config
     is_es = bool(cfg["early_stopping"]["enabled"])
@@ -224,32 +211,20 @@ def main():
     bad_epochs = 0
 
     # ========== train loop ==========
-    # debug----------
-    import math
-
-    def param_norm(m):
-        s = 0.0
-        for p in m.parameters():
-            s += p.detach().float().norm().item() ** 2
-        return math.sqrt(s)
-    # debug----------
-
     for epoch in range(start_epoch, epochs + 1):
-        # debug----------
         w0 = param_norm(model)
-        # debug----------
+
         ## train one epoch
         train_metrics = train_one_epoch(
-            model, train_loader, optimizer, criterion, device=device, max_batches=max_train_batches
+            model, train_loader, optimizer, criterion, device=device, max_batches=max_train_batches, cfg=cfg
         )
-        ## evaluete on val set after each epoch
+        ## evaluate on val set after each epoch
         val_metrics = evaluate(
             model, val_loader, criterion, device=device, max_batches=max_val_batches
         )
-        # debug----------
+
         w1 = param_norm(model)
-        print(f"[DEBUG] param_norm: {w0:.6f} -> {w1:.6f}")
-        # debug----------
+        vprint(f"[DEBUG] param_norm: {w0:.6f} -> {w1:.6f}", cfg)
 
         lr_used = optimizer.param_groups[0]["lr"]  # LR used for this epoch
 
@@ -286,6 +261,7 @@ def main():
                 epoch=epoch,
                 model=model,
                 optimizer=optimizer,
+                scheduler=scheduler,
                 cfg=cfg,
                 train_metrics=train_metrics,
                 val_metrics=val_metrics,
@@ -326,8 +302,8 @@ def main():
     save_confusion_matrix_csv(run.log_dir / "confusion_matrix.csv", cm, CLASS_NAMES)
 
     # ===== DEBUG: Print confusion matrix details =====
-    print("\n[DEBUG] Confusion Matrix:")
-    print(cm)
+    vprint("\n[DEBUG] Confusion Matrix:", cfg)
+    vprint(str(cm), cfg)
     vprint(f"[DEBUG] Predictions per class (column sums): {cm.sum(dim=0).tolist()}", cfg)
     vprint(f"[DEBUG] True instances per class (row sums): {cm.sum(dim=1).tolist()}", cfg)
 

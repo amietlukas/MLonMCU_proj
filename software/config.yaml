@@ -3,22 +3,42 @@
 seed: 42
 
 data:
-  dataset_root: ../datasets/HAGRID/hagrid_more_than_15
+  dataset_root: ../datasets/HAGRID/hagrid_full
   input_size: 128 # the grayscale images are resized to 128x128
   num_classes: 6
 
 preprocess:
-  type: letterbox        # may add different methods in future
+  type: letterbox        # "letterbox" = resize only | "augmented" = augmentation + letterbox (train only)
   fill: 0                # padding value for letterbox
   normalize:
-    mean: 0.5
-    std: 0.5
+    # Per-channel normalization computed from training set (141 258 images)
+    mean: [0.3912, 0.3612, 0.3425]
+    std:  [0.3270, 0.3131, 0.3042]
+    # For 1-channel grayscale, use:
+    # mean: [0.5]
+    # std:  [0.5]
+    # For uniform (old style), use:
+    # mean: 0.5
+    # std:  0.5
+
+  # augmentation settings (only used when preprocess.type == "augmented", applied to train only)
+  augmentation:
+    horizontal_flip: 0.0       # probability of random horizontal flip
+    rotation_degrees: 15       # random rotation range [-deg, +deg]
+    translate: [0.1, 0.1]      # max fraction of total width/height for horizontal/vertical shift
+    scale: [0.85, 1.15]        # random zoom range
+    color_jitter:
+      brightness: 0.3
+      contrast: 0.3
+      saturation: 0.2
+      hue: 0.05
+    erasing_prob: 0.0         # random erasing (cutout) probability
 
 train:
   batch_size: 256        # Increased from 128 for better GPU utilization
   num_workers: 8         # Reduced from 32 for balanced I/O
   shuffle: true
-  max_train_batches: 2 # set to a int for quicker testing, set to null for full training
+  max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
   epochs: 150
   
@@ -31,14 +51,13 @@ model:
   # stages define channel widths after each downsampling
   channels: [16, 32, 64, 128]
   # convs per stage (1 = Conv-ReLU-Pool, 2 = Conv-ReLU-Conv-ReLU-Pool)
-  blocks_per_stage: 2
+  blocks_per_stage: 1
   kernel_size: 3
+  dropout_rate: 0.1
 
 debug:
-  verbose: false # set to true to see all [DEBUG] and [INFO] prints
-  # TODO: can't plot RGB -> set to false
-  # can't plot if in_channels=3!
-  plot_images: false # set false to disable plotting images during training
+  verbose: false # set to true to see all [DEBUG] prints
+  plot_images: true  # saves transform + augmentation preview grids to logs/
   n_plot_per_class: 5
 
 # currently implemented:
@@ -47,9 +66,12 @@ LR_scheduler:
   type: CosineAnnealingLR
   lr: 3e-3
   # for CosineAnnealingLR:
-  eta_min: 1e-5 
+  eta_min: 1e-5
+
+optimizer:
+  weight_decay: 1e-4     # L2 regularization strength
 
 early_stopping:
   enabled: true
-  patience: 50 # stop if no improvement in validation loss for 10 epochs
+  patience: 20 # stop if no improvement in validation loss for 10 epochs
   min_delta: 1e-4 # dont count noise as improvement TODO: find noise level
