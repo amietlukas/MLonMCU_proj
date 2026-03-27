@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from typing import Any, Dict
-from src.helper_func import vprint
+from classifier.src.helper_func import vprint
 
 
 

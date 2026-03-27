@@ -18,8 +18,8 @@ import torchvision.transforms as T
 import torchvision.transforms.functional as TF
 import numpy as np
 
-from src.data import CLASS_NAMES, LetterboxSquare, _parse_norm
-from src.model import BaselineCNN
+from classifier.src.data import CLASS_NAMES, LetterboxSquare, _parse_norm
+from classifier.src.model import BaselineCNN
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────

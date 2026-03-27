@@ -29,7 +29,7 @@ def compute_rgb_mean_std(
     mean : list of 3 floats  [R, G, B]
     std  : list of 3 floats  [R, G, B]
     """
-    from src.data import LetterboxSquare          # avoid circular import
+    from classifier.src.data import LetterboxSquare          # avoid circular import
 
     tf = T.Compose([LetterboxSquare(size=size, fill=fill), T.ToTensor()])
 

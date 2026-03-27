@@ -1,13 +1,18 @@
 """
 The orchestrator of the full pipeline.
-From project root, run this file: python main.py --name <name>
+From software root, run this file: python classifier/main.py --name <name>
 """
 
 import argparse
 import math
 import random
+import sys
 from pathlib import Path
 from collections import Counter, defaultdict
+
+SOFTWARE_ROOT = Path(__file__).resolve().parent.parent
+if str(SOFTWARE_ROOT) not in sys.path:
+    sys.path.insert(0, str(SOFTWARE_ROOT))
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0" # since only one GPU is supported
@@ -16,17 +21,17 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 import torch.nn as nn
 
-from src.config import load_config
-from src.data import build_dataloaders, build_datasets, build_transform, CLASS_NAMES
-from src.model import BaselineCNN
-from src.helper_func import vprint, param_norm, infer_mapping_from_samples
-from src.engine import train_one_epoch, evaluate
-from src.run import make_run_info, save_config_snapshot, save_code_snapshot, setup_terminal_logging
-from src.checkpoint import save_checkpoint, export_best_model_fp32_and_int8_qdq # save checkpoints. and POSTTRAINING export inkl. quantization
-from src.metrics import init_metrics_csv, append_metrics_csv, plot_loss_acc
-from src.model_utils import save_model_summary
-from src.viz import save_transform_preview, save_augmentation_preview
-from src.per_class_metrics import (
+from utils.config import load_config
+from classifier.src.data import build_dataloaders, build_datasets, build_transform, CLASS_NAMES
+from classifier.src.model import BaselineCNN
+from classifier.src.helper_func import vprint, param_norm, infer_mapping_from_samples
+from classifier.src.engine import train_one_epoch, evaluate
+from utils.run import make_run_info, save_config_snapshot, save_code_snapshot, setup_terminal_logging
+from utils.checkpoint import save_checkpoint, export_best_model_fp32_and_int8_qdq
+from classifier.src.metrics import init_metrics_csv, append_metrics_csv, plot_loss_acc
+from classifier.src.model_utils import save_model_summary
+from classifier.src.viz import save_transform_preview, save_augmentation_preview
+from classifier.src.per_class_metrics import (
     compute_confusion_matrix,
     compute_per_class_metrics,
     save_confusion_matrix_csv,
