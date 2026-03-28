@@ -1,0 +1,1 @@
+../Middlewares/CMSIS-NN/Source/NNSupportFunctions/arm_nn_vec_mat_mul_result_acc_s16.c:48:21:arm_nn_vec_mat_mul_result_acc_s16	184	static,ignoring_inline_asm

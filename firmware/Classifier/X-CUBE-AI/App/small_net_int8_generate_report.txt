@@ -1,0 +1,284 @@
+ST Edge AI Core v2.2.0-20266 2adc00962
+Created date          : 2026-03-17 22:42:29
+Parameters            : generate --target stm32u5 --name small_net_int8 -m /mnt/core/MLonMCU_proj/software/runs/letsgooo_v2-20260310-010152/checkpoints/onnx/letsgooo_v2-20260310-010152_best-epoch113_int8_qdq_op13.onnx --compression none --verbosity 1 --workspace /tmp/mxAI_workspace1673575145621075438553427332028789 --output /home/vishal/.stm32cubemx/small_net_int8_output
+
+Exec/report summary (generate)
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+model file         :   /mnt/core/MLonMCU_proj/software/runs/letsgooo_v2-20260310-010152/checkpoints/onnx/letsgooo_v2-20260310-010152_best-epoch113_int8_qdq_op13.onnx   
+type               :   onnx                                                                                                                                             
+c_name             :   small_net_int8                                                                                                                                   
+compression        :   none                                                                                                                                             
+options            :   allocate-inputs, allocate-outputs                                                                                                                
+optimization       :   balanced                                                                                                                                         
+target/series      :   stm32u5                                                                                                                                          
+workspace dir      :   /tmp/mxAI_workspace1673575145621075438553427332028789                                                                                            
+output dir         :   /home/vishal/.stm32cubemx/small_net_int8_output                                                                                                  
+model_fmt          :   sa/sa per tensor                                                                                                                                 
+model_name         :   letsgooo_v220260310010152_bestepoch113_int8_qdq_op13                                                                                             
+model_hash         :   0x5c010cc5aa9830967d0251cbf294f927                                                                                                               
+params #           :   98,214 items (383.65 KiB)                                                                                                                        
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+input 1/1          :   'input', int8(1x3x128x128), 48.00 KBytes, QLinear(0.013167597,-37,int8), activations                                                             
+output 1/1         :   'logits_QuantizeLinear_Input', int8(1x6), 6 Bytes, QLinear(0.135162532,-43,int8), activations                                                    
+macc               :   64,243,190                                                                                                                                       
+weights (ro)       :   99,976 B (97.63 KiB) (1 segment) / -292,880(-74.6%) vs float model                                                                               
+activations (rw)   :   98,308 B (96.00 KiB) (1 segment) *                                                                                                               
+ram (total)        :   98,308 B (96.00 KiB) = 98,308 + 0 + 0                                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(*) 'input'/'output' buffers are allocated in the activations buffer
+
+Model name - letsgooo_v220260310010152_bestepoch113_int8_qdq_op13
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+m_id   layer (type,original)                                            oshape                   param/size               macc                     connected to   | c_size              c_macc                   c_type                                      
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+0      input (Input, )                                                  [b:1,h:128,w:128,c:3]                                                                     |                                              
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+1      classifier_bias_const (Placeholder, DequantizeLinear)            [b:6]                    6/24                                                             | -24(-100.0%)                                 
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+2      classifier_weight_..tput_const (Placeholder, DequantizeLinear)   [b:6,c:128]              768/3,072                                                        | -3,072(-100.0%)     +24,576(+100.0%)         Transpose_[0]                               
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+3      input_QuantizeLinear_Output (Conversion, QuantizeLinear)         [b:1,h:128,w:128,c:3]                           98,304                            input   |                     -98,304(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+12     input_DequantizeLinear_Output (Conversion, DequantizeLinear)     [b:1,h:128,w:128,c:3]                           98,304      input_QuantizeLinear_Output   |                     -98,304(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+13     _features_features..u_output_0 (Conv2D, Conv)                    [b:1,h:128,w:128,c:16]   448/1,792           7,077,904    input_DequantizeLinear_Output   | -1,792(-100.0%)     -7,077,904(-100.0%)      
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+14     _features_features..ear_Output (Conversion, QuantizeLinear)      [b:1,h:128,w:128,c:16]                         524,288   _features_features..u_output_0   |                     -524,288(-100.0%)        
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+15     _features_features..ear_Output (Conversion, DequantizeLinear)    [b:1,h:128,w:128,c:16]                         524,288   _features_features..ear_Output   |                     -524,288(-100.0%)        
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+16     _features_features..l_output_0 (Pool, MaxPool)                   [b:1,h:64,w:64,c:16]                           262,144   _features_features..ear_Output   | +496(+100.0%)       +7,077,904(+2700.0%)     Conv2D_[1]                                  
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+17     _features_features..ear_Output (Conversion, QuantizeLinear)      [b:1,h:64,w:64,c:16]                           131,072   _features_features..l_output_0   |                     -131,072(-100.0%)        
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+18     _features_features..ear_Output (Conversion, DequantizeLinear)    [b:1,h:64,w:64,c:16]                           131,072   _features_features..ear_Output   |                     -131,072(-100.0%)        
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+19     _features_features..u_output_0 (Conv2D, Conv)                    [b:1,h:64,w:64,c:32]     4,640/18,560       18,874,400   _features_features..ear_Output   | -18,560(-100.0%)    -18,874,400(-100.0%)     Pad_[2]                                     
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+20     _features_features..ear_Output (Conversion, QuantizeLinear)      [b:1,h:64,w:64,c:32]                           262,144   _features_features..u_output_0   |                     -262,144(-100.0%)        
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+21     _features_features..ear_Output (Conversion, DequantizeLinear)    [b:1,h:64,w:64,c:32]                           262,144   _features_features..ear_Output   |                     -262,144(-100.0%)        
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+22     _features_features..l_output_0 (Pool, MaxPool)                   [b:1,h:32,w:32,c:32]                           131,072   _features_features..ear_Output   | +4,736(+100.0%)     +18,874,400(+14400.0%)   Conv2D_[3]                                  
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+23     _features_features..ear_Output (Conversion, QuantizeLinear)      [b:1,h:32,w:32,c:32]                            65,536   _features_features..l_output_0   |                     -65,536(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+24     _features_features..ear_Output (Conversion, DequantizeLinear)    [b:1,h:32,w:32,c:32]                            65,536   _features_features..ear_Output   |                     -65,536(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+25     _features_features..u_output_0 (Conv2D, Conv)                    [b:1,h:32,w:32,c:64]     18,496/73,984      18,874,432   _features_features..ear_Output   | -73,984(-100.0%)    -18,874,432(-100.0%)     Pad_[4]                                     
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+26     _features_features..ear_Output (Conversion, QuantizeLinear)      [b:1,h:32,w:32,c:64]                           131,072   _features_features..u_output_0   |                     -131,072(-100.0%)        
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+27     _features_features..ear_Output (Conversion, DequantizeLinear)    [b:1,h:32,w:32,c:64]                           131,072   _features_features..ear_Output   |                     -131,072(-100.0%)        
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+28     _features_features..l_output_0 (Pool, MaxPool)                   [b:1,h:16,w:16,c:64]                            65,536   _features_features..ear_Output   | +18,688(+100.0%)    +18,874,432(+28800.1%)   Conv2D_[5]                                  
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+29     _features_features..ear_Output (Conversion, QuantizeLinear)      [b:1,h:16,w:16,c:64]                            32,768   _features_features..l_output_0   |                     -32,768(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+30     _features_features..ear_Output (Conversion, DequantizeLinear)    [b:1,h:16,w:16,c:64]                            32,768   _features_features..ear_Output   |                     -32,768(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+31     _features_features..u_output_0 (Conv2D, Conv)                    [b:1,h:16,w:16,c:128]    73,856/295,424     18,874,496   _features_features..ear_Output   | -295,424(-100.0%)   -18,874,496(-100.0%)     Pad_[6]                                     
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+32     _features_features..ear_Output (Conversion, QuantizeLinear)      [b:1,h:16,w:16,c:128]                           65,536   _features_features..u_output_0   |                     -65,536(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+33     _features_features..ear_Output (Conversion, DequantizeLinear)    [b:1,h:16,w:16,c:128]                           65,536   _features_features..ear_Output   |                     -65,536(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+34     _features_features..l_output_0 (Pool, MaxPool)                   [b:1,h:8,w:8,c:128]                             32,768   _features_features..ear_Output   | +74,240(+100.0%)    +18,890,880(+57650.4%)   Conv2D_/Conversion_[7, 8]                   
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+35     _features_features..ear_Output (Conversion, QuantizeLinear)      [b:1,h:8,w:8,c:128]                             16,384   _features_features..l_output_0   |                     -16,384(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+36     _features_features..ear_Output (Conversion, DequantizeLinear)    [b:1,h:8,w:8,c:128]                             16,384   _features_features..ear_Output   |                     -16,384(-100.0%)         
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+37     _ReduceMean_output_0 (Reduce, ReduceMean)                        [b:1,c:128]                                     16,384   _features_features..ear_Output   | +1,024(+100.0%)     -7,680(-46.9%)           Reduce_/ScaleBias_/Conversion_[9, 10, 11]   
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+38     _ReduceMean_output..ear_Output (Conversion, QuantizeLinear)      [b:1,c:128]                                        256             _ReduceMean_output_0   |                     -256(-100.0%)            
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+39     _ReduceMean_output..ear_Output (Conversion, DequantizeLinear)    [b:1,c:128]                                        256   _ReduceMean_output..ear_Output   |                     -256(-100.0%)            
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+40     logits_QuantizeLinear_Input (Gemm, Gemm)                         [b:1,c:6]                                          774   _ReduceMean_output..ear_Output   | +792(+100.0%)                                Dense_[o][12]                               
+                                                                                                                                 classifier_weight_..tput_const   | 
+                                                                                                                                          classifier_bias_const   | 
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+41     logits_QuantizeLinear_Output (Conversion, QuantizeLinear)        [b:1,c:6]                                           12      logits_QuantizeLinear_Input   |                     -12(-100.0%)             
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+42     logits (Conversion, DequantizeLinear)                            [b:1,c:6]                                           12     logits_QuantizeLinear_Output   |                     -12(-100.0%)             
+------ ---------------------------------------------------------------- ------------------------ ---------------- ------------ -------------------------------- --- ------------------- ------------------------ ------------------------------------------- 
+model/c-model: macc=66,864,654/64,243,190 -2,621,464(-3.9%) weights=392,856/99,976 -292,880(-74.6%) activations=--/98,308 io=--/0
+
+
+
+Generated C-graph summary
+------------------------------------------------------------------------------------------------------------------------
+model name            : letsgooo_v220260310010152_bestepoch113_int8_qdq_op13
+c-name                : small_net_int8
+c-node #              : 13
+c-array #             : 35
+activations size      : 98308 (1 segment)
+weights size          : 99976 (1 segment)
+macc                  : 64243190
+inputs                : ['input_output']
+outputs               : ['logits_QuantizeLinear_Input_output']
+
+C-Arrays (35)
+------ -------------------------------------------------------------------------------------------- ------------- ------------------------- ------------- --------- 
+c_id   name (*_array)                                                                               item/size     domain/mem-pool           c-type        comment   
+------ -------------------------------------------------------------------------------------------- ------------- ------------------------- ------------- --------- 
+0      _ReduceMean_output_0_Mul_0_0_logits_QuantizeLinear_Input_conversion_output                   128/128       activations/**default**   s8                      
+1      _ReduceMean_output_0_Mul_bias                                                                128/512       weights/weights           const float             
+2      _ReduceMean_output_0_Mul_output                                                              128/512       activations/**default**   float                   
+3      _ReduceMean_output_0_Mul_scale                                                               128/512       weights/weights           const float             
+4      _ReduceMean_output_0_output                                                                  128/512       activations/**default**   float                   
+5      _features_features_0_features_0_2_Relu_output_0_bias                                         16/64         weights/weights           const s32               
+6      _features_features_0_features_0_2_Relu_output_0_output                                       65536/65536   activations/**default**   s8                      
+7      _features_features_0_features_0_2_Relu_output_0_scratch0                                     1196/1196     activations/**default**   s8                      
+8      _features_features_0_features_0_2_Relu_output_0_scratch1                                     4096/4096     activations/**default**   s8                      
+9      _features_features_0_features_0_2_Relu_output_0_weights                                      432/432       weights/weights           const s8                
+10     _features_features_1_features_1_2_Relu_output_0_bias                                         32/128        weights/weights           const s32               
+11     _features_features_1_features_1_2_Relu_output_0_output                                       32768/32768   activations/**default**   s8                      
+12     _features_features_1_features_1_2_Relu_output_0_pad_before_output                            69696/69696   activations/**default**   s8                      
+13     _features_features_1_features_1_2_Relu_output_0_scratch0                                     6144/6144     activations/**default**   s8                      
+14     _features_features_1_features_1_2_Relu_output_0_scratch1                                     4096/4096     activations/**default**   s8                      
+15     _features_features_1_features_1_2_Relu_output_0_weights                                      4608/4608     weights/weights           const s8                
+16     _features_features_2_features_2_2_Relu_output_0_bias                                         64/256        weights/weights           const s32               
+17     _features_features_2_features_2_2_Relu_output_0_output                                       16384/16384   activations/**default**   s8                      
+18     _features_features_2_features_2_2_Relu_output_0_pad_before_output                            36992/36992   activations/**default**   s8                      
+19     _features_features_2_features_2_2_Relu_output_0_scratch0                                     7168/7168     activations/**default**   s8                      
+20     _features_features_2_features_2_2_Relu_output_0_scratch1                                     4096/4096     activations/**default**   s8                      
+21     _features_features_2_features_2_2_Relu_output_0_weights                                      18432/18432   weights/weights           const s8                
+22     _features_features_3_features_3_2_Relu_output_0_0_0__ReduceMean_output_0_conversion_output   8192/32768    activations/**default**   float                   
+23     _features_features_3_features_3_2_Relu_output_0_bias                                         128/512       weights/weights           const s32               
+24     _features_features_3_features_3_2_Relu_output_0_output                                       8192/8192     activations/**default**   s8                      
+25     _features_features_3_features_3_2_Relu_output_0_pad_before_output                            20736/20736   activations/**default**   s8                      
+26     _features_features_3_features_3_2_Relu_output_0_scratch0                                     9216/9216     activations/**default**   s8                      
+27     _features_features_3_features_3_2_Relu_output_0_scratch1                                     4096/4096     activations/**default**   s8                      
+28     _features_features_3_features_3_2_Relu_output_0_weights                                      73728/73728   weights/weights           const s8                
+29     input_Transpose_output                                                                       49152/49153   activations/**default**   s8                      
+30     input_output                                                                                 49152/49152   activations/**default**   s8            /input    
+31     logits_QuantizeLinear_Input_bias                                                             6/24          weights/weights           const s32               
+32     logits_QuantizeLinear_Input_output                                                           6/6           activations/**default**   s8            /output   
+33     logits_QuantizeLinear_Input_scratch0                                                         158/316       activations/**default**   s16                     
+34     logits_QuantizeLinear_Input_weights                                                          768/768       weights/weights           const s8                
+------ -------------------------------------------------------------------------------------------- ------------- ------------------------- ------------- --------- 
+
+C-Layers (13)
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+c_id   name (*_layer)                                                                        id   layer_type    macc       rom     tensors                                                                                         shape (array id)         
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+0      input_Transpose                                                                       2    Transpose     24576      0       I: input_output                                                                                 int8(1x3x128x128) (30)   
+                                                                                                                                   O: input_Transpose_output                                                                       int8(1x128x128x3) (29)   
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+1      _features_features_0_features_0_2_Relu_output_0                                       16   Conv2D        7340048    496     I: input_Transpose_output                                                                       int8(1x128x128x3) (29)   
+                                                                                                                                   S: _features_features_0_features_0_2_Relu_output_0_scratch0                                                              
+                                                                                                                                   S: _features_features_0_features_0_2_Relu_output_0_scratch1                                                              
+                                                                                                                                   W: _features_features_0_features_0_2_Relu_output_0_weights                                      int8(16x3x3x3) (9)       
+                                                                                                                                   W: _features_features_0_features_0_2_Relu_output_0_bias                                         int32(16) (5)            
+                                                                                                                                   O: _features_features_0_features_0_2_Relu_output_0_output                                       int8(1x64x64x16) (6)     
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+2      _features_features_1_features_1_2_Relu_output_0_pad_before                            19   Pad           0          0       I: _features_features_0_features_0_2_Relu_output_0_output                                       int8(1x64x64x16) (6)     
+                                                                                                                                   O: _features_features_1_features_1_2_Relu_output_0_pad_before_output                            int8(1x66x66x16) (12)    
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+3      _features_features_1_features_1_2_Relu_output_0                                       22   Conv2D        19005472   4736    I: _features_features_1_features_1_2_Relu_output_0_pad_before_output                            int8(1x66x66x16) (12)    
+                                                                                                                                   S: _features_features_1_features_1_2_Relu_output_0_scratch0                                                              
+                                                                                                                                   S: _features_features_1_features_1_2_Relu_output_0_scratch1                                                              
+                                                                                                                                   W: _features_features_1_features_1_2_Relu_output_0_weights                                      int8(32x3x3x16) (15)     
+                                                                                                                                   W: _features_features_1_features_1_2_Relu_output_0_bias                                         int32(32) (10)           
+                                                                                                                                   O: _features_features_1_features_1_2_Relu_output_0_output                                       int8(1x32x32x32) (11)    
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+4      _features_features_2_features_2_2_Relu_output_0_pad_before                            25   Pad           0          0       I: _features_features_1_features_1_2_Relu_output_0_output                                       int8(1x32x32x32) (11)    
+                                                                                                                                   O: _features_features_2_features_2_2_Relu_output_0_pad_before_output                            int8(1x34x34x32) (18)    
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+5      _features_features_2_features_2_2_Relu_output_0                                       28   Conv2D        18939968   18688   I: _features_features_2_features_2_2_Relu_output_0_pad_before_output                            int8(1x34x34x32) (18)    
+                                                                                                                                   S: _features_features_2_features_2_2_Relu_output_0_scratch0                                                              
+                                                                                                                                   S: _features_features_2_features_2_2_Relu_output_0_scratch1                                                              
+                                                                                                                                   W: _features_features_2_features_2_2_Relu_output_0_weights                                      int8(64x3x3x32) (21)     
+                                                                                                                                   W: _features_features_2_features_2_2_Relu_output_0_bias                                         int32(64) (16)           
+                                                                                                                                   O: _features_features_2_features_2_2_Relu_output_0_output                                       int8(1x16x16x64) (17)    
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+6      _features_features_3_features_3_2_Relu_output_0_pad_before                            31   Pad           0          0       I: _features_features_2_features_2_2_Relu_output_0_output                                       int8(1x16x16x64) (17)    
+                                                                                                                                   O: _features_features_3_features_3_2_Relu_output_0_pad_before_output                            int8(1x18x18x64) (25)    
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+7      _features_features_3_features_3_2_Relu_output_0                                       34   Conv2D        18907264   74240   I: _features_features_3_features_3_2_Relu_output_0_pad_before_output                            int8(1x18x18x64) (25)    
+                                                                                                                                   S: _features_features_3_features_3_2_Relu_output_0_scratch0                                                              
+                                                                                                                                   S: _features_features_3_features_3_2_Relu_output_0_scratch1                                                              
+                                                                                                                                   W: _features_features_3_features_3_2_Relu_output_0_weights                                      int8(128x3x3x64) (28)    
+                                                                                                                                   W: _features_features_3_features_3_2_Relu_output_0_bias                                         int32(128) (23)          
+                                                                                                                                   O: _features_features_3_features_3_2_Relu_output_0_output                                       int8(1x8x8x128) (24)     
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+8      _features_features_3_features_3_2_Relu_output_0_0_0__ReduceMean_output_0_conversion   34   Conversion    16384      0       I: _features_features_3_features_3_2_Relu_output_0_output                                       int8(1x8x8x128) (24)     
+                                                                                                                                   O: _features_features_3_features_3_2_Relu_output_0_0_0__ReduceMean_output_0_conversion_output   f32(1x8x8x128) (22)      
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+9      _ReduceMean_output_0                                                                  37   Reduce        8192       0       I: _features_features_3_features_3_2_Relu_output_0_0_0__ReduceMean_output_0_conversion_output   f32(1x8x8x128) (22)      
+                                                                                                                                   O: _ReduceMean_output_0_output                                                                  f32(1x1x1x128) (4)       
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+10     _ReduceMean_output_0_Mul                                                              37   ScaleBias     256        1024    I: _ReduceMean_output_0_output                                                                  f32(1x1x1x128) (4)       
+                                                                                                                                   W: _ReduceMean_output_0_Mul_scale                                                               f32(128) (3)             
+                                                                                                                                   W: _ReduceMean_output_0_Mul_bias                                                                f32(128) (1)             
+                                                                                                                                   O: _ReduceMean_output_0_Mul_output                                                              f32(1x128) (2)           
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+11     _ReduceMean_output_0_Mul_0_0_logits_QuantizeLinear_Input_conversion                   37   Conversion    256        0       I: _ReduceMean_output_0_Mul_output                                                              f32(1x128) (2)           
+                                                                                                                                   O: _ReduceMean_output_0_Mul_0_0_logits_QuantizeLinear_Input_conversion_output                   int8(1x128) (0)          
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+12     logits_QuantizeLinear_Input                                                           40   Dense         774        792     I: _ReduceMean_output_0_Mul_0_0_logits_QuantizeLinear_Input_conversion_output                   int8(1x128) (0)          
+                                                                                                                                   S: logits_QuantizeLinear_Input_scratch0                                                                                  
+                                                                                                                                   W: logits_QuantizeLinear_Input_weights                                                          int8(6x128) (34)         
+                                                                                                                                   W: logits_QuantizeLinear_Input_bias                                                             int32(6) (31)            
+                                                                                                                                   O: logits_QuantizeLinear_Input_output                                                           int8(1x6) (32)           
+------ ------------------------------------------------------------------------------------- ---- ------------- ---------- ------- ----------------------------------------------------------------------------------------------- ------------------------ 
+
+
+
+Number of operations per c-layer
+------- ------ --------------------------------------------- ------------ -------------- 
+c_id    m_id   name (type)                                            #op           type 
+------- ------ --------------------------------------------- ------------ -------------- 
+0       2      input_Transpose (Transpose)                         24,576     smul_s8_s8 
+1       16     _features_features..u_output_0 (Conv2D)          7,340,048     smul_s8_s8 
+2       19     _features_features..pad_before (Pad)                     0     smul_s8_s8 
+3       22     _features_features..u_output_0 (Conv2D)         19,005,472     smul_s8_s8 
+4       25     _features_features..pad_before (Pad)                     0     smul_s8_s8 
+5       28     _features_features..u_output_0 (Conv2D)         18,939,968     smul_s8_s8 
+6       31     _features_features..pad_before (Pad)                     0     smul_s8_s8 
+7       34     _features_features..u_output_0 (Conv2D)         18,907,264     smul_s8_s8 
+8       34     _features_features..conversion (Conversion)         16,384    smul_s8_f32 
+9       37     _ReduceMean_output_0 (Reduce)                        8,192   smul_f32_f32 
+10      37     _ReduceMean_output_0_Mul (ScaleBias)                   256   smul_f32_f32 
+11      37     _ReduceMean_output..conversion (Conversion)            256    smul_f32_s8 
+12      40     logits_QuantizeLinear_Input (Dense)                    774     smul_s8_s8 
+------- ------ --------------------------------------------- ------------ -------------- 
+total                                                          64,243,190 
+
+Number of operation types
+---------------- ------------ ----------- 
+operation type              #           % 
+---------------- ------------ ----------- 
+smul_s8_s8         64,218,102      100.0% 
+smul_s8_f32            16,384        0.0% 
+smul_f32_f32            8,448        0.0% 
+smul_f32_s8               256        0.0% 
+
+Complexity report (model)
+------ ------------------------------------------ ------------------------- ------------------------- ------------- 
+m_id   name                                       c_macc                    c_rom                     c_id          
+------ ------------------------------------------ ------------------------- ------------------------- ------------- 
+2      classifier_weight_Dequantize..tput_const   |                  0.0%   |                  0.0%   [0]           
+16     _features_features_0_feature..l_output_0   ||||||            11.4%   |                  0.5%   [1]           
+19     _features_features_1_feature..u_output_0   |                  0.0%   |                  0.0%   [2]           
+22     _features_features_1_feature..l_output_0   ||||||||||||||||  29.6%   |                  4.7%   [3]           
+25     _features_features_2_feature..u_output_0   |                  0.0%   |                  0.0%   [4]           
+28     _features_features_2_feature..l_output_0   |||||||||||||||   29.5%   ||||              18.7%   [5]           
+31     _features_features_3_feature..u_output_0   |                  0.0%   |                  0.0%   [6]           
+34     _features_features_3_feature..l_output_0   |||||||||||||||   29.5%   ||||||||||||||||  74.3%   [7, 8]        
+37     _ReduceMean_output_0                       |                  0.0%   |                  1.0%   [9, 10, 11]   
+40     logits_QuantizeLinear_Input                |                  0.0%   |                  0.8%   [12]          
+------ ------------------------------------------ ------------------------- ------------------------- ------------- 
+macc=64,243,190 weights=99,976 act=98,308 ram_io=0
+
+Generated files (7)
+------------------------------------------------------------------------------ 
+/home/vishal/.stm32cubemx/small_net_int8_output/small_net_int8_data_params.h   
+/home/vishal/.stm32cubemx/small_net_int8_output/small_net_int8_data_params.c   
+/home/vishal/.stm32cubemx/small_net_int8_output/small_net_int8_data.h          
+/home/vishal/.stm32cubemx/small_net_int8_output/small_net_int8_data.c          
+/home/vishal/.stm32cubemx/small_net_int8_output/small_net_int8_config.h        
+/home/vishal/.stm32cubemx/small_net_int8_output/small_net_int8.h               
+/home/vishal/.stm32cubemx/small_net_int8_output/small_net_int8.c               

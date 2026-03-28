@@ -1,0 +1,11 @@
+../X-CUBE-AI/App/small_net_fp32.c:688:9:ai_small_net_fp32_get_info	4
+../X-CUBE-AI/App/small_net_fp32.c:735:9:ai_small_net_fp32_get_report	4
+../X-CUBE-AI/App/small_net_fp32.c:782:10:ai_small_net_fp32_get_error	1
+../X-CUBE-AI/App/small_net_fp32.c:789:10:ai_small_net_fp32_create	1
+../X-CUBE-AI/App/small_net_fp32.c:835:12:ai_small_net_fp32_inputs_get	2
+../X-CUBE-AI/App/small_net_fp32.c:846:12:ai_small_net_fp32_outputs_get	2
+../X-CUBE-AI/App/small_net_fp32.c:857:11:ai_small_net_fp32_destroy	1
+../X-CUBE-AI/App/small_net_fp32.c:864:9:ai_small_net_fp32_init	4
+../X-CUBE-AI/App/small_net_fp32.c:800:10:ai_small_net_fp32_create_and_init	10
+../X-CUBE-AI/App/small_net_fp32.c:881:8:ai_small_net_fp32_run	1
+../X-CUBE-AI/App/small_net_fp32.c:889:8:ai_small_net_fp32_forward	1

@@ -1,0 +1,1 @@
+../Middlewares/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_wrapper_s8.c:50:21:arm_convolve_wrapper_s8	88	static

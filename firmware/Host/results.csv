@@ -1,0 +1,5 @@
+image,gt,pred,confidence,pre_ms,infer_ms,post_ms,total_ms,correct
+605b89a4-97a7-4ee7-bd71-d1dd80987016.jpg,pinkie,pinkie,0.9967,4.917,3042.460,0.008,3048.010,1
+28ba94d8-bccf-476a-8525-649a65ef998a.jpg,fist,fist,0.9939,4.917,3042.462,0.008,3048.011,1
+85fe656c-c2c1-48df-b791-1283b0df3fa5.jpg,pinkie,others,0.4345,4.917,3042.461,0.007,3048.010,0
+920f3c43-f3cd-49ba-8d98-112fa97916b2.jpg,rock,rock,0.9760,4.917,3042.461,0.008,3048.010,1

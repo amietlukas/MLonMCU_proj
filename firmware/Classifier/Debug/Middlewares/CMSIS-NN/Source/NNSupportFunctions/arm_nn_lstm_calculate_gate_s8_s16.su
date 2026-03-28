@@ -1,0 +1,1 @@
+../Middlewares/CMSIS-NN/Source/NNSupportFunctions/arm_nn_lstm_calculate_gate_s8_s16.c:54:21:arm_nn_lstm_calculate_gate_s8_s16	56	static

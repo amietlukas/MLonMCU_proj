@@ -1,0 +1,31 @@
+config load "/mnt/core/MLonMCU_proj/firmware/mxAI29812001204594/mxAI29812001204594.ioc"
+pack context M33
+set context CortexM33 USART3
+pack enable STMicroelectronics X-CUBE-AI 10.2.0 "Artificial Intelligence" Core
+pack enable STMicroelectronics X-CUBE-AI 10.2.0 Device Application Validation
+pack validate
+set pin PA7 USART3_TX
+set pin PA5 USART3_RX
+set mode USART3 Asynchronous
+set ip parameters USART3 BaudRate 115200
+set ip parameters USART3 WordLength WORDLENGTH_8B
+set ip parameters USART3 Parity PARITY_NONE
+set ip parameters USART3 StopBits STOPBITS_1
+set gpio parameters PA5 GPIO_PuPd GPIO_PULLUP
+AI set modes 0
+AI startuart USART3
+AI init bsp
+set bsp STMicroelectronics.X-CUBE-AI.10.2.0 "COM Port" Asynchronous USART3
+AI add model "small_net_fp32" "onnx" "/mnt/core/MLonMCU_proj/software/runs/letsgooo_v2-20260310-010152/checkpoints/onnx/letsgooo_v2-20260310-010152_best-epoch113_fp32_op13.onnx" "" None
+AI forcecopytype
+AI load requiredPreloadScript
+AI setboard B-U585I-IOT02A
+AI input in activation "small_net_fp32" true
+AI output in activation "small_net_fp32" true
+AI save "small_net_fp32"
+project set heapsize 0x800
+project set stacksize 0x800
+project set heapbycontext M33 0x800
+project set stackbycontext M33 0x800
+project generate
+exit

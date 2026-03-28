@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<package schemaVersion="1.7.40" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="PACK.xsd">
+    <vendor>STMicroelectronics</vendor>
+    <name>FP-SNS-STAIOTCFT</name>
+    <description>The FP-SNS-STAIOTCFT is an STM32Cube function pack designed to enable AI-based inertial
+ applications on STM32 microcontrollers. This package allows you to leverage the power of 
+AI inference on the MCU, Machine Learning Core (MLC), and Intelligent Sensor Processing 
+Unit (ISPU) to develop advanced sensor-based applications. It supports the STEVAL-MKBOXPRO,
+ STEVAL-STWINBX1, and STEVAL-STWINKT1B development boards, providing a robust platform 
+for applications such as vibration monitoring and smart asset tracking.</description>
+    <url>http://sw-center.st.com/packs/x-cube/</url>
+    <license>en.DM00751078.pdf</license>
+    <releases>
+        <release date="2025-04-01" version="1.0.0">First Release</release>
+    </releases>
+    <keywords>
+        <keyword>IMPLEMENTED_WITH_STM32CUBEMX</keyword>
+        <keyword>CUBE_RULES_COMPLIANT</keyword>
+    </keywords>
+    <taxonomy>
+        <description Cclass="CMSIS">CMSIS</description>
+        <description Cclass="Data Exchange">Data Exchange</description>
+        <description Cclass="Board Part">Board Part</description>
+        <description Cclass="Application Library">Application Library</description>
+        <description Cclass="USB_Device_Library">USB_Device_Library</description>
+        <description Cclass="Device">Device</description>
+    </taxonomy>
+    <requirements>
+        <packages>
+            <package name="X-CUBE-MEMS1" vendor="STMicroelectronics" version="11.1.0"/>
+            <package name="X-CUBE-AI" vendor="STMicroelectronics" version="8.1.0"/>
+            <package name="X-CUBE-ISPU" vendor="STMicroelectronics" version="2.1.0"/>
+        </packages>
+    </requirements>
+    <conditions>
+        <condition id="App_AI_Inertial_condition">
+            <description>Libraries available only in case of application</description>
+            <require Cclass="Application Library" Cgroup="PnPL"/>
+            <require Cclass="USB_Device_Library" Cgroup="Class" Csub="CDC"/>
+            <require Cclass="USB_Device_Library" Cgroup="Core"/>
+            <require Cclass="Application Library" Cgroup="Pre Processing"/>
+        </condition>
+        <condition id="ism330dhcx_cond">
+            <require Cclass="Board Part" Cgroup="AccGyr" Csub="ism330dhcx"/>
+            <deny Cclass="Board Part" Cgroup="AccGyrQvar" Csub="lsm6dsv16x"/>
+        </condition>
+        <condition id="lsm6dsv16x_cond">
+            <require Cclass="Board Part" Cgroup="AccGyrQvar" Csub="lsm6dsv16x"/>
+            <deny Cclass="Board Part" Cgroup="AccGyr" Csub="ism330dhcx"/>
+            <deny Cclass="Board Part" Cgroup="Acc" Csub="iis2iclx"/>
+        </condition>
+        <condition id="ism330is_cond">
+            <require Cclass="Board Part" Cgroup="ISPU_AccGyr" Csub="ism330is"/>
+        </condition>
+        <condition id="iis2iclx_cond">
+            <require Cclass="Board Part" Cgroup="Acc" Csub="iis2iclx"/>
+            <deny Cclass="Board Part" Cgroup="AccGyrQvar" Csub="lsm6dsv16x"/>
+        </condition>
+        <condition id="M33-IAR">
+            <require Dcore="Cortex-M33"/>
+            <require Tcompiler="IAR"/>
+        </condition>
+        <condition id="M33-GCC">
+            <require Dcore="Cortex-M33"/>
+            <require Tcompiler="GCC"/>
+        </condition>
+        <condition id="M33-ARMCC">
+            <require Dcore="Cortex-M33"/>
+            <require Tcompiler="ARMCC"/>
+        </condition>
+        <condition id="M4-GCC">
+            <require Dcore="Cortex-M4"/>
+            <require Tcompiler="GCC"/>
+        </condition>
+        <condition id="M4-ARMCC">
+            <require Dcore="Cortex-M4"/>
+            <require Tcompiler="ARMCC"/>
+        </condition>
+        <condition id="M4-IAR">
+            <require Dcore="Cortex-M4"/>
+            <require Tcompiler="IAR"/>
+        </condition>
+        <condition id="CMSISMathLibCondition">
+            <require Cbundle="Math Lib" Cclass="CMSIS" Cgroup="DSP"/>
+        </condition>
+        <condition id="ParsonCondition">
+            <require Cclass="Data Exchange" Cgroup="parson"/>
+        </condition>
+    </conditions>
+    <components>
+        <component Cclass="Application Library" Cgroup="PnPL" Cversion="2.2.2" condition="ParsonCondition" maxInstances="1">
+            <description>PnPL</description>
+            <files>
+                <file category="header" name="Middlewares/ST/PnPLCompManager/Inc/IPnPLComponent.h"/>
+                <file category="header" name="Middlewares/ST/PnPLCompManager/Inc/IPnPLComponent_vtbl.h"/>
+                <file category="header" name="Middlewares/ST/PnPLCompManager/Inc/PnPLCompManager.h"/>
+                <file category="header" name="Middlewares/ST/PnPLCompManager/Inc/PnPLCompManager_Conf_template.h"/>
+                <file category="header" name="Middlewares/ST/PnPLCompManager/Inc/PnPLDef.h"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/LICENSE.md"/>
+                <file category="doc" name="Middlewares/ST/PnPLCompManager/LICENSE.txt"/>
+                <file category="doc" name="Middlewares/ST/PnPLCompManager/Release_Notes.html"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/Release_Notes.md"/>
+                <file category="source" name="Middlewares/ST/PnPLCompManager/Src/IPnPLComponent.c"/>
+                <file category="source" name="Middlewares/ST/PnPLCompManager/Src/PnPLCompManager.c"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/_htmresc/Add button.svg"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/_htmresc/favicon.png"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/_htmresc/mini-st.css"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/_htmresc/mini-st_2020.css"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/_htmresc/st_logo.png"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/_htmresc/st_logo_2020.png"/>
+                <file category="other" name="Middlewares/ST/PnPLCompManager/_htmresc/Update.svg"/>
+            </files>
+        </component>
+        <component Cclass="USB_Device_Library" Cgroup="Class" Csub="CDC" Cversion="2.11.1" maxInstances="1">
+            <description>USB_Device_Library in correct folder</description>
+            <files>
+                <file category="header" name="Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h"/>
+                <file category="source" name="Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c"/>
+            </files>
+        </component>
+        <component Cclass="USB_Device_Library" Cgroup="Core" Cversion="2.11.1" maxInstances="1">
+            <description>USB_Device_Library in correct folder</description>
+            <files>
+                <file category="header" name="Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h"/>
+                <file category="header" name="Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h"/>
+                <file category="header" name="Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h"/>
+                <file category="header" name="Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h"/>
+                <file category="source" name="Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c"/>
+                <file category="source" name="Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c"/>
+                <file category="source" name="Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c"/>
+            </files>
+        </component>
+        <component Cclass="Application Library" Cgroup="Pre Processing" Cversion="1.0.0" condition="CMSISMathLibCondition" maxInstances="1">
+            <description>pre_processing</description>
+            <files>
+                <file category="header" name="Middlewares/ST/staiotcraft_pre_processing/Inc/pre_processing_core.h"/>
+                <file category="header" name="Middlewares/ST/staiotcraft_pre_processing/Inc/sys_functions.h"/>
+                <file category="source" name="Middlewares/ST/staiotcraft_pre_processing/Src/sys_functions.c"/>
+                <file category="source" name="Middlewares/ST/staiotcraft_pre_processing/Src/pre_processing_core.c"/>
+            </files>
+        </component>
+        <component Cclass="Data Exchange" Cgroup="parson" Cvendor="Parson" Cversion="1.5.2" maxInstances="1">
+            <description>parson</description>
+            <files>
+                <file category="doc" name="Middlewares/Third_Party/parson/CMakeLists.txt"/>
+                <file category="other" name="Middlewares/Third_Party/parson/LICENSE"/>
+                <file category="source" name="Middlewares/Third_Party/parson/parson.c"/>
+                <file category="header" name="Middlewares/Third_Party/parson/parson.h"/>
+                <file category="other" name="Middlewares/Third_Party/parson/README.md"/>
+                <file category="doc" name="Middlewares/Third_Party/parson/Release_Notes.html"/>
+                <file category="other" name="Middlewares/Third_Party/parson/Release_Notes.md"/>
+            </files>
+        </component>
+        <bundle Cbundle="Application" Cclass="Device" Cversion="1.0.0">
+            <description>Version 1.0.0</description>
+            <doc>Documentation/STMicroelectronics.FP-SNS-STAIOTCFT_GettingStarted.pdf</doc>
+            <component Cgroup="Application" Cvariant="AI_Inertial" condition="App_AI_Inertial_condition" maxInstances="1">
+                <description>AI Inertial</description>
+                <files/>
+            </component>
+        </bundle>
+        <bundle Cbundle="Sensor" Cclass="Board Part" Cversion="1.0.0">
+            <description> </description>
+            <doc>Documentation/FP-SNS-STAIOTCFT.chm</doc>
+            <component Cgroup="AccGyr" Csub="ism330dhcx" condition="ism330dhcx_cond" maxInstances="1">
+                <description> </description>
+                <files/>
+            </component>
+            <component Cgroup="ISPU_AccGyr" Csub="ism330is" condition="ism330is_cond" maxInstances="1">
+                <description> </description>
+                <files/>
+            </component>
+            <component Cgroup="AccGyrQvar" Csub="lsm6dsv16x" condition="lsm6dsv16x_cond" maxInstances="1">
+                <description> </description>
+                <files/>
+            </component>
+            <component Cgroup="Acc" Csub="iis2iclx" condition="iis2iclx_cond" maxInstances="1">
+                <description> </description>
+                <files/>
+            </component>
+        </bundle>
+        <bundle Cbundle="Math Lib" Cclass="CMSIS" Cversion="1.0.0">
+            <description> </description>
+            <doc>Documentation/FP-SNS-STAIOTCFT.chm</doc>
+            <component Cgroup="DSP" Csub="Lib" condition="App_AI_Inertial_condition" maxInstances="1">
+                <description> </description>
+                <files>
+                    <file category="library" condition="M33-ARMCC" name="Drivers/CMSIS/DSP/Lib/ARM/arm_ARMv8MMLlfsp_math.lib" public="false"/>
+                    <file category="library" condition="M33-GCC" name="Drivers/CMSIS/DSP/Lib/GCC/libarm_ARMv8MMLlfsp_math.a" public="false"/>
+                    <file category="library" condition="M33-IAR" name="Drivers/CMSIS/DSP/Lib/IAR/iar_ARMv8MMLlfsp_math.a" public="false"/>
+                    <file category="library" condition="M4-GCC" name="Drivers/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a" public="false"/>
+                    <file category="library" condition="M4-ARMCC" name="Drivers/CMSIS/DSP/Lib/ARM/arm_cortexM4lf_math.lib" public="false"/>
+                    <file category="library" condition="M4-IAR" name="Drivers/CMSIS/DSP/Lib/IAR/iar_cortexM4lf_math.a" public="false"/>
+                </files>
+            </component>
+            <component Cgroup="DSP" Csub="Include" condition="App_AI_Inertial_condition" maxInstances="1">
+                <description> </description>
+                <files>
+                    <file category="header" name="Drivers/CMSIS/DSP/Include/arm_common_tables.h"/>
+                    <file category="header" name="Drivers/CMSIS/DSP/Include/arm_const_structs.h"/>
+                    <file category="header" name="Drivers/CMSIS/DSP/Include/arm_math.h"/>
+                </files>
+            </component>
+        </bundle>
+    </components>
+</package>

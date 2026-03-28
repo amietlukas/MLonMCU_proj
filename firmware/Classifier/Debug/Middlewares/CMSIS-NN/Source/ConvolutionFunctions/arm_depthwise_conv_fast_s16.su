@@ -1,0 +1,1 @@
+../Middlewares/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_fast_s16.c:51:21:arm_depthwise_conv_fast_s16	312	static,ignoring_inline_asm
