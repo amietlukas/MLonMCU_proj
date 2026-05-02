@@ -86,8 +86,12 @@ def export_best_model_fp32_and_int8_qdq(
 
     # Fixed input shape
     in_ch = int(cfg.get("model", {}).get("in_channels", 3))
-    input_size = int(cfg.get("data", {}).get("input_size", 128))
-    dummy_input = torch.randn(1, in_ch, input_size, input_size, device=device)
+    size_cfg = cfg.get("data", {}).get("input_size", 128)
+    if isinstance(size_cfg, (list, tuple)):
+        h, w = size_cfg
+    else:
+        h = w = int(size_cfg)
+    dummy_input = torch.randn(1, in_ch, h, w, device=device)
 
     model.eval()
 
@@ -117,7 +121,9 @@ def export_best_model_fp32_and_int8_qdq(
             for xb, _yb, _paths in loader:
                 if n >= max_batches:
                     break
-                self._samples.append({input_name: xb.detach().cpu().numpy().astype(np.float32)})
+                # Model is exported with fixed batch_size=1, so we split the batch.
+                for i in range(xb.shape[0]):
+                    self._samples.append({input_name: xb[i:i+1].detach().cpu().numpy().astype(np.float32)})
                 n += 1
             self._iter = iter(self._samples)
 

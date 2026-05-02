@@ -60,19 +60,25 @@ def scan_split(dataset_root: Path, split: str) -> List[Tuple[Path, int]]:
 # =========== Transform ===========
 # Letterbox class
 class LetterboxSquare:
-    def __init__(self, size: int, fill: int = 0):
+    def __init__(self, size: int | tuple | list, fill: int = 0):
         self.size = size
         self.fill = fill
 
     def __call__(self, img: Image.Image) -> Image.Image:
         w, h = img.size
-        s = self.size / max(w, h)
+        
+        if isinstance(self.size, (list, tuple)):
+            th, tw = self.size
+        else:
+            th = tw = self.size
+
+        s = min(tw / w, th / h)
         nw, nh = int(round(w * s)), int(round(h * s))
 
         img = F.resize(img, (nh, nw), interpolation=F.InterpolationMode.BILINEAR)
 
-        pad_w = self.size - nw
-        pad_h = self.size - nh
+        pad_w = tw - nw
+        pad_h = th - nh
         left = pad_w // 2
         right = pad_w - left
         top = pad_h // 2
@@ -81,8 +87,8 @@ class LetterboxSquare:
         img = F.pad(img, (left, top, right, bottom), fill=self.fill)
 
         # check if size is correct
-        if img.size != (self.size, self.size):
-            raise RuntimeError(f"LetterboxSquare produced {img.size}, expected {(self.size, self.size)}")
+        if img.size != (tw, th):
+            raise RuntimeError(f"LetterboxSquare produced {img.size}, expected {(tw, th)}")
 
         return img
 
@@ -121,7 +127,12 @@ def build_transform(cfg: Dict[str, Any], train: bool) -> T.Compose:
         "augmented"  – augmentation pipeline for train, letterbox-only for eval
     """
 
-    size = int(cfg["data"]["input_size"])
+    size_cfg = cfg["data"]["input_size"]
+    if isinstance(size_cfg, (list, tuple)):
+        size = tuple(size_cfg)
+    else:
+        size = int(size_cfg)
+
     pp = cfg.get("preprocess", {})
     pp_type = pp.get("type", "letterbox")
     fill = int(pp.get("fill", 0))

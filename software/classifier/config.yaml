@@ -3,8 +3,9 @@
 seed: 42
 
 data:
-  dataset_root: ../../datasets/HAGRID/hagrid_0_1_classification
-  input_size: 128 # the grayscale images are resized to 128x128
+  dataset_root: ../../datasets/HAGRID/hagrid_full_qqvga
+  #input_size: 128 # the grayscale images are resized to 128x128
+  input_size: [160, 120]  # QQVGA: [height, width]
   num_classes: 6
 
 preprocess:
@@ -35,8 +36,8 @@ preprocess:
     erasing_prob: 0.0         # random erasing (cutout) probability
 
 train:
-  batch_size: 256
-  num_workers: 8 
+  batch_size: 128
+  num_workers: 4
   shuffle: true
   max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
@@ -51,12 +52,12 @@ model:
   # stages define channel widths after each downsampling
   channels: [16, 32, 64, 128]
   # convs per stage (1 = Conv-ReLU-Pool, 2 = Conv-ReLU-Conv-ReLU-Pool)
-  blocks_per_stage: 1
+  blocks_per_stage: 2
   kernel_size: 3
   dropout_rate: 0.1
 
 debug:
-  verbose: true # set to true to see all [DEBUG] prints
+  verbose: false # set to true to see all [DEBUG] prints
   plot_images: false  # saves transform + augmentation preview grids to logs/
   n_plot_per_class: 5
 
