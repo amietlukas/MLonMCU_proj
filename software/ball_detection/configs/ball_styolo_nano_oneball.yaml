@@ -1,0 +1,112 @@
+project:
+  name: ball_detector_single_ball
+
+paths:
+  dataset_root: ../../../datasets/BALL
+  images_dir: ../../../datasets/BALL/SPLBallDataset/full_size_images
+  annotations_csv: null
+  output_dir: ../runs
+  export_dir: ../exports
+  splits_dir: ../splits
+
+dataset:
+  class_name: Ball
+  bbox_format: cxcywh_radius
+  duplicate_policy: last
+  train_val_split: 0.8
+  reuse_splits: true
+  seed: 42
+
+input:
+  width: 640
+  height: 480
+  color_mode: rgb
+  channels: 3
+  resize_policy: resize
+  interpolation: bilinear
+  letterbox_fill_value: 114
+
+model:
+  name: ball_styolo_nano
+  num_classes: 1
+  strides: [8, 16, 32]
+  width_mult: 1.0
+  neck_out_ch: 96
+
+train:
+  epochs: 100
+  batch_size: 32
+  num_workers: 4
+  optimizer: adamw
+  optimizer_params:
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+    momentum: 0.9
+    nesterov: true
+  scheduler: cosine
+  scheduler_params:
+    t_max: 100
+    eta_min: 0.0
+    factor: 0.5
+    patience: 5
+    threshold: 1.0e-4
+    min_lr: 0.0
+    cooldown: 0
+  lr: 0.001
+  weight_decay: 0.0005
+  amp: true
+  grad_clip_norm: 10.0
+  early_stopping:
+    enabled: true
+    monitor: val_map50
+    mode: max
+    patience: 20
+    min_delta: 0.0005
+
+loss:
+  obj_weight: 1.0
+  box_weight: 5.0
+  focal_loss: false
+  focal_alpha: 0.25
+  focal_gamma: 2.0
+  assign_scale_target: 3.0
+  assign_conflict_policy: largest_area
+  decode_twth_clamp_min: -4.0
+  decode_twth_clamp_max: 4.0
+
+eval:
+  conf_threshold: 0.25
+  nms_iou_threshold: 0.45
+  max_detections: 1
+  use_nms: false
+  single_object_mode: true
+  ap_conf_threshold: 0.001
+  ap_max_detections: 200
+  ap_use_nms: true
+  matching_iou_threshold: 0.5
+  small_area_threshold: 0.005
+  medium_area_threshold: 0.03
+  iou_thresholds: [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
+
+export:
+  opset: 13
+  dynamic_batch: false
+  do_fp32_onnx: true
+  do_int8_ptq_qdq: true
+  calibration_batches: 20
+  int8:
+    per_channel: true
+    activation_type: uint8
+    weight_type: int8
+    calibrate_method: minmax
+
+augmentation:
+  horizontal_flip: true
+  hflip_prob: 0.5
+  color_jitter: true
+  brightness: 0.2
+  contrast: 0.2
+  saturation: 0.2
+  blur: false
+  blur_prob: 0.2
+  blur_radius: 0.8
