@@ -123,15 +123,14 @@ def build_transform(cfg: Dict[str, Any], train: bool) -> T.Compose:
     Build a torchvision transform pipeline.
 
     preprocess.type controls the strategy:
-        "letterbox"  – resize + letterbox pad (no augmentation)
-        "augmented"  – augmentation pipeline for train, letterbox-only for eval
-    """
+        "letterbox"      – letterbox resize + pad to data.input_size (no augmentation)
+        "augmented"      – letterbox + stochastic augmentation for train (eval = letterbox-only)
+        "raw"            – use the dataset images at their native dimensions (no spatial resize)
+        "raw_augmented"  – raw dimensions + stochastic augmentation for train (eval = raw)
 
-    size_cfg = cfg["data"]["input_size"]
-    if isinstance(size_cfg, (list, tuple)):
-        size = tuple(size_cfg)
-    else:
-        size = int(size_cfg)
+    Choose "raw" / "raw_augmented" when the dataset has already been resized to the
+    target dimensions (e.g. HAGRID QQVGA at 160x120) and you don't want extra padding.
+    """
 
     pp = cfg.get("preprocess", {})
     pp_type = pp.get("type", "letterbox")
@@ -142,9 +141,6 @@ def build_transform(cfg: Dict[str, Any], train: bool) -> T.Compose:
     norm_cfg = pp.get("normalize", {})
     norm_mean, norm_std = _parse_norm(norm_cfg, in_channels)
 
-    # --- spatial base: letterbox is always the foundation ---
-    spatial = LetterboxSquare(size=size, fill=fill)
-
     # --- channel handling ---
     if in_channels == 1:
         channel_tf = [T.Grayscale(num_output_channels=1)]
@@ -153,82 +149,61 @@ def build_transform(cfg: Dict[str, Any], train: bool) -> T.Compose:
     else:
         raise ValueError(f"Unsupported in_channels: {in_channels}")
 
-    # --- build pipeline depending on type ---
-    if pp_type == "letterbox":
-        # pure letterbox for both train and eval
-        tf = T.Compose(
-            channel_tf + [
-                spatial,
-                T.ToTensor(),
-                T.Normalize(mean=norm_mean, std=norm_std),
-            ]
-        )
-
-    elif pp_type == "augmented":
-        if train:
-            # augmentation settings from config
-            aug = pp.get("augmentation", {})
-            h_flip      = float(aug.get("horizontal_flip", 0.0))
-            rot_deg     = float(aug.get("rotation_degrees", 0))
-            translate   = aug.get("translate", None)
-            scale       = aug.get("scale", None)
-            cj          = aug.get("color_jitter", {})
-            erase_prob  = float(aug.get("erasing_prob", 0.0))
-
-            aug_list: list = []
-
-            # color jitter (before spatial transforms — works on PIL)
-            if cj:
-                aug_list.append(
-                    T.ColorJitter(
-                        brightness=float(cj.get("brightness", 0)),
-                        contrast=float(cj.get("contrast", 0)),
-                        saturation=float(cj.get("saturation", 0)),
-                        hue=float(cj.get("hue", 0)),
-                    )
-                )
-
-            # random horizontal flip (no vertical — hand gestures are not vertically symmetric)
-            if h_flip > 0:
-                aug_list.append(T.RandomHorizontalFlip(p=h_flip))
-
-            # affine: rotation + translation + scale  (makes model invariant to hand position / angle)
-            if rot_deg > 0 or translate is not None or scale is not None:
-                aug_list.append(
-                    T.RandomAffine(
-                        degrees=rot_deg,
-                        translate=tuple(translate) if translate else None,
-                        scale=tuple(scale) if scale else None,
-                        fill=fill,
-                    )
-                )
-
-            tf = T.Compose(
-                channel_tf + [
-                    spatial,           # letterbox first (deterministic resize)
-                ] + aug_list + [       # then stochastic augmentations
-                    T.ToTensor(),
-                    T.Normalize(mean=norm_mean, std=norm_std),
-                ] + (
-                    # random erasing operates on tensors
-                    [T.RandomErasing(p=erase_prob, scale=(0.02, 0.2), ratio=(0.3, 3.3))]
-                    if erase_prob > 0 else []
-                )
-            )
-        else:
-            # eval path: same as letterbox (no augmentation)
-            tf = T.Compose(
-                channel_tf + [
-                    spatial,
-                    T.ToTensor(),
-                    T.Normalize(mean=norm_mean, std=norm_std),
-                ]
-            )
-
+    # --- spatial transform: letterbox or pass-through ---
+    use_letterbox = pp_type in ("letterbox", "augmented")
+    if use_letterbox:
+        size_cfg = cfg["data"]["input_size"]
+        size = tuple(size_cfg) if isinstance(size_cfg, (list, tuple)) else int(size_cfg)
+        spatial_list = [LetterboxSquare(size=size, fill=fill)]
+    elif pp_type in ("raw", "raw_augmented"):
+        spatial_list = []  # trust dataset dims; no resize/pad
     else:
         raise ValueError(f"Unknown preprocess.type: {pp_type}")
 
-    return tf
+    # --- stochastic augmentation (train + *_augmented only) ---
+    use_aug = train and pp_type in ("augmented", "raw_augmented")
+    aug_list: list = []
+    erase_prob = 0.0
+    if use_aug:
+        aug = pp.get("augmentation", {})
+        h_flip      = float(aug.get("horizontal_flip", 0.0))
+        rot_deg     = float(aug.get("rotation_degrees", 0))
+        translate   = aug.get("translate", None)
+        scale       = aug.get("scale", None)
+        cj          = aug.get("color_jitter", {})
+        erase_prob  = float(aug.get("erasing_prob", 0.0))
+
+        # color jitter (works on PIL)
+        if cj:
+            aug_list.append(
+                T.ColorJitter(
+                    brightness=float(cj.get("brightness", 0)),
+                    contrast=float(cj.get("contrast", 0)),
+                    saturation=float(cj.get("saturation", 0)),
+                    hue=float(cj.get("hue", 0)),
+                )
+            )
+        if h_flip > 0:
+            aug_list.append(T.RandomHorizontalFlip(p=h_flip))
+        if rot_deg > 0 or translate is not None or scale is not None:
+            aug_list.append(
+                T.RandomAffine(
+                    degrees=rot_deg,
+                    translate=tuple(translate) if translate else None,
+                    scale=tuple(scale) if scale else None,
+                    fill=fill,
+                )
+            )
+
+    # --- assemble: channel -> spatial -> augmentation -> ToTensor -> Normalize -> [Erasing] ---
+    pipeline = channel_tf + spatial_list + aug_list + [
+        T.ToTensor(),
+        T.Normalize(mean=norm_mean, std=norm_std),
+    ]
+    if use_aug and erase_prob > 0:
+        pipeline.append(T.RandomErasing(p=erase_prob, scale=(0.02, 0.2), ratio=(0.3, 3.3)))
+
+    return T.Compose(pipeline)
 
 # =========== Dataset ===========
 class HagridGestureDataset(Dataset):
@@ -245,7 +220,8 @@ class HagridGestureDataset(Dataset):
 
         img_path, y = self.samples[idx]
 
-        img = Image.open(img_path).convert("RGB")
+        with Image.open(img_path) as img:
+            img = img.convert("RGB")
 
         if self.transform is None:
             raise RuntimeError("No transform provided. Please provide a transform for image preprocessing.")
@@ -253,10 +229,11 @@ class HagridGestureDataset(Dataset):
         # preprocessing
         x = self.transform(img)
 
-        return x, torch.tensor(y, dtype=torch.long), str(img_path)
+        # Return idx instead of str(img_path) to prevent pin_memory string leak
+        return x, torch.tensor(y, dtype=torch.long), idx
 
 def build_datasets(cfg: Dict[str, Any]):
-    dataset_root: Path = cfg["data"]["dataset_root"]
+    dataset_root = Path(cfg["data"]["dataset_root"])
 
     train_samples = scan_split(dataset_root, "train")
     val_samples   = scan_split(dataset_root, "val")
@@ -289,6 +266,7 @@ def build_dataloaders(cfg: Dict[str, Any]):
         shuffle=shuffle,
         num_workers=nw,
         persistent_workers=persistent,
+        pin_memory=torch.cuda.is_available(),
         drop_last=False,
     )
     val_loader = DataLoader(
@@ -297,6 +275,7 @@ def build_dataloaders(cfg: Dict[str, Any]):
         shuffle=False,
         num_workers=nw,
         persistent_workers=persistent,
+        pin_memory=torch.cuda.is_available(),
         drop_last=False,
     )
     test_loader = DataLoader(
@@ -305,6 +284,7 @@ def build_dataloaders(cfg: Dict[str, Any]):
         shuffle=False,
         num_workers=nw,
         persistent_workers=persistent,
+        pin_memory=torch.cuda.is_available(),
         drop_last=False,
     )
 

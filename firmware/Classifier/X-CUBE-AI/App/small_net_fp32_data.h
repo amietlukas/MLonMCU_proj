@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    small_net_fp32_data.h
   * @author  AST Embedded Analytics Research Platform
-  * @date    2026-03-17T22:42:17+0100
+  * @date    2026-05-02T17:31:19+0200
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * Copyright (c) 2026 STMicroelectronics.

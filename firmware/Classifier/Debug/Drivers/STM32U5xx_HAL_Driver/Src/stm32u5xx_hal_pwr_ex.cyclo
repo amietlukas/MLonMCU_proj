@@ -1,6 +1,6 @@
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c:340:19:HAL_PWREx_ControlVoltageScaling	12
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c:340:19:HAL_PWREx_ControlVoltageScaling	10
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c:409:10:HAL_PWREx_GetVoltageRange	1
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c:423:19:HAL_PWREx_ConfigSupply	9
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c:423:19:HAL_PWREx_ConfigSupply	7
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c:471:11:HAL_PWREx_GetSupplyConfig	1
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c:480:6:HAL_PWREx_EnableFastSoftStart	1
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr_ex.c:489:6:HAL_PWREx_DisableFastSoftStart	1

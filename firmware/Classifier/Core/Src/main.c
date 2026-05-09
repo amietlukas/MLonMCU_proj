@@ -22,7 +22,6 @@
 #include "usart.h"
 #include "gpio.h"
 #include "app_x-cube-ai.h"
-//#include "cachel1_armv7.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -97,7 +96,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ICACHE_Init();
-  MX_USART1_UART_Init();
+  MX_USART3_UART_Init();
   MX_X_CUBE_AI_Init();
   /* USER CODE BEGIN 2 */
 

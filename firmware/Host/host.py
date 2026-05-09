@@ -19,12 +19,17 @@ RESULTS_CSV        = "results.csv"
 CONFUSION_CSV      = "confusion_matrix.csv"
 METRICS_CSV        = "metrics.csv"
 
-DATASET_PATH = "/mnt/core/MLonMCU_proj/datasets/HAGRID/hagrid_balanced_classification/test"
-ANNOT_PATH   = "/mnt/core/MLonMCU_proj/datasets/HAGRID/hagrid_balanced_classification/annotations/test"
+DATASET_PATH = "/mnt/core/MLonMCU_proj/datasets/HAGRID/hagrid_full_qqvga_resize/test"
+ANNOT_PATH   = "/mnt/core/MLonMCU_proj/datasets/HAGRID/hagrid_full_qqvga_resize/annotations/test"
 
-MODEL_SIZE = 128
+# Model input is landscape 160x120 (W x H), 1-channel grayscale, post-letterbox.
+# This matches data.py LetterboxSquare with input_size=[120, 160] (= [th, tw])
+# and in_channels=1 in the new bignet_pruned config.
+MODEL_W = 160
+MODEL_H = 120
+MODEL_C = 1
 
-N_INFERENCES = 1000
+N_INFERENCES = 30000
 
 CLASS_NAMES = ["palm", "rock", "pinkie", "one", "fist", "others"]
 CLASS_TO_IDX = {name: i for i, name in enumerate(CLASS_NAMES)}
@@ -59,23 +64,16 @@ def load_dataset_paths():
 
 
 # =========================
-# LETTERBOX TO 128x128 (matches training exactly)
+# RESIZE TO MODEL_W x MODEL_H (landscape 160x120, grayscale; matches training)
 # =========================
-def letterbox_square(img, size, fill=0):
-    """Resize preserving aspect ratio, pad to square."""
-    w, h = img.size
-    s = size / max(w, h)
-    nw, nh = int(round(w * s)), int(round(h * s))
-    img = img.resize((nw, nh), Image.BILINEAR)
-    padded = Image.new("RGB", (size, size), (fill, fill, fill))
-    padded.paste(img, ((size - nw) // 2, (size - nh) // 2))
-    return padded
-
-
 def load_image(path):
-    """Load image, letterbox to 128x128, return as flat uint8 RGB HWC."""
-    img = Image.open(path).convert("RGB")
-    img = letterbox_square(img, MODEL_SIZE)
+    """Load image, convert to grayscale, resize directly to MODEL_W x MODEL_H
+    (since config.yaml used preprocess: type: raw), return flat uint8 row-major HW bytes.
+    The new bignet_pruned ONNX has mean/std fused in and expects raw [0,255] float
+    pixel values; with INPUT_SCALE=1.0 and INPUT_ZP=-128 the MCU just maps each
+    uint8 pixel u to int8 (u - 128)."""
+    img = Image.open(path).convert("L")
+    #img = img.resize((MODEL_W, MODEL_H), Image.BILINEAR)
     return np.array(img, dtype=np.uint8).flatten()
 
 
@@ -141,6 +139,8 @@ def main():
     ser = serial.Serial(PORT, BAUD, timeout=5)
     time.sleep(2)  # wait for MCU to boot / USB CDC to stabilize
     ser.reset_input_buffer()  # drain any init messages from MCU
+    ser.write(b"\x01")        # sync byte: unblocks MCU after BOOT handshake
+    ser.flush()
 
     correct = 0
     total = 0

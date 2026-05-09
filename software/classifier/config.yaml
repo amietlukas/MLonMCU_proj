@@ -1,23 +1,23 @@
 # config.yaml
 # here we set all the parameters.
-seed: 42
+seed: 36 # 42
 
 data:
-  dataset_root: ../../datasets/HAGRID/hagrid_full_qqvga
+  dataset_root: ../../datasets/HAGRID/hagrid_full_qqvga_resize
   #input_size: 128 # the grayscale images are resized to 128x128
-  input_size: [160, 120]  # QQVGA: [height, width]
+  input_size: [120, 160]  # QQVGA: [height, width] — raw dataset dims (160w x 120h landscape)
   num_classes: 6
 
 preprocess:
-  type: letterbox        # "letterbox" = resize only | "augmented" = augmentation + letterbox (train only)
+  type: raw              # "letterbox" / "augmented" pad to input_size | "raw" / "raw_augmented" use dataset dims as-is
   fill: 0                # padding value for letterbox
   normalize:
     # Per-channel normalization computed from training set (141 258 images)
-    mean: [0.3912, 0.3612, 0.3425]
-    std:  [0.3270, 0.3131, 0.3042]
+    # mean: [0.5907, 0.5273, 0.4958]
+    # std:  [0.2467, 0.2476, 0.2471]
     # For 1-channel grayscale, use:
-    # mean: [0.5]
-    # std:  [0.5]
+    mean: [0.5427]
+    std:  [0.2425]
     # For uniform (old style), use:
     # mean: 0.5
     # std:  0.5
@@ -37,7 +37,7 @@ preprocess:
 
 train:
   batch_size: 128
-  num_workers: 4
+  num_workers: 8
   shuffle: true
   max_train_batches: null # set to a int for quicker testing, set to null for full training
   max_val_batches: null # set to a int for quicker testing, set to null for full validation
@@ -46,15 +46,15 @@ train:
 
 model:
   type: baseline_cnn
-  in_channels: 3 # 1 = grayscale, 3 = RGB
+  in_channels: 1 # 1 = grayscale, 3 = RGB
   num_classes: 6 # match data.num_classes!
 
   # stages define channel widths after each downsampling
-  channels: [16, 32, 64, 128]
+  channels: [16, 32, 64, 96, 128, 192] # [16, 32, 64, 128]
   # convs per stage (1 = Conv-ReLU-Pool, 2 = Conv-ReLU-Conv-ReLU-Pool)
-  blocks_per_stage: 2
+  blocks_per_stage: 1
   kernel_size: 3
-  dropout_rate: 0.1
+  dropout_rate: 0.01
 
 debug:
   verbose: false # set to true to see all [DEBUG] prints
@@ -70,9 +70,9 @@ LR_scheduler:
   eta_min: 1e-5
 
 optimizer:
-  weight_decay: 1e-4     # L2 regularization strength
+  weight_decay: 1e-5     # L2 regularization strength
 
 early_stopping:
   enabled: true
-  patience: 20 # stop if no improvement in validation loss for 10 epochs
+  patience: 20 # stop if no improvement in validation loss for 40 epochs
   min_delta: 1e-4 # dont count noise as improvement TODO: find noise level
