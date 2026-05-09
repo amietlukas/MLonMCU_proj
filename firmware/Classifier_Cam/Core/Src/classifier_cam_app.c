@@ -121,6 +121,43 @@ static void preprocess(const uint8_t *gray, int8_t *dst)
     }
 }
 
+/* ------------------------------------------------------------------ */
+/* Bluetooth command mapping — drives the paul_car Arduino sketch.    */
+/*                                                                    */
+/* paul_car.ino reads single ASCII chars over its hardware UART       */
+/* (bridged via HC-05/06 at 9600 baud) and interprets them as:        */
+/*   '0' STOP  '1' FORWARD  '2' FWD-RIGHT  '3' FWD-LEFT               */
+/*   '4' BACKWARD  '5' OTHER (currently == STOP)                      */
+/*                                                                    */
+/* The U5 sends one byte over USART3 (PA7 TX) per inference. Wire     */
+/* PA7 to the HC-05/06 RXD; the U5-side module is the master, paired  */
+/* and bound to the slave on the Arduino side.                        */
+/*                                                                    */
+/* Edit the gesture->command map here to taste. Anything below the    */
+/* confidence floor is sent as '5' so a flickery low-conf prediction  */
+/* doesn't slam the car between directions. */
+#define CMD_MIN_CONF  0.5f
+
+static char prediction_to_cmd(int pred_class, float confidence)
+{
+    if (confidence < CMD_MIN_CONF) return '5';
+
+    switch (pred_class) {
+        case 0: return '0';   /* palm   -> STOP        */
+        case 1: return '4';   /* rock   -> BACKWARD    */
+        case 2: return '3';   /* pinkie -> FWD-LEFT    */
+        case 3: return '2';   /* one    -> FWD-RIGHT   */
+        case 4: return '5';   /* fist   -> STOP        */
+        case 5: return '5';   /* others -> STOP        */
+        default: return '5';
+    }
+}
+
+static void bt_send_cmd(char cmd)
+{
+    HAL_UART_Transmit(&huart3, (uint8_t *)&cmd, 1, HAL_MAX_DELAY);
+}
+
 static int postprocess(const int8_t *out_q, float *confidence)
 {
     float logits[NUM_CLASSES];
@@ -266,6 +303,10 @@ void classifier_cam_process(void)
         int pred = postprocess(out_data, &conf);
 
         const uint32_t t1 = dwt_now();
+
+        /* Drive the car *before* the slow host stream — at 9600 baud
+         * this single byte takes ~1 ms, vs the ~209 ms image upload. */
+        bt_send_cmd(prediction_to_cmd(pred, conf));
 
         /* Stream frame to host: header, image, then result struct. */
         uart_send_str("FRAME\r\n");
