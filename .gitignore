@@ -33,7 +33,7 @@ venv/
 !**/runs/**/.gitkeep
 !**/runs/**/README.md
 
-# datasets
-**/datasets/**
-!**/datasets/**/.gitkeep
-!**/datasets/**/README.md
+# datasets (real data only, repo-root datasets/)
+/datasets/**
+!/datasets/**/.gitkeep
+!/datasets/**/README.md
