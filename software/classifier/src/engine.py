@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from typing import Any, Dict
+import tqdm
 from classifier.src.helper_func import vprint
 
 
@@ -26,8 +27,9 @@ def train_one_epoch(
     correct = 0
     total = 0
 
+    pbar = tqdm.tqdm(loader, desc="Training")
     # iterate over batches
-    for batch_idx, (xb, yb, _paths) in enumerate(loader):
+    for batch_idx, (xb, yb, _paths) in enumerate(pbar):
         
         # for faster training during development
         if max_batches is not None and batch_idx >= max_batches:
@@ -41,7 +43,13 @@ def train_one_epoch(
             # keep CPU copies for debug
             xb_cpu = xb
             yb_cpu = yb
-            paths0 = [str(p) for p in _paths]
+            
+            # Reconstruct paths if needed for debug printing mapping idx to path
+            if isinstance(loader.dataset, torch.utils.data.Subset):
+                ds = loader.dataset.dataset
+                paths0 = [str(ds.samples[loader.dataset.indices[p]][0]) for p in _paths]
+            else:
+                paths0 = [str(loader.dataset.samples[p][0]) for p in _paths]
 
             vprint(f"[DEBUG] unique paths in batch: {len(set(paths0))} / {len(paths0)}", cfg)
             vprint("[DEBUG] first 5 paths+labels:", cfg)
@@ -94,6 +102,8 @@ def train_one_epoch(
 
         preds = logits.argmax(dim=1)
         correct += (preds == yb).sum().item()
+        
+        pbar.set_postfix({"loss": f"{loss.item():.4f}"})
 
     return {
         "loss": total_loss / max(total, 1),
@@ -116,6 +126,7 @@ def evaluate(
     correct = 0
     total = 0
 
+    pbar = tqdm.tqdm(loader, desc="Validation")
     # iterate over batches
     for batch_idx, (xb, yb, _paths) in enumerate(loader):
         

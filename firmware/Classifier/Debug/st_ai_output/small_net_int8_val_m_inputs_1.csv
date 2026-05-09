@@ -1,0 +1,5 @@
+# file created : 2026-05-07 03:23:22
+# dtype=float32
+# original model features - 24/24
+# (24, 120, 160, 1)/float32, min/max=[3.000000, 255.000000], mean/std=[155.059387, 58.115620], input
+# Note: w/o data, number of item by sample is exceeded: 19200 > 512

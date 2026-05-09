@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import List, Tuple
 import random
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image

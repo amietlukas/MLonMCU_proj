@@ -25,10 +25,5 @@ SUBDIRS := \
 Core/Src \
 Core/Startup \
 Drivers/STM32U5xx_HAL_Driver/Src \
-Middlewares/CMSIS-NN/Source/ActivationFunctions \
-Middlewares/CMSIS-NN/Source/ConvolutionFunctions \
-Middlewares/CMSIS-NN/Source/FullyConnectedFunctions \
-Middlewares/CMSIS-NN/Source/NNSupportFunctions \
-Middlewares/CMSIS-NN/Source/PoolingFunctions \
 X-CUBE-AI/App \
 

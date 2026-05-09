@@ -4,7 +4,7 @@
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c:393:19:HAL_PWR_ConfigPVD	6
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c:445:6:HAL_PWR_EnablePVD	1
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c:454:6:HAL_PWR_DisablePVD	1
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c:476:6:HAL_PWR_EnableWakeUpPin	2
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c:476:6:HAL_PWR_EnableWakeUpPin	1
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c:507:6:HAL_PWR_DisableWakeUpPin	1
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c:538:6:HAL_PWR_EnterSLEEPMode	3
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_pwr.c:599:6:HAL_PWR_EnterSTOPMode	3

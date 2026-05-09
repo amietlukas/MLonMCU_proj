@@ -84,8 +84,41 @@ def export_best_model_fp32_and_int8_qdq(
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # --- FUSE INPUT NORMALIZATION ---
+    # We bake the full inference preprocessing directly into the first Convolution:
+    # both the /255 (uint8 -> [0,1]) and the (x - mu) / sigma steps are folded in.
+    # The fused graph (FP32 and INT8 QDQ) expects float inputs in the raw [0, 255]
+    # pixel range. The INT8 input QuantizeLinear's scale is therefore calibrated for
+    # [0, 255], so on the MCU you can feed uint8 pixels directly (mapped to int8 via
+    # a zero-point shift) without any divide or normalize at runtime.
+    # Math: combined effective normalization is (pixel/255 - mu) / sigma
+    #     = (pixel - 255*mu) / (255*sigma), so we use mu' = 255*mu, sigma' = 255*sigma.
+    in_ch = int(cfg.get("model", {}).get("in_channels", 1))
+    norm_cfg = cfg.get("preprocess", {}).get("normalize", {})
+
+    # Parse norm_mean and norm_std, then scale by 255 to absorb the uint8->[0,1] step.
+    def _parse(v, n):
+        if isinstance(v, (list, tuple)): return [float(x) for x in v] if len(v) == n else [float(v[0])] * n
+        return [float(v)] * n
+    norm_mean = [m * 255.0 for m in _parse(norm_cfg.get("mean", 0.5), in_ch)]
+    norm_std  = [s * 255.0 for s in _parse(norm_cfg.get("std", 0.5),  in_ch)]
+    
+    with torch.no_grad():
+        conv = model.features[0][0]
+        bn = model.features[0][1]
+        
+        mu = torch.tensor(norm_mean, dtype=torch.float32, device=conv.weight.device).view(1, -1, 1, 1)
+        sigma = torch.tensor(norm_std, dtype=torch.float32, device=conv.weight.device).view(1, -1, 1, 1)
+        
+        # W' = W / sigma
+        new_weight = conv.weight / sigma
+        # Delta = sum(W' * mu) over in_ch, h, w
+        delta = (new_weight * mu).sum(dim=(1, 2, 3))
+        
+        conv.weight.copy_(new_weight)
+        bn.running_mean.add_(delta)
+
     # Fixed input shape
-    in_ch = int(cfg.get("model", {}).get("in_channels", 3))
     size_cfg = cfg.get("data", {}).get("input_size", 128)
     if isinstance(size_cfg, (list, tuple)):
         h, w = size_cfg
@@ -109,7 +142,8 @@ def export_best_model_fp32_and_int8_qdq(
         input_names=["input"],
         output_names=["logits"],
         dynamic_axes=None,  # fixed-shape export
-        opset_version=13,   # ST docs recommend opset13
+        #opset_version=13,   # Use 13 for ST, if onnx doesnt work
+        opset_version=17,   # Fallback from 18 to 17 avoiding the node-assert bug
         verbose=False,
     )
 
@@ -118,9 +152,19 @@ def export_best_model_fp32_and_int8_qdq(
         def __init__(self, loader, input_name: str, max_batches: int):
             self._samples = []
             n = 0
+            
+            # --- Unnormalize inputs for the calibrated graph ---
+            # Loader emits xb = (pixel/255 - mu) / sigma. With mu' = 255*mu and
+            # sigma' = 255*sigma below, xb * sigma' + mu' = raw pixel in [0, 255].
+            mu_t = torch.tensor(norm_mean).view(1, -1, 1, 1)
+            sig_t = torch.tensor(norm_std).view(1, -1, 1, 1)
+            
             for xb, _yb, _paths in loader:
                 if n >= max_batches:
                     break
+                
+                xb = xb * sig_t + mu_t
+                
                 # Model is exported with fixed batch_size=1, so we split the batch.
                 for i in range(xb.shape[0]):
                     self._samples.append({input_name: xb[i:i+1].detach().cpu().numpy().astype(np.float32)})

@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    small_net_int8.h
   * @author  AST Embedded Analytics Research Platform
-  * @date    2026-03-17T22:42:29+0100
+  * @date    2026-05-07T03:11:00+0200
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * @attention
@@ -23,7 +23,7 @@
 
 /******************************************************************************/
 #define AI_SMALL_NET_INT8_MODEL_NAME          "small_net_int8"
-#define AI_SMALL_NET_INT8_ORIGIN_MODEL_NAME   "letsgooo_v220260310010152_bestepoch113_int8_qdq_op13"
+#define AI_SMALL_NET_INT8_ORIGIN_MODEL_NAME   "bignet_pruned20260505225640_bestepoch132_int8_qdq_op13"
 
 /******************************************************************************/
 #define AI_SMALL_NET_INT8_ACTIVATIONS_ALIGNMENT   (4)
@@ -44,11 +44,11 @@ AI_DEPRECATED
   AI_SMALL_NET_INT8_IN_1_SIZE_BYTES, \
 }
 #define AI_SMALL_NET_INT8_IN_1_FORMAT      (AI_BUFFER_FORMAT_S8)
-#define AI_SMALL_NET_INT8_IN_1_HEIGHT      (128)
-#define AI_SMALL_NET_INT8_IN_1_WIDTH       (3)
-#define AI_SMALL_NET_INT8_IN_1_CHANNEL     (128)
-#define AI_SMALL_NET_INT8_IN_1_SIZE        (49152)
-#define AI_SMALL_NET_INT8_IN_1_SIZE_BYTES  (49152)
+#define AI_SMALL_NET_INT8_IN_1_HEIGHT      (120)
+#define AI_SMALL_NET_INT8_IN_1_WIDTH       (160)
+#define AI_SMALL_NET_INT8_IN_1_CHANNEL     (1)
+#define AI_SMALL_NET_INT8_IN_1_SIZE        (19200)
+#define AI_SMALL_NET_INT8_IN_1_SIZE_BYTES  (19200)
 
 /******************************************************************************/
 #define AI_SMALL_NET_INT8_OUT_NUM       (1)

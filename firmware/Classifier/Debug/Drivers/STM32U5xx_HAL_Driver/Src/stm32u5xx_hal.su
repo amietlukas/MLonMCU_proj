@@ -1,6 +1,6 @@
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c:203:13:HAL_MspInit	0	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c:214:13:HAL_MspDeInit	0	static
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c:174:19:HAL_DeInit	16	static
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c:174:19:HAL_DeInit	8	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c:237:26:HAL_InitTick	16	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c:140:19:HAL_Init	8	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c:330:13:HAL_IncTick	0	static

@@ -1,0 +1,3 @@
+../Core/Src/classifier_app.c:57:13:uart_send_str	8	static
+../Core/Src/classifier_app.c:103:6:classifier_init	8	static
+../Core/Src/classifier_app.c:126:6:classifier_process	72	static

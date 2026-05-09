@@ -44,6 +44,7 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--name", type=str, required=True, help="Run name, e.g. --name baseline128")
     p.add_argument("--checkpoint", type=str, default=None, help="Checkpoint dir name to resume from, e.g. --checkpoint baseline128-20260221-192155")
+    p.add_argument("--prune", type=float, default=None, help="Structured L1 channel-prune ratio in (0,1) per stage. Requires --checkpoint.")
     return p.parse_args()
 
 
@@ -195,17 +196,45 @@ def main():
         print(f"[INFO] Loading checkpoint from: {checkpoint_path}")
         ckpt = torch.load(checkpoint_path, map_location=device)
 
+        # Warm-start: load weights only. Optimizer + scheduler + epoch counter
+        # are reset so the cosine LR re-anneals over the full `epochs` budget.
         model.load_state_dict(ckpt["model_state_dict"])
-        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
 
-        if "scheduler_state_dict" in ckpt:
-            scheduler.load_state_dict(ckpt["scheduler_state_dict"])
-            print(f"[INFO] Restored scheduler state")
+        import shutil
+        run.best_ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(checkpoint_path, run.best_ckpt_path)
 
-        start_epoch = ckpt.get("epoch", 0) + 1
-        best_val_acc = ckpt.get("val_metrics", {}).get("acc", -1.0)
+        ckpt_epoch = ckpt.get("epoch", "?")
+        ckpt_val_acc = ckpt.get("val_metrics", {}).get("acc", -1.0)
+        print(f"[INFO] Warm-starting from checkpoint epoch {ckpt_epoch} (val acc {ckpt_val_acc:.3f})")
+        print(f"[INFO] Optimizer + scheduler reset; training {epochs} fresh epochs from these weights\n")
 
-        print(f"[INFO] Resuming from epoch {start_epoch}, best val acc: {best_val_acc:.3f}\n")
+    # ========== prune (optional) ==========
+    if args.prune is not None:
+        if args.checkpoint is None:
+            raise ValueError("--prune requires --checkpoint (pruning untrained weights is just random)")
+        from classifier.src.prune import prune_baseline_cnn, count_params
+
+        n_before = count_params(model)
+        print(f"\n[INFO] Structured L1 channel pruning at ratio {args.prune:.2%} per stage")
+        print(f"[INFO] Channels before: {cfg['model']['channels']}  | params: {n_before:,}")
+
+        model, cfg = prune_baseline_cnn(model, args.prune, cfg)
+        model = model.to(device)
+
+        n_after = count_params(model)
+        reduction = 100.0 * (n_before - n_after) / n_before
+        print(f"[INFO] Channels after:  {cfg['model']['channels']}  | params: {n_after:,}  ({reduction:.1f}% reduction)")
+
+        # Re-init optimizer + scheduler since the parameter set changed
+        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+        if scheduler_type == "CosineAnnealingLR":
+            scheduler = lr_scheduler.CosineAnnealingLR(optimizer, eta_min=eta_min, T_max=epochs)
+
+        # Re-save snapshots so the run dir reflects the pruned model
+        save_config_snapshot(cfg, run.config_snapshot_path)
+        save_model_summary(run.model_summary_path, model, cfg)
+        print(f"[INFO] Updated config snapshot + model summary\n")
 
     # early stopping config
     is_es = bool(cfg["early_stopping"]["enabled"])

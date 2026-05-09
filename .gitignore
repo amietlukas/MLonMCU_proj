@@ -37,3 +37,6 @@ venv/
 **/datasets/**
 !**/datasets/**/.gitkeep
 !**/datasets/**/README.md
+
+# version control
+/local_version
