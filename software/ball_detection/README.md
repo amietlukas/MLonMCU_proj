@@ -1,12 +1,16 @@
 # Ball Detection (STYOLO-Style, ONNX-Friendly)
 
-This module implements a first complete training/eval/export pipeline for single-class ball detection on SPL-style CSV annotations.
+This module implements a complete training/eval/export pipeline for single-class ball detection using mixed datasets (`SPLDataset` + `OurDataset`).
 
 ## Implemented in this version
 
-- Dataset parser for `datasets/BALL/SPLBallDataset/full_size_images`
-- Single-class filtering (`Ball`) with robust CSV parsing and invalid-box warnings
-- Reproducible train/val split generation + reuse
+- Multi-source dataset parser for:
+  - `datasets/BALL/SPLDataset`
+  - `datasets/BALL/OurDataset`
+- Reproducible train/val split generation + reuse, stratified per source
+- Image-driven dataset indexing (all image files are included, not only annotated rows)
+- Empty-image support (images without annotation rows are valid no-ball samples)
+- Mixed-source train batching (every train batch contains samples from both datasets)
 - Configurable resize policy (`letterbox` or direct `resize`) with consistent box transform metadata
 - Optional train augmentations (hflip, color jitter, blur)
 - Optional utility to export parsed labels in YOLO txt format (`export_yolo_labels`)
@@ -17,7 +21,8 @@ This module implements a first complete training/eval/export pipeline for single
   - `mAP@0.5:0.95`
   - precision / recall / F1
   - mean IoU (matched TPs)
-  - center error in pixels
+  - center error (mean / median / p95) in pixels
+  - normalized center error by image diagonal (mean / median / p95)
   - false positives per image
   - small/medium/large recall bins
 - ONNX export (`fp32.onnx`) with output heads `p8`, `p16`, `p32`
@@ -26,24 +31,25 @@ This module implements a first complete training/eval/export pipeline for single
 ## Dataset layout expected
 
 Dataset root config points to `datasets/BALL`.
-Images and CSVs are read from:
+By default, the config uses two dataset sources:
 
-- `datasets/BALL/SPLBallDataset/full_size_images/<scene_folder>/<scene_name>.csv`
-- `datasets/BALL/SPLBallDataset/full_size_images/<scene_folder>/<image files>`
+- `datasets/BALL/SPLDataset/<scene>/annotations.csv`
+- `datasets/BALL/OurDataset/<scene>/annotations.csv`
 
-Each CSV row is parsed as:
+Rows are parsed as:
 
-- `image_name, class_name, x, y, w, h, class_name, x, y, w, h, ...`
+- `filename,x,y,width,height`
 
-In current config (`dataset.bbox_format: cxcywh_radius`) these are interpreted as:
+And interpreted as:
 
-- `x, y` = box center in pixels
-- `w, h` = radius-like half-size in pixels (dataset-specific behavior)
+- `x, y` = top-left corner in pixels
+- `width, height` = box size in pixels
 
-Only `class_name == Ball` is kept.
-Other classes are ignored.
-Rows with no `Ball` are supported as zero-object images.
-If the same image appears multiple times in CSV rows, the default is `dataset.duplicate_policy: last`.
+If the same image appears multiple times in CSV rows, rows are merged (`duplicate_policy: append`) so one image can have multiple ball boxes.
+Images that exist in a source folder but have no annotation row are kept as valid empty (no-ball) training/eval samples.
+This is important for learning the negative/no-ball case.
+
+Backward compatibility is kept: if `dataset.sources` is omitted, the loader falls back to legacy SPL multiclass CSV parsing (`image,class,x,y,w,h,...`) via `paths.images_dir`.
 
 ## Split files
 
@@ -53,6 +59,15 @@ Split files are written to:
 - `software/ball_detection/splits/val.txt`
 
 If `dataset.reuse_splits: true` and both files exist, they are reused.
+Split validity is checked against the current dataset IDs and source coverage.
+If invalid (for example after switching datasets), splits are regenerated automatically.
+Splits are always generated over all images, not only annotated rows.
+
+### Batch source mixing
+
+With `dataset.mix_sources_per_batch: true`, train batches are source-balanced.
+For two sources and batch size `32`, each batch contains `16` samples from each source.
+This guarantees per-batch source presence, but can oversample the smaller source within an epoch.
 
 ## Main config
 
@@ -63,6 +78,10 @@ Key settings:
 
 - input (default): `640x480`, `rgb`, `3` channels, `resize`
 - alternative preprocessing: `letterbox` (if aspect-ratio-preserving square input is desired)
+- data sources: `dataset.sources` list (per-source path + annotation format + bbox format)
+- split reuse control:
+  - config: `dataset.reuse_splits`
+  - CLI override: `--reuse-splits` / `--regenerate-splits`
 - model: `ball_styolo_nano`, strides `[8,16,32]`
   - compactness/accuracy knobs: `model.width_mult`, `model.neck_out_ch`
 - loss/assignment knobs for convergence:
@@ -93,6 +112,15 @@ python -m ball_detection.train \
   --device cpu \
   --max-train-batches 2 \
   --max-val-batches 2
+```
+
+Force a fresh split generation:
+
+```bash
+python -m ball_detection.train \
+  --config ball_detection/configs/ball_styolo_nano.yaml \
+  --name ball_regen_split \
+  --regenerate-splits
 ```
 
 ### Training artifacts per run
@@ -136,6 +164,11 @@ python -m ball_detection.evaluate \
   --device auto
 ```
 
+Optional split control is also available for eval:
+
+- `--reuse-splits`
+- `--regenerate-splits`
+
 ## Export only
 
 ```bash
@@ -144,6 +177,24 @@ python -m ball_detection.export \
   --checkpoint ball_detection/runs/<run-id>/checkpoints/best.pt \
   --device auto
 ```
+
+Optional split control is also available for export:
+
+- `--reuse-splits`
+- `--regenerate-splits`
+
+## Prediction bbox format
+
+- Internal training/assignment/IoU logic uses `xyxy` boxes.
+- Final postprocessed predictions now expose both:
+  - `boxes` in `xyxy`
+  - `boxes_xywh_topleft` in top-left + width/height format
+- `boxes_xywh_topleft` is available on `ImagePrediction` objects in `src/training/metrics.py`.
+- Dataset targets now also carry both forms:
+  - `target["boxes"]` (`xyxy`)
+  - `target["boxes_xywh_topleft"]`
+  - `target["boxes_orig"]` (`xyxy` in original image)
+  - `target["boxes_orig_xywh_topleft"]`
 
 ## ONNX / deployment notes
 

@@ -54,6 +54,44 @@ def _validate_config(cfg: Dict[str, Any]) -> None:
     if not (0.0 < split_ratio < 1.0):
         raise ValueError("dataset.train_val_split must be in the open interval (0, 1)")
 
+    dataset_cfg = cfg.get("dataset", {})
+    bbox_format = str(dataset_cfg.get("bbox_format", "xywh_topleft")).lower()
+    if bbox_format not in {"xywh_topleft", "cxcywh_center", "cxcywh_radius"}:
+        raise ValueError("dataset.bbox_format must be one of: xywh_topleft, cxcywh_center, cxcywh_radius")
+    duplicate_policy = str(dataset_cfg.get("duplicate_policy", "append")).lower()
+    if duplicate_policy not in {"append", "first", "last"}:
+        raise ValueError("dataset.duplicate_policy must be one of: append, first, last")
+
+    sources = dataset_cfg.get("sources", None)
+    if sources is not None:
+        if not isinstance(sources, list) or len(sources) == 0:
+            raise ValueError("dataset.sources must be a non-empty list when provided")
+        for i, src in enumerate(sources):
+            if not isinstance(src, dict):
+                raise ValueError(f"dataset.sources[{i}] must be a dictionary")
+            if src.get("images_dir", src.get("path")) is None:
+                raise ValueError(f"dataset.sources[{i}] must define images_dir (or path)")
+
+            src_fmt = str(src.get("annotation_format", "csv_xywh_topleft")).lower()
+            if src_fmt not in {"legacy_multiclass", "csv_xywh_topleft", "simple_csv_xywh"}:
+                raise ValueError(
+                    f"dataset.sources[{i}].annotation_format must be one of: "
+                    "legacy_multiclass, csv_xywh_topleft, simple_csv_xywh"
+                )
+
+            src_bbox = str(src.get("bbox_format", bbox_format)).lower()
+            if src_bbox not in {"xywh_topleft", "cxcywh_center", "cxcywh_radius"}:
+                raise ValueError(
+                    f"dataset.sources[{i}].bbox_format must be one of: "
+                    "xywh_topleft, cxcywh_center, cxcywh_radius"
+                )
+
+            src_dup = str(src.get("duplicate_policy", duplicate_policy)).lower()
+            if src_dup not in {"append", "first", "last"}:
+                raise ValueError(
+                    f"dataset.sources[{i}].duplicate_policy must be one of: append, first, last"
+                )
+
     num_classes = int(cfg.get("model", {}).get("num_classes", 1))
     if num_classes != 1:
         raise ValueError("This first pipeline version currently supports model.num_classes == 1 only")
@@ -151,8 +189,25 @@ def load_config(config_path: str | Path) -> Dict[str, Any]:
         "repo_root": repo_root,
     }
 
-    if not images_dir.exists():
-        raise FileNotFoundError(f"Dataset images_dir does not exist: {images_dir}")
+    dataset_sources = cfg.get("dataset", {}).get("sources", None)
+    if isinstance(dataset_sources, list) and len(dataset_sources) > 0:
+        missing_source_dirs: list[str] = []
+        for src in dataset_sources:
+            src_dir_raw = src.get("images_dir", src.get("path"))
+            if src_dir_raw is None:
+                continue
+            src_dir = Path(str(src_dir_raw))
+            if not src_dir.is_absolute():
+                src_dir = (dataset_root / src_dir).resolve()
+            if not src_dir.exists():
+                src_name = str(src.get("name", src_dir_raw))
+                missing_source_dirs.append(f"{src_name}: {src_dir}")
+        if missing_source_dirs:
+            joined = "; ".join(missing_source_dirs)
+            raise FileNotFoundError(f"Dataset source directory does not exist: {joined}")
+    else:
+        if not images_dir.exists():
+            raise FileNotFoundError(f"Dataset images_dir does not exist: {images_dir}")
 
     return cfg
 

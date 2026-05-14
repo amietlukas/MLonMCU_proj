@@ -2,20 +2,32 @@ from __future__ import annotations
 
 import csv
 import random
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
 import torch
 from PIL import Image
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, Sampler
 
 from ball_detection.src.datasets.transforms_detection import DetectionTransform
 from ball_detection.src.reproducibility import worker_init_fn
-from ball_detection.src.utils.boxes import xywh_to_xyxy
+from ball_detection.src.utils.boxes import xywh_to_xyxy, xyxy_to_xywh_topleft
 
 
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".webp"}
+
+
+@dataclass
+class DatasetSource:
+    name: str
+    images_dir: Path
+    annotation_file: str
+    annotation_format: str
+    bbox_format: str
+    class_name: str
+    duplicate_policy: str
 
 
 @dataclass
@@ -24,6 +36,7 @@ class SampleRecord:
     image_path: Path
     orig_size: tuple[int, int]  # (H, W)
     boxes_orig: torch.Tensor  # [N,4] xyxy absolute in original image
+    source_name: str
 
 
 class SPLBallDetectionDataset(Dataset):
@@ -48,11 +61,18 @@ class SPLBallDetectionDataset(Dataset):
 
         img_tensor, boxes_resized, meta = self.transform(image, rec.boxes_orig)
 
+        boxes_resized = boxes_resized.float()
+        boxes_resized_xywh_topleft = xyxy_to_xywh_topleft(boxes_resized)
+        boxes_orig = rec.boxes_orig.clone().float()
+        boxes_orig_xywh_topleft = xyxy_to_xywh_topleft(boxes_orig)
+
         labels = torch.zeros((boxes_resized.shape[0],), dtype=torch.long)
         target = {
-            "boxes": boxes_resized.float(),
+            "boxes": boxes_resized,
+            "boxes_xywh_topleft": boxes_resized_xywh_topleft,
             "labels": labels,
             "image_id": rec.image_id,
+            "source": rec.source_name,
             "orig_size": rec.orig_size,
             "resized_size": meta.resized_size,
             "resize_mode": meta.mode,
@@ -60,10 +80,105 @@ class SPLBallDetectionDataset(Dataset):
             "scale_y": float(meta.scale_y),
             "scale": float(meta.scale_x),  # legacy alias for square letterbox workflows
             "pad": (meta.pad_left, meta.pad_top, meta.pad_right, meta.pad_bottom),
-            "boxes_orig": rec.boxes_orig.clone().float(),
+            "boxes_orig": boxes_orig,
+            "boxes_orig_xywh_topleft": boxes_orig_xywh_topleft,
             "image_path": str(rec.image_path),
         }
         return img_tensor, target
+
+
+class MixedSourceBatchSampler(Sampler[list[int]]):
+    """Builds mixed-source batches with guaranteed per-batch source presence.
+
+    This sampler is intended for training only. It oversamples smaller sources by
+    cycling through shuffled indices so that every batch contains all sources.
+    """
+
+    def __init__(
+        self,
+        source_to_indices: Dict[str, List[int]],
+        batch_size: int,
+        seed: int,
+        shuffle: bool = True,
+    ) -> None:
+        if not source_to_indices:
+            raise ValueError("source_to_indices must not be empty")
+
+        self.source_to_indices = {k: list(v) for k, v in source_to_indices.items() if len(v) > 0}
+        self.sources = sorted(self.source_to_indices.keys())
+        if not self.sources:
+            raise ValueError("All sources are empty")
+
+        self.batch_size = int(batch_size)
+        self.seed = int(seed)
+        self.shuffle = bool(shuffle)
+        self._epoch = 0
+
+        if self.batch_size < len(self.sources):
+            raise ValueError(
+                f"batch_size={self.batch_size} is smaller than num_sources={len(self.sources)}. "
+                "Cannot guarantee mixed-source batches."
+            )
+
+        self.per_source_batch_count = self._build_per_source_batch_count()
+        self.num_batches = self._compute_num_batches()
+
+    def _build_per_source_batch_count(self) -> Dict[str, int]:
+        base = self.batch_size // len(self.sources)
+        rem = self.batch_size % len(self.sources)
+        counts: dict[str, int] = {}
+        for i, src in enumerate(self.sources):
+            counts[src] = base + (1 if i < rem else 0)
+        return counts
+
+    def _compute_num_batches(self) -> int:
+        batches = []
+        for src in self.sources:
+            need = max(self.per_source_batch_count[src], 1)
+            n = len(self.source_to_indices[src])
+            batches.append((n + need - 1) // need)
+        return max(batches) if batches else 0
+
+    def __len__(self) -> int:
+        return self.num_batches
+
+    def __iter__(self):
+        if self.num_batches <= 0:
+            return
+
+        rng = random.Random(self.seed + self._epoch)
+        self._epoch += 1
+
+        pools: dict[str, List[int]] = {}
+        pos: dict[str, int] = {}
+        for src in self.sources:
+            arr = list(self.source_to_indices[src])
+            if self.shuffle:
+                rng.shuffle(arr)
+            pools[src] = arr
+            pos[src] = 0
+
+        for _ in range(self.num_batches):
+            batch: list[int] = []
+            for src in self.sources:
+                take = self.per_source_batch_count[src]
+                arr = pools[src]
+                if not arr:
+                    continue
+
+                p = pos[src]
+                for _k in range(take):
+                    if p >= len(arr):
+                        p = 0
+                        if self.shuffle:
+                            rng.shuffle(arr)
+                    batch.append(arr[p])
+                    p += 1
+                pos[src] = p
+
+            if self.shuffle:
+                rng.shuffle(batch)
+            yield batch
 
 
 
@@ -79,7 +194,52 @@ def _safe_float(value: str) -> float | None:
         return None
 
 
-def _parse_csv_row_for_ball(
+def _convert_box_to_xyxy(
+    x: float,
+    y: float,
+    w: float,
+    h: float,
+    bbox_format: str,
+) -> tuple[float, float, float, float]:
+    if bbox_format == "xywh_topleft":
+        return xywh_to_xyxy(x, y, w, h)
+    if bbox_format == "cxcywh_center":
+        x1 = float(x) - float(w) * 0.5
+        y1 = float(y) - float(h) * 0.5
+        x2 = float(x) + float(w) * 0.5
+        y2 = float(y) + float(h) * 0.5
+        return x1, y1, x2, y2
+    if bbox_format == "cxcywh_radius":
+        x1 = float(x) - float(w)
+        y1 = float(y) - float(h)
+        x2 = float(x) + float(w)
+        y2 = float(y) + float(h)
+        return x1, y1, x2, y2
+    raise ValueError(f"Unsupported bbox_format: {bbox_format}")
+
+
+def _clamp_and_validate_box(
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    img_w: int,
+    img_h: int,
+) -> tuple[float, float, float, float] | None:
+    if x2 <= x1 or y2 <= y1:
+        return None
+
+    x1 = max(0.0, min(float(img_w - 1), x1))
+    y1 = max(0.0, min(float(img_h - 1), y1))
+    x2 = max(0.0, min(float(img_w - 1), x2))
+    y2 = max(0.0, min(float(img_h - 1), y2))
+
+    if x2 <= x1 or y2 <= y1:
+        return None
+    return x1, y1, x2, y2
+
+
+def _parse_legacy_multiclass_row_for_ball(
     row: List[str],
     class_name: str,
     img_w: int,
@@ -116,69 +276,189 @@ def _parse_csv_row_for_ball(
                 logger.warning(f"[WARN] invalid numeric box skipped: {context}")
             continue
 
-        if bbox_format == "xywh_topleft":
-            x1, y1, x2, y2 = xywh_to_xyxy(x, y, w, h)
-        elif bbox_format == "cxcywh_center":
-            x1 = float(x) - float(w) * 0.5
-            y1 = float(y) - float(h) * 0.5
-            x2 = float(x) + float(w) * 0.5
-            y2 = float(y) + float(h) * 0.5
-        elif bbox_format == "cxcywh_radius":
-            x1 = float(x) - float(w)
-            y1 = float(y) - float(h)
-            x2 = float(x) + float(w)
-            y2 = float(y) + float(h)
-        else:
-            raise ValueError(f"Unsupported bbox_format: {bbox_format}")
-
-        if x2 <= x1 or y2 <= y1:
+        x1, y1, x2, y2 = _convert_box_to_xyxy(float(x), float(y), float(w), float(h), bbox_format)
+        box = _clamp_and_validate_box(x1, y1, x2, y2, img_w=img_w, img_h=img_h)
+        if box is None:
             if logger is not None:
-                logger.warning(f"[WARN] degenerate box skipped: {context} -> {(x1, y1, x2, y2)}")
+                logger.warning(f"[WARN] invalid box skipped: {context} -> {(x1, y1, x2, y2)}")
             continue
 
-        x1 = max(0.0, min(float(img_w - 1), x1))
-        y1 = max(0.0, min(float(img_h - 1), y1))
-        x2 = max(0.0, min(float(img_w - 1), x2))
-        y2 = max(0.0, min(float(img_h - 1), y2))
-
-        if x2 <= x1 or y2 <= y1:
-            if logger is not None:
-                logger.warning(f"[WARN] invalid clamped box skipped: {context} -> {(x1, y1, x2, y2)}")
-            continue
-
-        boxes.append([x1, y1, x2, y2])
+        boxes.append([box[0], box[1], box[2], box[3]])
 
     if not boxes:
         return torch.zeros((0, 4), dtype=torch.float32)
     return torch.tensor(boxes, dtype=torch.float32)
 
 
-def _find_csv_files(images_dir: Path) -> List[Path]:
-    return sorted(images_dir.rglob("*.csv"))
+def _is_header_like_simple_row(row: List[str]) -> bool:
+    if len(row) < 5:
+        return False
+    first = row[0].strip().lower()
+    if first in {"filename", "image", "image_name"}:
+        return True
+    second = _safe_float(row[1])
+    third = _safe_float(row[2])
+    fourth = _safe_float(row[3])
+    fifth = _safe_float(row[4])
+    return second is None and third is None and fourth is None and fifth is None
 
 
-def load_spl_ball_records(
-    images_dir: Path,
-    class_name: str,
+def _parse_simple_xywh_row_for_ball(
+    row: List[str],
+    img_w: int,
+    img_h: int,
     bbox_format: str,
-    duplicate_policy: str,
+    logger,
+    context: str,
+) -> torch.Tensor:
+    if len(row) < 5:
+        if logger is not None:
+            logger.warning(f"[WARN] malformed simple annotation row skipped: {context} | row={row}")
+        return torch.zeros((0, 4), dtype=torch.float32)
+
+    x = _safe_float(row[1])
+    y = _safe_float(row[2])
+    w = _safe_float(row[3])
+    h = _safe_float(row[4])
+
+    if None in {x, y, w, h}:
+        if _is_header_like_simple_row(row):
+            return torch.zeros((0, 4), dtype=torch.float32)
+        if logger is not None:
+            logger.warning(f"[WARN] invalid numeric simple box skipped: {context} | row={row}")
+        return torch.zeros((0, 4), dtype=torch.float32)
+
+    x1, y1, x2, y2 = _convert_box_to_xyxy(float(x), float(y), float(w), float(h), bbox_format)
+    box = _clamp_and_validate_box(x1, y1, x2, y2, img_w=img_w, img_h=img_h)
+    if box is None:
+        if logger is not None:
+            logger.warning(f"[WARN] invalid simple box skipped: {context} -> {(x1, y1, x2, y2)}")
+        return torch.zeros((0, 4), dtype=torch.float32)
+
+    return torch.tensor([[box[0], box[1], box[2], box[3]]], dtype=torch.float32)
+
+
+def _find_annotation_files(images_dir: Path, annotation_file: str) -> List[Path]:
+    pattern = annotation_file.strip()
+    if not pattern:
+        pattern = "annotations.csv"
+    return sorted(images_dir.rglob(pattern))
+
+
+def _find_image_files(images_dir: Path) -> List[Path]:
+    files: list[Path] = []
+    for p in images_dir.rglob("*"):
+        if p.is_file() and p.suffix.lower() in IMAGE_EXTS:
+            files.append(p)
+    return sorted(files)
+
+
+def _resolve_dataset_sources(cfg: Dict[str, Any]) -> List[DatasetSource]:
+    dataset_cfg = cfg["dataset"]
+    paths_cfg = cfg["paths"]
+
+    dataset_root = Path(paths_cfg["dataset_root"])
+
+    sources_cfg = dataset_cfg.get("sources", None)
+    if isinstance(sources_cfg, list) and len(sources_cfg) > 0:
+        sources: list[DatasetSource] = []
+        used_names: set[str] = set()
+
+        for idx, src in enumerate(sources_cfg, start=1):
+            if not isinstance(src, dict):
+                raise ValueError(f"dataset.sources[{idx - 1}] must be a dictionary")
+
+            name_raw = str(src.get("name", f"source_{idx}")).strip()
+            name = name_raw.lower().replace(" ", "_")
+            if name in used_names:
+                raise ValueError(f"Duplicate dataset source name: {name}")
+            used_names.add(name)
+
+            rel_or_abs_dir = src.get("images_dir", src.get("path", None))
+            if rel_or_abs_dir is None:
+                raise ValueError(
+                    f"dataset.sources[{idx - 1}] must define 'images_dir' (or 'path')"
+                )
+            src_dir = Path(str(rel_or_abs_dir))
+            if not src_dir.is_absolute():
+                src_dir = (dataset_root / src_dir).resolve()
+
+            annotation_format = str(src.get("annotation_format", "csv_xywh_topleft")).lower()
+            default_file = "*.csv" if annotation_format == "legacy_multiclass" else "annotations.csv"
+            annotation_file = str(src.get("annotation_file", default_file))
+            bbox_format = str(src.get("bbox_format", dataset_cfg.get("bbox_format", "xywh_topleft"))).lower()
+            class_name = str(src.get("class_name", dataset_cfg.get("class_name", "Ball")))
+            duplicate_policy = str(src.get("duplicate_policy", dataset_cfg.get("duplicate_policy", "append"))).lower()
+
+            sources.append(
+                DatasetSource(
+                    name=name,
+                    images_dir=src_dir,
+                    annotation_file=annotation_file,
+                    annotation_format=annotation_format,
+                    bbox_format=bbox_format,
+                    class_name=class_name,
+                    duplicate_policy=duplicate_policy,
+                )
+            )
+
+        return sources
+
+    # Backward-compat: single legacy source driven by paths.images_dir.
+    return [
+        DatasetSource(
+            name="spl",
+            images_dir=Path(paths_cfg["images_dir"]),
+            annotation_file="*.csv",
+            annotation_format="legacy_multiclass",
+            bbox_format=str(dataset_cfg.get("bbox_format", "cxcywh_radius")).lower(),
+            class_name=str(dataset_cfg.get("class_name", "Ball")),
+            duplicate_policy=str(dataset_cfg.get("duplicate_policy", "last")).lower(),
+        )
+    ]
+
+
+def _load_records_from_source(
+    source: DatasetSource,
     logger,
 ) -> tuple[List[SampleRecord], Dict[str, Any]]:
-    csv_files = _find_csv_files(images_dir)
-    if not csv_files:
-        raise FileNotFoundError(f"No CSV files found under: {images_dir}")
+    if not source.images_dir.exists():
+        raise FileNotFoundError(f"Dataset source directory does not exist: {source.images_dir}")
 
-    records_map: dict[str, SampleRecord] = {}
+    image_files = _find_image_files(source.images_dir)
+    if not image_files:
+        raise FileNotFoundError(f"No images found under: {source.images_dir}")
+
+    csv_files = _find_annotation_files(source.images_dir, source.annotation_file)
+    if not csv_files:
+        raise FileNotFoundError(
+            f"No annotation files matching '{source.annotation_file}' found under: {source.images_dir}"
+        )
+
+    records_map: dict[str, dict[str, Any]] = {}
+    for image_path in image_files:
+        rel_image = image_path.relative_to(source.images_dir).as_posix()
+        image_id = f"{source.name}/{rel_image}"
+        with Image.open(image_path) as img:
+            img_w, img_h = img.size
+        records_map[image_id] = {
+            "image_path": image_path,
+            "orig_size": (img_h, img_w),
+            "boxes_list": [],
+            "has_annotation_row": False,
+        }
+
     total_rows = 0
     rows_with_ball = 0
     total_ball_boxes_rows = 0
+    duplicate_rows = 0
     duplicate_row_overwrites = 0
+    missing_image_rows = 0
 
     for csv_path in csv_files:
         with csv_path.open("r", encoding="utf-8", newline="") as f:
             reader = csv.reader(f)
             for row_idx, row in enumerate(reader, start=1):
-                total_rows += 1
                 if len(row) == 0:
                     if logger is not None:
                         logger.warning(f"[WARN] empty CSV row skipped: {csv_path}:{row_idx}")
@@ -192,51 +472,105 @@ def load_spl_ball_records(
 
                 image_path = csv_path.parent / image_name
                 if not image_path.exists() or image_path.suffix.lower() not in IMAGE_EXTS:
+                    if _is_header_like_simple_row(row):
+                        continue
+                    missing_image_rows += 1
                     if logger is not None:
                         logger.warning(f"[WARN] image missing or unsupported extension skipped: {image_path}")
                     continue
 
-                with Image.open(image_path) as img:
-                    img_w, img_h = img.size
+                total_rows += 1
 
+                rel_image = image_path.relative_to(source.images_dir).as_posix()
+                image_id = f"{source.name}/{rel_image}"
+
+                entry = records_map.get(image_id)
+                if entry is None:
+                    missing_image_rows += 1
+                    if logger is not None:
+                        logger.warning(f"[WARN] annotation row references image outside source map: {image_path}")
+                    continue
+
+                orig_h, orig_w = entry["orig_size"]
+                img_w = int(orig_w)
+                img_h = int(orig_h)
                 context = f"{csv_path.name}:{row_idx}:{image_name}"
-                boxes_orig = _parse_csv_row_for_ball(
-                    row=row,
-                    class_name=class_name,
-                    img_w=img_w,
-                    img_h=img_h,
-                    bbox_format=bbox_format,
-                    logger=logger,
-                    context=context,
-                )
+                if source.annotation_format == "legacy_multiclass":
+                    boxes_orig = _parse_legacy_multiclass_row_for_ball(
+                        row=row,
+                        class_name=source.class_name,
+                        img_w=img_w,
+                        img_h=img_h,
+                        bbox_format=source.bbox_format,
+                        logger=logger,
+                        context=context,
+                    )
+                elif source.annotation_format in {"csv_xywh_topleft", "simple_csv_xywh"}:
+                    boxes_orig = _parse_simple_xywh_row_for_ball(
+                        row=row,
+                        img_w=img_w,
+                        img_h=img_h,
+                        bbox_format=source.bbox_format,
+                        logger=logger,
+                        context=context,
+                    )
+                else:
+                    raise ValueError(
+                        f"Unsupported annotation format '{source.annotation_format}' for source '{source.name}'. "
+                        "Supported values: ['legacy_multiclass', 'csv_xywh_topleft', 'simple_csv_xywh']."
+                    )
 
+                prior_has_annotation_row = bool(entry.get("has_annotation_row", False))
+                entry["has_annotation_row"] = True
                 if boxes_orig.shape[0] > 0:
                     rows_with_ball += 1
                 total_ball_boxes_rows += int(boxes_orig.shape[0])
 
-                rel_image = image_path.relative_to(images_dir).as_posix()
-                rec = SampleRecord(
-                    image_id=rel_image,
-                    image_path=image_path,
-                    orig_size=(img_h, img_w),
-                    boxes_orig=boxes_orig,
-                )
+                if not prior_has_annotation_row:
+                    if boxes_orig.shape[0] > 0:
+                        entry["boxes_list"] = [boxes_orig]
+                    continue
 
-                if rel_image in records_map:
+                duplicate_rows += 1
+                policy = source.duplicate_policy
+                if policy == "append":
+                    if boxes_orig.shape[0] > 0:
+                        entry["boxes_list"].append(boxes_orig)
+                elif policy == "first":
+                    continue
+                elif policy == "last":
                     duplicate_row_overwrites += 1
-                    if duplicate_policy == "first":
-                        continue
-                    if duplicate_policy != "last":
-                        raise ValueError(
-                            f"Unsupported dataset.duplicate_policy: {duplicate_policy}. "
-                            "Expected one of ['first', 'last']."
-                        )
+                    entry["boxes_list"] = [boxes_orig] if boxes_orig.shape[0] > 0 else []
+                else:
+                    raise ValueError(
+                        f"Unsupported duplicate_policy '{policy}' for source '{source.name}'. "
+                        "Expected one of ['append', 'first', 'last']."
+                    )
 
-                records_map[rel_image] = rec
+    records: list[SampleRecord] = []
+    images_with_annotation_rows = 0
+    for image_id in sorted(records_map.keys()):
+        payload = records_map[image_id]
+        if bool(payload.get("has_annotation_row", False)):
+            images_with_annotation_rows += 1
+        boxes_list: list[torch.Tensor] = payload["boxes_list"]
+        if boxes_list:
+            boxes_orig = torch.cat(boxes_list, dim=0)
+        else:
+            boxes_orig = torch.zeros((0, 4), dtype=torch.float32)
 
-    records = [records_map[k] for k in sorted(records_map.keys())]
+        records.append(
+            SampleRecord(
+                image_id=image_id,
+                image_path=payload["image_path"],
+                orig_size=payload["orig_size"],
+                boxes_orig=boxes_orig,
+                source_name=source.name,
+            )
+        )
+
     if not records:
-        raise RuntimeError("No records parsed from SPLBall dataset")
+        raise RuntimeError(f"No records parsed for source '{source.name}'")
 
     bbox_ws: list[float] = []
     bbox_hs: list[float] = []
@@ -251,7 +585,86 @@ def load_spl_ball_records(
             bbox_ws.extend(wh[:, 0].tolist())
             bbox_hs.extend(wh[:, 1].tolist())
 
-    bbox_stats = {
+    stats = {
+        "source_name": source.name,
+        "num_csv_files": len(csv_files),
+        "num_images": len(records),
+        "num_rows": total_rows,
+        "duplicate_rows": duplicate_rows,
+        "duplicate_row_overwrites": duplicate_row_overwrites,
+        "missing_image_rows": missing_image_rows,
+        "rows_with_ball": rows_with_ball,
+        "rows_without_ball": total_rows - rows_with_ball,
+        "images_with_annotation_rows": images_with_annotation_rows,
+        "images_without_annotation_rows": len(records) - images_with_annotation_rows,
+        "images_with_ball": images_with_ball,
+        "images_without_ball": len(records) - images_with_ball,
+        "num_ball_boxes_rows": total_ball_boxes_rows,
+        "num_ball_boxes": total_ball_boxes,
+        "bbox_width_min": min(bbox_ws) if bbox_ws else 0.0,
+        "bbox_width_mean": (sum(bbox_ws) / len(bbox_ws)) if bbox_ws else 0.0,
+        "bbox_width_max": max(bbox_ws) if bbox_ws else 0.0,
+        "bbox_height_min": min(bbox_hs) if bbox_hs else 0.0,
+        "bbox_height_mean": (sum(bbox_hs) / len(bbox_hs)) if bbox_hs else 0.0,
+        "bbox_height_max": max(bbox_hs) if bbox_hs else 0.0,
+        "bbox_format": source.bbox_format,
+        "duplicate_policy": source.duplicate_policy,
+    }
+
+    return records, stats
+
+
+def load_spl_ball_records(
+    sources: List[DatasetSource],
+    logger,
+) -> tuple[List[SampleRecord], Dict[str, Any]]:
+    all_records: list[SampleRecord] = []
+    source_stats: dict[str, Dict[str, Any]] = {}
+
+    seen_ids: set[str] = set()
+    for source in sources:
+        records, stats = _load_records_from_source(source=source, logger=logger)
+        for rec in records:
+            if rec.image_id in seen_ids:
+                raise RuntimeError(f"Duplicate image_id across sources: {rec.image_id}")
+            seen_ids.add(rec.image_id)
+        all_records.extend(records)
+        source_stats[source.name] = stats
+
+    if not all_records:
+        raise RuntimeError("No records parsed from configured sources")
+
+    bbox_ws: list[float] = []
+    bbox_hs: list[float] = []
+    images_with_ball = 0
+    total_ball_boxes = 0
+    for rec in all_records:
+        if rec.boxes_orig.shape[0] > 0:
+            images_with_ball += 1
+        total_ball_boxes += int(rec.boxes_orig.shape[0])
+        if rec.boxes_orig.numel() > 0:
+            wh = (rec.boxes_orig[:, 2:4] - rec.boxes_orig[:, 0:2]).clamp(min=0)
+            bbox_ws.extend(wh[:, 0].tolist())
+            bbox_hs.extend(wh[:, 1].tolist())
+
+    stats = {
+        "num_sources": len(sources),
+        "source_names": [s.name for s in sources],
+        "source_stats": source_stats,
+        "num_csv_files": int(sum(s["num_csv_files"] for s in source_stats.values())),
+        "num_images": len(all_records),
+        "num_rows": int(sum(s["num_rows"] for s in source_stats.values())),
+        "duplicate_rows": int(sum(s["duplicate_rows"] for s in source_stats.values())),
+        "duplicate_row_overwrites": int(sum(s["duplicate_row_overwrites"] for s in source_stats.values())),
+        "missing_image_rows": int(sum(s.get("missing_image_rows", 0) for s in source_stats.values())),
+        "rows_with_ball": int(sum(s["rows_with_ball"] for s in source_stats.values())),
+        "rows_without_ball": int(sum(s["rows_without_ball"] for s in source_stats.values())),
+        "images_with_annotation_rows": int(sum(s.get("images_with_annotation_rows", 0) for s in source_stats.values())),
+        "images_without_annotation_rows": int(sum(s.get("images_without_annotation_rows", 0) for s in source_stats.values())),
+        "images_with_ball": images_with_ball,
+        "images_without_ball": len(all_records) - images_with_ball,
+        "num_ball_boxes_rows": int(sum(s["num_ball_boxes_rows"] for s in source_stats.values())),
+        "num_ball_boxes": total_ball_boxes,
         "bbox_width_min": min(bbox_ws) if bbox_ws else 0.0,
         "bbox_width_mean": (sum(bbox_ws) / len(bbox_ws)) if bbox_ws else 0.0,
         "bbox_width_max": max(bbox_ws) if bbox_ws else 0.0,
@@ -260,21 +673,7 @@ def load_spl_ball_records(
         "bbox_height_max": max(bbox_hs) if bbox_hs else 0.0,
     }
 
-    stats = {
-        "num_csv_files": len(csv_files),
-        "num_images": len(records),
-        "num_rows": total_rows,
-        "duplicate_row_overwrites": duplicate_row_overwrites,
-        "rows_with_ball": rows_with_ball,
-        "rows_without_ball": total_rows - rows_with_ball,
-        "images_with_ball": images_with_ball,
-        "images_without_ball": len(records) - images_with_ball,
-        "num_ball_boxes_rows": total_ball_boxes_rows,
-        "num_ball_boxes": total_ball_boxes,
-        **bbox_stats,
-    }
-
-    return records, stats
+    return all_records, stats
 
 
 def _save_split(split_path: Path, image_ids: Iterable[str]) -> None:
@@ -290,7 +689,7 @@ def _load_split(split_path: Path) -> List[str]:
 
 
 def create_or_load_splits(
-    image_ids: List[str],
+    records: List[SampleRecord],
     splits_dir: Path,
     split_ratio: float,
     seed: int,
@@ -299,6 +698,10 @@ def create_or_load_splits(
 ) -> tuple[List[str], List[str], Path, Path]:
     train_file = splits_dir / "train.txt"
     val_file = splits_dir / "val.txt"
+
+    image_ids = [r.image_id for r in records]
+    id_to_source = {r.image_id: r.source_name for r in records}
+    all_sources = set(id_to_source.values())
 
     if reuse_splits and train_file.exists() and val_file.exists():
         train_ids = _load_split(train_file)
@@ -320,21 +723,44 @@ def create_or_load_splits(
             split_valid = False
 
         if split_valid:
+            train_sources = {id_to_source[i] for i in train_ids}
+            val_sources = {id_to_source[i] for i in val_ids}
+            if train_sources != all_sources or val_sources != all_sources:
+                split_valid = False
+
+        if split_valid:
             if logger is not None:
                 logger.info(f"[INFO] Reusing existing split files: {train_file}, {val_file}")
             return train_ids, val_ids, train_file, val_file
+
         if logger is not None:
-            logger.warning("[WARN] Existing split files invalid for current dataset. Regenerating splits.")
+            logger.warning("[WARN] Existing split files invalid for current dataset/sources. Regenerating splits.")
 
-    uniq_ids = sorted(set(image_ids))
+    source_to_ids: dict[str, list[str]] = defaultdict(list)
+    for rec in records:
+        source_to_ids[rec.source_name].append(rec.image_id)
+
     rng = random.Random(seed)
-    rng.shuffle(uniq_ids)
+    train_ids: list[str] = []
+    val_ids: list[str] = []
 
-    split_idx = int(len(uniq_ids) * split_ratio)
-    split_idx = max(1, min(len(uniq_ids) - 1, split_idx))
+    for source_name in sorted(source_to_ids.keys()):
+        uniq_ids = sorted(set(source_to_ids[source_name]))
+        if len(uniq_ids) < 2:
+            raise RuntimeError(
+                f"Source '{source_name}' has only {len(uniq_ids)} image(s). "
+                "Need at least 2 for train/val split."
+            )
 
-    train_ids = uniq_ids[:split_idx]
-    val_ids = uniq_ids[split_idx:]
+        rng.shuffle(uniq_ids)
+        split_idx = int(len(uniq_ids) * split_ratio)
+        split_idx = max(1, min(len(uniq_ids) - 1, split_idx))
+
+        train_ids.extend(uniq_ids[:split_idx])
+        val_ids.extend(uniq_ids[split_idx:])
+
+    rng.shuffle(train_ids)
+    rng.shuffle(val_ids)
 
     _save_split(train_file, train_ids)
     _save_split(val_file, val_ids)
@@ -375,27 +801,27 @@ def _make_transforms(cfg: Dict[str, Any], train: bool) -> DetectionTransform:
     )
 
 
-def build_spl_ball_datasets(cfg: Dict[str, Any], logger):
-    class_name = str(cfg["dataset"]["class_name"]) # ball
-    images_dir = Path(cfg["paths"]["images_dir"])
-    bbox_format = str(cfg["dataset"].get("bbox_format", "cxcywh_radius")).lower()
-    duplicate_policy = str(cfg["dataset"].get("duplicate_policy", "last")).lower()
+def _count_records_by_source(records: List[SampleRecord]) -> Dict[str, int]:
+    counts: dict[str, int] = defaultdict(int)
+    for rec in records:
+        counts[rec.source_name] += 1
+    return dict(sorted(counts.items(), key=lambda kv: kv[0]))
 
-    records, stats = load_spl_ball_records(
-        images_dir=images_dir,
-        class_name=class_name,
-        bbox_format=bbox_format,
-        duplicate_policy=duplicate_policy,
-        logger=logger,
-    )
+
+def build_spl_ball_datasets(cfg: Dict[str, Any], logger):
+    dataset_cfg = cfg["dataset"]
+    class_name = str(dataset_cfg.get("class_name", "Ball"))
+
+    sources = _resolve_dataset_sources(cfg)
+    records, stats = load_spl_ball_records(sources=sources, logger=logger)
 
     splits_dir = Path(cfg["paths"]["splits_dir"])
     train_ids, val_ids, train_file, val_file = create_or_load_splits(
-        image_ids=[r.image_id for r in records],
+        records=records,
         splits_dir=splits_dir,
-        split_ratio=float(cfg["dataset"]["train_val_split"]),
-        seed=int(cfg["dataset"]["seed"]),
-        reuse_splits=bool(cfg["dataset"].get("reuse_splits", True)),
+        split_ratio=float(dataset_cfg["train_val_split"]),
+        seed=int(dataset_cfg["seed"]),
+        reuse_splits=bool(dataset_cfg.get("reuse_splits", True)),
         logger=logger,
     )
 
@@ -416,14 +842,20 @@ def build_spl_ball_datasets(cfg: Dict[str, Any], logger):
     train_ds = SPLBallDetectionDataset(records=train_records, transform=train_tf, class_name=class_name)
     val_ds = SPLBallDetectionDataset(records=val_records, transform=val_tf, class_name=class_name)
 
+    source_formats = {s.name: s.bbox_format for s in sources}
+    source_policies = {s.name: s.duplicate_policy for s in sources}
+
     info = {
         **stats,
-        "bbox_format": bbox_format,
-        "duplicate_policy": duplicate_policy,
+        "bbox_format": source_formats,
+        "duplicate_policy": source_policies,
         "train_images": len(train_records),
         "val_images": len(val_records),
         "train_split_file": str(train_file),
         "val_split_file": str(val_file),
+        "train_source_images": _count_records_by_source(train_records),
+        "val_source_images": _count_records_by_source(val_records),
+        "all_source_images": _count_records_by_source(records),
     }
     return train_ds, val_ds, info
 
@@ -470,17 +902,54 @@ def build_dataloaders(
     generator = torch.Generator()
     generator.manual_seed(seed)
 
-    train_loader = DataLoader(
-        train_ds,
-        batch_size=bs,
-        shuffle=True,
-        num_workers=num_workers,
-        pin_memory=torch.cuda.is_available(),
-        drop_last=False,
-        collate_fn=detection_collate_fn,
-        worker_init_fn=worker_init_fn,
-        generator=generator,
+    mix_sources_per_batch = bool(cfg["dataset"].get("mix_sources_per_batch", True))
+    train_source_indices: dict[str, list[int]] = defaultdict(list)
+    for idx, rec in enumerate(train_ds.records):
+        train_source_indices[rec.source_name].append(idx)
+
+    use_mixed_train_sampler = (
+        mix_sources_per_batch
+        and len(train_source_indices) > 1
+        and bs >= len(train_source_indices)
     )
+
+    if use_mixed_train_sampler:
+        train_batch_sampler = MixedSourceBatchSampler(
+            source_to_indices=dict(train_source_indices),
+            batch_size=bs,
+            seed=seed,
+            shuffle=True,
+        )
+        train_loader = DataLoader(
+            train_ds,
+            batch_sampler=train_batch_sampler,
+            num_workers=num_workers,
+            pin_memory=torch.cuda.is_available(),
+            collate_fn=detection_collate_fn,
+            worker_init_fn=worker_init_fn,
+        )
+        info["train_batch_mixing"] = {
+            "enabled": True,
+            "per_source_batch_count": dict(train_batch_sampler.per_source_batch_count),
+            "num_batches": len(train_batch_sampler),
+            "strategy": "balanced_cycle",
+        }
+    else:
+        train_loader = DataLoader(
+            train_ds,
+            batch_size=bs,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=torch.cuda.is_available(),
+            drop_last=False,
+            collate_fn=detection_collate_fn,
+            worker_init_fn=worker_init_fn,
+            generator=generator,
+        )
+        info["train_batch_mixing"] = {
+            "enabled": False,
+            "reason": "single_source_or_disabled_or_small_batch",
+        }
 
     val_loader = DataLoader(
         val_ds,

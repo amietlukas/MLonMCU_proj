@@ -9,6 +9,15 @@ def xywh_to_xyxy(x: float, y: float, w: float, h: float) -> tuple[float, float, 
     return x, y, x + w, y + h
 
 
+def xyxy_to_xywh_topleft(boxes: torch.Tensor) -> torch.Tensor:
+    if boxes.numel() == 0:
+        return boxes.clone()
+    out = boxes.clone()
+    out[..., 2] = (out[..., 2] - out[..., 0]).clamp(min=0)
+    out[..., 3] = (out[..., 3] - out[..., 1]).clamp(min=0)
+    return out
+
+
 def clamp_xyxy(box: torch.Tensor, width: int, height: int) -> torch.Tensor:
     out = box.clone()
     out[..., 0] = out[..., 0].clamp(0, width - 1)

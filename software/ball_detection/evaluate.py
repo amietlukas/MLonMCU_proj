@@ -28,6 +28,20 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--device", type=str, default="auto", choices=["auto", "cpu", "cuda"])
     p.add_argument("--num-workers", type=int, default=None)
     p.add_argument("--max-val-batches", type=int, default=None)
+    split_group = p.add_mutually_exclusive_group()
+    split_group.add_argument(
+        "--reuse-splits",
+        dest="reuse_splits",
+        action="store_true",
+        help="Reuse split files if valid for the current dataset",
+    )
+    split_group.add_argument(
+        "--regenerate-splits",
+        dest="reuse_splits",
+        action="store_false",
+        help="Force regeneration of split files",
+    )
+    p.set_defaults(reuse_splits=None)
     p.add_argument("--debug", action="store_true")
     return p.parse_args()
 
@@ -35,6 +49,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     cfg = load_config(args.config)
+    if args.reuse_splits is not None:
+        cfg["dataset"]["reuse_splits"] = bool(args.reuse_splits)
 
     device = resolve_device(args.device)
     ckpt_path = Path(args.checkpoint).expanduser().resolve()
@@ -97,7 +113,12 @@ def main() -> None:
         "[INFO] Val metrics | "
         f"loss={metrics['total_loss']:.4f} map50={metrics['map50']:.4f} map5095={metrics['map5095']:.4f} "
         f"P={metrics['precision']:.4f} R={metrics['recall']:.4f} F1={metrics['f1']:.4f} "
-        f"mean_iou={metrics['mean_iou']:.4f} center_err_px={metrics['center_error_px']:.2f} fp/img={metrics['fp_per_image']:.4f}"
+        f"mean_iou={metrics['mean_iou']:.4f} "
+        f"center_err_px(mean/med/p95)="
+        f"{metrics['center_error_px']:.2f}/{metrics['center_error_px_median']:.2f}/{metrics['center_error_px_p95']:.2f} "
+        f"center_err_norm_diag(mean/med/p95)="
+        f"{metrics['center_error_norm_diag']:.4f}/{metrics['center_error_norm_diag_median']:.4f}/{metrics['center_error_norm_diag_p95']:.4f} "
+        f"fp/img={metrics['fp_per_image']:.4f}"
     )
 
 

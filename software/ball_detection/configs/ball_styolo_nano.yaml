@@ -3,7 +3,7 @@ project:
 
 paths:
   dataset_root: ../../../datasets/BALL
-  images_dir: ../../../datasets/BALL/SPLBallDataset/full_size_images
+  images_dir: ../../../datasets/BALL
   annotations_csv: null
   output_dir: ../runs
   export_dir: ../exports
@@ -11,10 +11,24 @@ paths:
 
 dataset:
   class_name: Ball
-  bbox_format: cxcywh_radius  # cx, cy, w, h where w/h behave like radius in SPL CSV
-  duplicate_policy: last      # when same image appears multiple rows: keep last row
+  bbox_format: xywh_topleft   # fallback when no dataset.sources are provided
+  duplicate_policy: append    # fallback when no dataset.sources are provided
+  sources:
+    - name: spl
+      images_dir: SPLDataset
+      annotation_file: annotations.csv
+      annotation_format: csv_xywh_topleft
+      bbox_format: xywh_topleft
+      duplicate_policy: append
+    - name: our
+      images_dir: OurDataset
+      annotation_file: annotations.csv
+      annotation_format: csv_xywh_topleft
+      bbox_format: xywh_topleft
+      duplicate_policy: append
   train_val_split: 0.8
-  reuse_splits: true          # read fix splits from software/ball_detection/splits
+  reuse_splits: true          # reuse split files from software/ball_detection/splits if valid
+  mix_sources_per_batch: true
   seed: 42
 
 input:                        # image resolution

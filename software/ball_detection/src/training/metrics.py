@@ -5,7 +5,7 @@ from typing import Dict, Iterable, Sequence
 
 import torch
 
-from ball_detection.src.utils.boxes import box_iou, centers_of_boxes, resized_to_original
+from ball_detection.src.utils.boxes import box_iou, centers_of_boxes, resized_to_original, xyxy_to_xywh_topleft
 from ball_detection.src.utils.nms import batched_nms
 
 
@@ -21,6 +21,7 @@ class ImagePrediction:
     image_id: str
     boxes: torch.Tensor
     scores: torch.Tensor
+    boxes_xywh_topleft: torch.Tensor | None = None
 
 
 def _area_ratio_bin(area_ratio: float, small_threshold: float, medium_threshold: float) -> str:
@@ -29,6 +30,37 @@ def _area_ratio_bin(area_ratio: float, small_threshold: float, medium_threshold:
     if area_ratio < medium_threshold:
         return "medium"
     return "large"
+
+
+def _mean_or_zero(values: Sequence[float]) -> float:
+    if not values:
+        return 0.0
+    return float(sum(values) / len(values))
+
+
+def _median_or_zero(values: Sequence[float]) -> float:
+    if not values:
+        return 0.0
+    vals = sorted(float(v) for v in values)
+    n = len(vals)
+    mid = n // 2
+    if n % 2 == 1:
+        return vals[mid]
+    return 0.5 * (vals[mid - 1] + vals[mid])
+
+
+def _percentile_or_zero(values: Sequence[float], q: float) -> float:
+    if not values:
+        return 0.0
+    vals = sorted(float(v) for v in values)
+    if len(vals) == 1:
+        return vals[0]
+    qq = min(max(float(q), 0.0), 1.0)
+    pos = qq * (len(vals) - 1)
+    lo = int(pos)
+    hi = min(lo + 1, len(vals) - 1)
+    t = pos - lo
+    return (1.0 - t) * vals[lo] + t * vals[hi]
 
 
 def _voc_ap(rec: torch.Tensor, prec: torch.Tensor) -> float:
@@ -230,6 +262,7 @@ def build_image_predictions(
                 image_id=str(target["image_id"]),
                 boxes=boxes_out,
                 scores=scores_i.detach().cpu(),
+                boxes_xywh_topleft=xyxy_to_xywh_topleft(boxes_out),
             )
         )
     return preds
@@ -274,6 +307,7 @@ def compute_detection_metrics(
 
     matched_ious = []
     center_errors = []
+    center_errors_norm_diag = []
 
     count_small = 0
     count_medium = 0
@@ -283,6 +317,9 @@ def compute_detection_metrics(
     match_large = 0
 
     for image_id, gt_boxes in gt_by_image.items():
+        orig_h, orig_w = gt_meta[image_id]["orig_size"]
+        image_diag = max((float(orig_h) ** 2 + float(orig_w) ** 2) ** 0.5, 1e-9)
+
         pred = op_by_image.get(image_id)
         if pred is None:
             pred_boxes = torch.zeros((0, 4), dtype=torch.float32)
@@ -310,9 +347,10 @@ def compute_detection_metrics(
             pred_centers = centers_of_boxes(pred_boxes[p_idx])
             gt_centers = centers_of_boxes(gt_boxes[g_idx])
             center_dist = torch.linalg.norm(pred_centers - gt_centers, dim=1)
-            center_errors.extend(center_dist.tolist())
+            center_vals = center_dist.tolist()
+            center_errors.extend(center_vals)
+            center_errors_norm_diag.extend([float(v) / image_diag for v in center_vals])
 
-        orig_h, orig_w = gt_meta[image_id]["orig_size"]
         denom = float(max(orig_h * orig_w, 1))
 
         matched_gt_set = set(matches["matched_gt_indices"].tolist())
@@ -348,8 +386,13 @@ def compute_detection_metrics(
         "precision": float(precision),
         "recall": float(recall),
         "f1": float(f1),
-        "mean_iou": float(sum(matched_ious) / max(len(matched_ious), 1)),
-        "center_error_px": float(sum(center_errors) / max(len(center_errors), 1)),
+        "mean_iou": _mean_or_zero(matched_ious),
+        "center_error_px": _mean_or_zero(center_errors),
+        "center_error_px_median": _median_or_zero(center_errors),
+        "center_error_px_p95": _percentile_or_zero(center_errors, 0.95),
+        "center_error_norm_diag": _mean_or_zero(center_errors_norm_diag),
+        "center_error_norm_diag_median": _median_or_zero(center_errors_norm_diag),
+        "center_error_norm_diag_p95": _percentile_or_zero(center_errors_norm_diag, 0.95),
         "fp_per_image": float(total_fp / max(len(gt_by_image), 1)),
         "recall_small": float(match_small / max(count_small, 1)),
         "recall_medium": float(match_medium / max(count_medium, 1)),

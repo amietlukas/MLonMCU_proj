@@ -26,6 +26,20 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--device", type=str, default="auto", choices=["auto", "cpu", "cuda"])
     p.add_argument("--out-dir", type=str, default=None, help="Override export output directory")
     p.add_argument("--num-workers", type=int, default=None)
+    split_group = p.add_mutually_exclusive_group()
+    split_group.add_argument(
+        "--reuse-splits",
+        dest="reuse_splits",
+        action="store_true",
+        help="Reuse split files if valid for the current dataset",
+    )
+    split_group.add_argument(
+        "--regenerate-splits",
+        dest="reuse_splits",
+        action="store_false",
+        help="Force regeneration of split files",
+    )
+    p.set_defaults(reuse_splits=None)
     p.add_argument("--debug", action="store_true")
     return p.parse_args()
 
@@ -33,6 +47,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     cfg = load_config(args.config)
+    if args.reuse_splits is not None:
+        cfg["dataset"]["reuse_splits"] = bool(args.reuse_splits)
     device = resolve_device(args.device)
 
     ckpt_path = Path(args.checkpoint).expanduser().resolve()

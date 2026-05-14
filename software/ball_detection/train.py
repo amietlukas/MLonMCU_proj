@@ -45,6 +45,20 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--num-workers", type=int, default=None, help="Override dataloader num workers")
     p.add_argument("--max-train-batches", type=int, default=None, help="Debug cap for train batches per epoch")
     p.add_argument("--max-val-batches", type=int, default=None, help="Debug cap for val batches per epoch")
+    split_group = p.add_mutually_exclusive_group()
+    split_group.add_argument(
+        "--reuse-splits",
+        dest="reuse_splits",
+        action="store_true",
+        help="Reuse split files if valid for the current dataset",
+    )
+    split_group.add_argument(
+        "--regenerate-splits",
+        dest="reuse_splits",
+        action="store_false",
+        help="Force regeneration of split files",
+    )
+    p.set_defaults(reuse_splits=None)
     p.add_argument("--prune", type=float, default=None, help="Structured channel-prune ratio in (0,1). Requires --resume.")
     return p.parse_args()
 
@@ -114,6 +128,8 @@ def main() -> None:
     cfg = load_config(args.config)
 
     cfg_runtime = copy.deepcopy(cfg)
+    if args.reuse_splits is not None:
+        cfg_runtime["dataset"]["reuse_splits"] = bool(args.reuse_splits)
     if args.num_workers is not None:
         cfg_runtime["train"]["num_workers"] = int(args.num_workers)
 
@@ -139,6 +155,7 @@ def main() -> None:
     logger.info(f"[INFO] dataset_root: {cfg_runtime['paths']['dataset_root']}")
     logger.info(f"[INFO] images_dir: {cfg_runtime['paths']['images_dir']}")
     logger.info(f"[INFO] run directory: {run_dir}")
+    logger.info(f"[INFO] reuse_splits: {cfg_runtime['dataset'].get('reuse_splits', True)}")
 
     save_yaml(cfg_runtime, run_dir / "config_snapshot.yaml")
     init_metrics_csv(run_dir / "metrics.csv")
@@ -160,9 +177,31 @@ def main() -> None:
     logger.info(
         f"[INFO] images with/without ball: {data_info['images_with_ball']}/{data_info['images_without_ball']}"
     )
+    logger.info(
+        "[INFO] images with/without annotation rows: "
+        f"{data_info.get('images_with_annotation_rows', 0)}/{data_info.get('images_without_annotation_rows', 0)}"
+    )
     logger.info(f"[INFO] bbox format: {data_info['bbox_format']}")
     logger.info(f"[INFO] duplicate policy: {data_info['duplicate_policy']}")
+    logger.info(f"[INFO] duplicate rows: {data_info.get('duplicate_rows', 0)}")
     logger.info(f"[INFO] duplicate row overwrites: {data_info['duplicate_row_overwrites']}")
+    logger.info(f"[INFO] annotation rows with missing image files: {data_info.get('missing_image_rows', 0)}")
+    logger.info(f"[INFO] dataset sources: {data_info.get('source_names', [])}")
+    logger.info(f"[INFO] all images per source: {data_info.get('all_source_images', {})}")
+    logger.info(f"[INFO] train images per source: {data_info.get('train_source_images', {})}")
+    logger.info(f"[INFO] val images per source: {data_info.get('val_source_images', {})}")
+    source_stats = data_info.get("source_stats", {})
+    if isinstance(source_stats, dict):
+        for src_name in sorted(source_stats.keys()):
+            src = source_stats[src_name]
+            logger.info(
+                "[INFO] source stats | "
+                f"{src_name}: images={src.get('num_images', 0)} rows={src.get('num_rows', 0)} "
+                f"imgs_with/without_rows={src.get('images_with_annotation_rows', 0)}/{src.get('images_without_annotation_rows', 0)} "
+                f"boxes={src.get('num_ball_boxes', 0)} dup_rows={src.get('duplicate_rows', 0)} "
+                f"bbox_format={src.get('bbox_format', 'unknown')} dup_policy={src.get('duplicate_policy', 'unknown')}"
+            )
+    logger.info(f"[INFO] train batch mixing: {data_info.get('train_batch_mixing', {})}")
     logger.info(
         "[INFO] bbox size stats px | "
         f"w(min/mean/max)=({data_info['bbox_width_min']:.2f}/{data_info['bbox_width_mean']:.2f}/{data_info['bbox_width_max']:.2f}) "
@@ -356,7 +395,11 @@ def main() -> None:
         )
         logger.info(
             "[INFO] val extras | "
-            f"mean_iou={val_metrics['mean_iou']:.4f} center_err_px={val_metrics['center_error_px']:.2f} "
+            f"mean_iou={val_metrics['mean_iou']:.4f} "
+            f"center_err_px(mean/med/p95)="
+            f"{val_metrics['center_error_px']:.2f}/{val_metrics['center_error_px_median']:.2f}/{val_metrics['center_error_px_p95']:.2f} "
+            f"center_err_norm_diag(mean/med/p95)="
+            f"{val_metrics['center_error_norm_diag']:.4f}/{val_metrics['center_error_norm_diag_median']:.4f}/{val_metrics['center_error_norm_diag_p95']:.4f} "
             f"fp/img={val_metrics['fp_per_image']:.4f} "
             f"small/med/large recall={val_metrics['recall_small']:.4f}/{val_metrics['recall_medium']:.4f}/{val_metrics['recall_large']:.4f} "
             f"counts={val_metrics['count_small']}/{val_metrics['count_medium']}/{val_metrics['count_large']}"
@@ -382,6 +425,11 @@ def main() -> None:
                 "val_f1": val_metrics["f1"],
                 "val_mean_iou": val_metrics["mean_iou"],
                 "val_center_error_px": val_metrics["center_error_px"],
+                "val_center_error_px_median": val_metrics["center_error_px_median"],
+                "val_center_error_px_p95": val_metrics["center_error_px_p95"],
+                "val_center_error_norm_diag": val_metrics["center_error_norm_diag"],
+                "val_center_error_norm_diag_median": val_metrics["center_error_norm_diag_median"],
+                "val_center_error_norm_diag_p95": val_metrics["center_error_norm_diag_p95"],
                 "val_fp_per_image": val_metrics["fp_per_image"],
                 "val_recall_small": val_metrics["recall_small"],
                 "val_recall_medium": val_metrics["recall_medium"],

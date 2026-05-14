@@ -3,7 +3,7 @@ project:
 
 paths:
   dataset_root: ../../../datasets/BALL
-  images_dir: ../../../datasets/BALL/SPLBallDataset/full_size_images
+  images_dir: ../../../datasets/BALL
   annotations_csv: null
   output_dir: ../runs
   export_dir: ../exports
@@ -11,10 +11,24 @@ paths:
 
 dataset:
   class_name: Ball
-  bbox_format: cxcywh_radius
-  duplicate_policy: last
+  bbox_format: xywh_topleft
+  duplicate_policy: append
+  sources:
+    - name: spl
+      images_dir: SPLDataset
+      annotation_file: annotations.csv
+      annotation_format: csv_xywh_topleft
+      bbox_format: xywh_topleft
+      duplicate_policy: append
+    - name: our
+      images_dir: OurDataset
+      annotation_file: annotations.csv
+      annotation_format: csv_xywh_topleft
+      bbox_format: xywh_topleft
+      duplicate_policy: append
   train_val_split: 0.8
   reuse_splits: true
+  mix_sources_per_batch: true
   seed: 42
 
 input:
