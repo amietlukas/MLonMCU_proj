@@ -45,6 +45,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--num-workers", type=int, default=None, help="Override dataloader num workers")
     p.add_argument("--max-train-batches", type=int, default=None, help="Debug cap for train batches per epoch")
     p.add_argument("--max-val-batches", type=int, default=None, help="Debug cap for val batches per epoch")
+    p.add_argument("--prune", type=float, default=None, help="Structured channel-prune ratio in (0,1). Requires --resume.")
     return p.parse_args()
 
 
@@ -235,6 +236,40 @@ def main() -> None:
         start_epoch = int(ckpt.get("epoch", 0)) + 1
         best_metric = float(ckpt.get("best_metric", -math.inf))
         logger.info(f"[INFO] Resumed from {resume_path} at epoch {start_epoch}")
+
+    # ========== prune (optional) ==========
+    if args.prune is not None:
+        if not args.resume:
+            raise ValueError("--prune requires --resume (pruning untrained weights is just random)")
+        from ball_detection.src.prune import prune_styolo
+
+        example = torch.randn(
+            1,
+            int(cfg_runtime["input"]["channels"]),
+            int(cfg_runtime["input"]["height"]),
+            int(cfg_runtime["input"]["width"]),
+            device=device,
+        )
+        logger.info(f"[INFO] Structured channel pruning at ratio {args.prune:.2%}")
+        model, n_before, n_after = prune_styolo(model, args.prune, example)
+        logger.info(f"[INFO] params: {n_before:,} -> {n_after:,}  ({100*(n_before-n_after)/n_before:.1f}% reduction)")
+
+        # Re-init optimizer/scheduler/scaler since the parameter set changed.
+        # Restart the cosine schedule from epoch 1 so it re-anneals over the full budget.
+        optimizer = _build_optimizer(cfg_runtime, model)
+        scheduler = _build_scheduler(cfg_runtime, optimizer)
+        scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
+        start_epoch = 1
+        prune_monitor = str(cfg_runtime["train"].get("early_stopping", {}).get("monitor", "val_map50"))
+        best_metric = math.inf if prune_monitor == "val_loss" else -math.inf
+
+        # Re-save snapshots so the run dir reflects the pruned model.
+        save_yaml(cfg_runtime, run_dir / "config_snapshot.yaml")
+        with (run_dir / "model_summary.txt").open("w", encoding="utf-8") as f:
+            f.write(str(model))
+            f.write("\n\n")
+            f.write(f"parameters: {n_after}\n")
+        logger.info(f"[INFO] Updated config snapshot + model summary")
 
     epochs = int(cfg_runtime["train"]["epochs"])
     grad_clip_norm = float(cfg_runtime["train"].get("grad_clip_norm", 0.0))

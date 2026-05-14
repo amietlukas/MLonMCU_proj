@@ -34,7 +34,7 @@ model:
   neck_out_ch: 96
 
 train:
-  epochs: 100
+  epochs: 150 # was 100
   batch_size: 32
   num_workers: 4
   optimizer: adamw
@@ -53,14 +53,14 @@ train:
     min_lr: 0.0        # used for plateau
     cooldown: 0        # used for plateau
   lr: 0.001
-  weight_decay: 0.0005
+  weight_decay: 0.0001 # was 0.0005
   amp: true
   grad_clip_norm: 10.0
   early_stopping:
     enabled: true
     monitor: val_loss
     mode: min
-    patience: 30
+    patience: 20 # was 30
     min_delta: 0.0005
 
 loss:
@@ -69,18 +69,18 @@ loss:
   obj_loss_mode: mean
   obj_pos_weight: 1.0
   obj_neg_weight: 1.0
-  obj_bce_pos_weight: 20.0
+  obj_bce_pos_weight: 1.0 # was 20.0
   focal_loss: true
   focal_alpha: 0.25
   focal_gamma: 2.0
-  assign_scale_target: 3.0
+  assign_scale_target: 1.5 # was 3.0
   assign_conflict_policy: largest_area   # largest_area | last
-  assign_center_radius: 0
+  assign_center_radius: 1 # was 0
   decode_twth_clamp_min: -4.0
   decode_twth_clamp_max: 4.0
 
 eval:
-  conf_threshold: 0.40
+  conf_threshold: 0.25 # was 0.40
   nms_iou_threshold: 0.25
   max_detections: 3
   use_nms: true
@@ -112,6 +112,6 @@ augmentation:
   brightness: 0.2
   contrast: 0.2
   saturation: 0.2
-  blur: false
-  blur_prob: 0.2
+  blur: true # was false
+  blur_prob: 0.15 # was 0.2
   blur_radius: 0.8

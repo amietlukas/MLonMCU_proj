@@ -54,7 +54,7 @@ def train_one_epoch(
 
         optimizer.zero_grad(set_to_none=True)
 
-        with torch.amp.autocast(device_type=device.type, enabled=amp_enabled):
+        with torch.amp.autocast(device_type=device.type, enabled=amp_enabled, dtype=torch.bfloat16):
             outputs = model(images)
             losses = criterion(outputs, targets_dev)
             loss = losses["total_loss"]
