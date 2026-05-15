@@ -101,7 +101,17 @@ def _build_scheduler(cfg: Dict[str, Any], optimizer: torch.optim.Optimizer):
         sched_mode = str(cfg["train"].get("scheduler_mode", "")).lower().strip()
         if sched_mode not in {"min", "max"}:
             default_monitor = str(cfg["train"].get("early_stopping", {}).get("monitor", "val_map50")).lower()
-            sched_mode = "min" if default_monitor == "val_loss" else "max"
+            sched_mode = "min" if default_monitor in {
+                "val_loss",
+                "loss",
+                "val_total_loss",
+                "val_center_error_px",
+                "center_error_px",
+                "val_center_error_norm_diag",
+                "center_error_norm_diag",
+                "val_fp_per_image",
+                "fp_per_image",
+            } else "max"
         return torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
             mode=sched_mode,
@@ -121,6 +131,46 @@ def _is_improved(current: float, best: float, mode: str, min_delta: float) -> bo
     if mode == "min":
         return current < (best - min_delta)
     raise ValueError(f"Unsupported mode: {mode}")
+
+
+def _resolve_validation_metric(val_metrics: Dict[str, float], monitor: str) -> float:
+    monitor_key = str(monitor).lower().strip()
+    alias_map = {
+        "val_loss": "total_loss",
+        "loss": "total_loss",
+        "val_total_loss": "total_loss",
+        "val_map50": "map50",
+        "map50": "map50",
+        "val_map5095": "map5095",
+        "map5095": "map5095",
+        "val_precision": "precision",
+        "precision": "precision",
+        "val_recall": "recall",
+        "recall": "recall",
+        "val_f1": "f1",
+        "f1": "f1",
+        "val_mean_iou": "mean_iou",
+        "mean_iou": "mean_iou",
+        "val_center_error_px": "center_error_px",
+        "center_error_px": "center_error_px",
+        "val_center_error_norm_diag": "center_error_norm_diag",
+        "center_error_norm_diag": "center_error_norm_diag",
+        "val_fp_per_image": "fp_per_image",
+        "fp_per_image": "fp_per_image",
+    }
+    metric_key = alias_map.get(monitor_key)
+    if metric_key is None:
+        raise ValueError(
+            f"Unsupported monitor metric '{monitor}'. "
+            "Supported: "
+            + ", ".join(sorted(alias_map.keys()))
+        )
+    if metric_key not in val_metrics:
+        raise KeyError(
+            f"Monitor metric '{monitor}' resolved to '{metric_key}', "
+            f"but this key is not present in val_metrics ({sorted(val_metrics.keys())})."
+        )
+    return float(val_metrics[metric_key])
 
 
 def main() -> None:
@@ -299,7 +349,7 @@ def main() -> None:
         scheduler = _build_scheduler(cfg_runtime, optimizer)
         scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
         start_epoch = 1
-        prune_monitor = str(cfg_runtime["train"].get("early_stopping", {}).get("monitor", "val_map50"))
+        prune_monitor = str(cfg_runtime["train"].get("early_stopping", {}).get("monitor", "val_map50")).lower().strip()
         best_metric = math.inf if prune_monitor == "val_loss" else -math.inf
 
         # Re-save snapshots so the run dir reflects the pruned model.
@@ -315,13 +365,24 @@ def main() -> None:
 
     es_cfg = cfg_runtime["train"].get("early_stopping", {})
     early_enabled = bool(es_cfg.get("enabled", True))
-    monitor = str(es_cfg.get("monitor", "val_map50"))
+    monitor = str(es_cfg.get("monitor", "val_map50")).lower().strip()
     mode = str(es_cfg.get("mode", "max")).lower()
     patience = int(es_cfg.get("patience", 20))
     min_delta = float(es_cfg.get("min_delta", 0.0))
     bad_epochs = 0
 
     if monitor == "val_loss" and best_metric == -math.inf:
+        best_metric = math.inf
+    elif monitor in {
+        "loss",
+        "val_total_loss",
+        "val_center_error_px",
+        "center_error_px",
+        "val_center_error_norm_diag",
+        "center_error_norm_diag",
+        "val_fp_per_image",
+        "fp_per_image",
+    } and best_metric == -math.inf:
         best_metric = math.inf
 
     logger.info(
@@ -380,9 +441,7 @@ def main() -> None:
 
         scheduler_name = str(cfg_runtime["train"].get("scheduler", "cosine")).lower()
         if scheduler_name in {"plateau", "reducelronplateau"}:
-            scheduler_value = float(val_metrics["total_loss"]) if scheduler_monitor == "val_loss" else float(
-                val_metrics["map50"]
-            )
+            scheduler_value = _resolve_validation_metric(val_metrics, scheduler_monitor)
             scheduler.step(scheduler_value)
         else:
             scheduler.step()
@@ -452,7 +511,7 @@ def main() -> None:
             best_metric=best_metric,
         )
 
-        current = float(val_metrics["map50"] if monitor == "val_map50" else val_metrics["total_loss"])
+        current = _resolve_validation_metric(val_metrics, monitor)
 
         if _is_improved(current=current, best=best_metric, mode=mode, min_delta=min_delta):
             best_metric = current

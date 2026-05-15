@@ -169,6 +169,21 @@ Optional split control is also available for eval:
 - `--reuse-splits`
 - `--regenerate-splits`
 
+### Threshold selection (ball / no-ball operating point)
+
+Use a confidence sweep on the validation set and pick the threshold from a target objective (default: max `F1`):
+
+```bash
+python -m ball_detection.evaluate \
+  --config ball_detection/configs/ball_styolo_nano.yaml \
+  --checkpoint ball_detection/runs/<run-id>/checkpoints/best.pt \
+  --device auto \
+  --sweep-conf \
+  --sweep-objective f1
+```
+
+This writes `threshold_sweep.csv` into the run directory and logs the recommended threshold with precision/recall/F1 and FP-per-image.
+
 ## Export only
 
 ```bash
