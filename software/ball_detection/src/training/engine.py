@@ -36,6 +36,8 @@ def train_one_epoch(
     max_batches: int | None,
 ) -> Dict[str, float]:
     model.train()
+    if hasattr(criterion, "set_assigner_debug_context"):
+        criterion.set_assigner_debug_context("train")
 
     loss_sum = 0.0
     obj_sum = 0.0
@@ -113,6 +115,8 @@ def validate_one_epoch(
     preview_dir: Path | None,
 ) -> Dict[str, float]:
     model.eval()
+    if hasattr(criterion, "set_assigner_debug_context"):
+        criterion.set_assigner_debug_context("val")
 
     loss_sum = 0.0
     obj_sum = 0.0

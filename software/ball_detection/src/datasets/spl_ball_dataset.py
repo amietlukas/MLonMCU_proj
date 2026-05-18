@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import random
+import warnings
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,19 +46,54 @@ class SPLBallDetectionDataset(Dataset):
         records: List[SampleRecord],
         transform: DetectionTransform,
         class_name: str = "Ball",
+        skip_read_errors: bool = False,
+        read_retry_count: int = 0,
     ) -> None:
         self.records = records
         self.transform = transform
         self.class_name = class_name
+        self.skip_read_errors = bool(skip_read_errors)
+        self.read_retry_count = max(0, int(read_retry_count))
 
     def __len__(self) -> int:
         return len(self.records)
 
     def __getitem__(self, idx: int):
-        rec = self.records[idx]
+        try:
+            return self._load_record(self.records[idx])
+        except Exception as exc:
+            if not self.skip_read_errors:
+                rec = self.records[idx]
+                raise RuntimeError(
+                    f"Failed to read image for record '{rec.image_id}': {rec.image_path}"
+                ) from exc
 
-        with Image.open(rec.image_path) as img:
-            image = img.convert("RGB")
+            max_tries = min(len(self.records) - 1, self.read_retry_count)
+            for offset in range(1, max_tries + 1):
+                fallback_idx = (idx + offset) % len(self.records)
+                fallback = self.records[fallback_idx]
+                try:
+                    sample = self._load_record(fallback)
+                except Exception:
+                    continue
+
+                original = self.records[idx]
+                warnings.warn(
+                    "[WARN] skipped unreadable image "
+                    f"'{original.image_path}' and used fallback '{fallback.image_path}'",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+                return sample
+
+            rec = self.records[idx]
+            raise RuntimeError(
+                f"Failed to read image for record '{rec.image_id}' after "
+                f"{max_tries} fallback attempt(s): {rec.image_path}"
+            ) from exc
+
+    def _load_record(self, rec: SampleRecord):
+        image = _load_rgb_image(rec.image_path)
 
         img_tensor, boxes_resized, meta = self.transform(image, rec.boxes_orig)
 
@@ -85,6 +121,32 @@ class SPLBallDetectionDataset(Dataset):
             "image_path": str(rec.image_path),
         }
         return img_tensor, target
+
+
+def _load_rgb_image(image_path: Path) -> Image.Image:
+    with Image.open(image_path) as img:
+        image = img.convert("RGB")
+        image.load()
+    return image
+
+
+def _read_image_size(image_path: Path, validate_image: bool) -> tuple[int, int]:
+    with Image.open(image_path) as img:
+        if validate_image:
+            img.load()
+        img_w, img_h = img.size
+    return int(img_w), int(img_h)
+
+
+def _validate_dataset_knobs(dataset_cfg: Dict[str, Any]) -> tuple[bool, bool, int]:
+    validate_images = bool(dataset_cfg.get("validate_images", False))
+    skip_unreadable_images = bool(dataset_cfg.get("skip_unreadable_images", False))
+    read_retry_count = int(dataset_cfg.get("read_retry_count", 0))
+    if read_retry_count < 0:
+        raise ValueError("dataset.read_retry_count must be >= 0")
+    if skip_unreadable_images and read_retry_count <= 0:
+        read_retry_count = 8
+    return validate_images, skip_unreadable_images, read_retry_count
 
 
 class MixedSourceBatchSampler(Sampler[list[int]]):
@@ -421,6 +483,8 @@ def _resolve_dataset_sources(cfg: Dict[str, Any]) -> List[DatasetSource]:
 def _load_records_from_source(
     source: DatasetSource,
     logger,
+    validate_images: bool = False,
+    skip_unreadable_images: bool = False,
 ) -> tuple[List[SampleRecord], Dict[str, Any]]:
     if not source.images_dir.exists():
         raise FileNotFoundError(f"Dataset source directory does not exist: {source.images_dir}")
@@ -436,11 +500,23 @@ def _load_records_from_source(
         )
 
     records_map: dict[str, dict[str, Any]] = {}
+    unreadable_image_files = 0
     for image_path in image_files:
         rel_image = image_path.relative_to(source.images_dir).as_posix()
         image_id = f"{source.name}/{rel_image}"
-        with Image.open(image_path) as img:
-            img_w, img_h = img.size
+        try:
+            img_w, img_h = _read_image_size(image_path, validate_image=validate_images)
+        except Exception as exc:
+            unreadable_image_files += 1
+            msg = f"[WARN] unreadable image skipped: {image_path} ({type(exc).__name__}: {exc})"
+            if skip_unreadable_images:
+                if logger is not None:
+                    logger.warning(msg)
+                continue
+            raise RuntimeError(
+                f"Unreadable image in source '{source.name}': {image_path}. "
+                "Set dataset.skip_unreadable_images=true to filter it before training."
+            ) from exc
         records_map[image_id] = {
             "image_path": image_path,
             "orig_size": (img_h, img_w),
@@ -589,6 +665,7 @@ def _load_records_from_source(
         "source_name": source.name,
         "num_csv_files": len(csv_files),
         "num_images": len(records),
+        "unreadable_image_files": unreadable_image_files,
         "num_rows": total_rows,
         "duplicate_rows": duplicate_rows,
         "duplicate_row_overwrites": duplicate_row_overwrites,
@@ -617,13 +694,20 @@ def _load_records_from_source(
 def load_spl_ball_records(
     sources: List[DatasetSource],
     logger,
+    validate_images: bool = False,
+    skip_unreadable_images: bool = False,
 ) -> tuple[List[SampleRecord], Dict[str, Any]]:
     all_records: list[SampleRecord] = []
     source_stats: dict[str, Dict[str, Any]] = {}
 
     seen_ids: set[str] = set()
     for source in sources:
-        records, stats = _load_records_from_source(source=source, logger=logger)
+        records, stats = _load_records_from_source(
+            source=source,
+            logger=logger,
+            validate_images=validate_images,
+            skip_unreadable_images=skip_unreadable_images,
+        )
         for rec in records:
             if rec.image_id in seen_ids:
                 raise RuntimeError(f"Duplicate image_id across sources: {rec.image_id}")
@@ -653,6 +737,7 @@ def load_spl_ball_records(
         "source_stats": source_stats,
         "num_csv_files": int(sum(s["num_csv_files"] for s in source_stats.values())),
         "num_images": len(all_records),
+        "unreadable_image_files": int(sum(s.get("unreadable_image_files", 0) for s in source_stats.values())),
         "num_rows": int(sum(s["num_rows"] for s in source_stats.values())),
         "duplicate_rows": int(sum(s["duplicate_rows"] for s in source_stats.values())),
         "duplicate_row_overwrites": int(sum(s["duplicate_row_overwrites"] for s in source_stats.values())),
@@ -811,9 +896,15 @@ def _count_records_by_source(records: List[SampleRecord]) -> Dict[str, int]:
 def build_spl_ball_datasets(cfg: Dict[str, Any], logger):
     dataset_cfg = cfg["dataset"]
     class_name = str(dataset_cfg.get("class_name", "Ball"))
+    validate_images, skip_unreadable_images, read_retry_count = _validate_dataset_knobs(dataset_cfg)
 
     sources = _resolve_dataset_sources(cfg)
-    records, stats = load_spl_ball_records(sources=sources, logger=logger)
+    records, stats = load_spl_ball_records(
+        sources=sources,
+        logger=logger,
+        validate_images=validate_images,
+        skip_unreadable_images=skip_unreadable_images,
+    )
 
     splits_dir = Path(cfg["paths"]["splits_dir"])
     train_ids, val_ids, train_file, val_file = create_or_load_splits(
@@ -839,8 +930,20 @@ def build_spl_ball_datasets(cfg: Dict[str, Any], logger):
     train_tf = _make_transforms(cfg, train=True)
     val_tf = _make_transforms(cfg, train=False)
 
-    train_ds = SPLBallDetectionDataset(records=train_records, transform=train_tf, class_name=class_name)
-    val_ds = SPLBallDetectionDataset(records=val_records, transform=val_tf, class_name=class_name)
+    train_ds = SPLBallDetectionDataset(
+        records=train_records,
+        transform=train_tf,
+        class_name=class_name,
+        skip_read_errors=skip_unreadable_images,
+        read_retry_count=read_retry_count,
+    )
+    val_ds = SPLBallDetectionDataset(
+        records=val_records,
+        transform=val_tf,
+        class_name=class_name,
+        skip_read_errors=skip_unreadable_images,
+        read_retry_count=read_retry_count,
+    )
 
     source_formats = {s.name: s.bbox_format for s in sources}
     source_policies = {s.name: s.duplicate_policy for s in sources}
@@ -856,6 +959,9 @@ def build_spl_ball_datasets(cfg: Dict[str, Any], logger):
         "train_source_images": _count_records_by_source(train_records),
         "val_source_images": _count_records_by_source(val_records),
         "all_source_images": _count_records_by_source(records),
+        "validate_images": validate_images,
+        "skip_unreadable_images": skip_unreadable_images,
+        "read_retry_count": read_retry_count,
     }
     return train_ds, val_ds, info
 

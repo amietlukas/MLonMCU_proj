@@ -236,6 +236,13 @@ def main() -> None:
     logger.info(f"[INFO] duplicate rows: {data_info.get('duplicate_rows', 0)}")
     logger.info(f"[INFO] duplicate row overwrites: {data_info['duplicate_row_overwrites']}")
     logger.info(f"[INFO] annotation rows with missing image files: {data_info.get('missing_image_rows', 0)}")
+    logger.info(
+        "[INFO] image read guard: "
+        f"validate_images={data_info.get('validate_images', False)} "
+        f"skip_unreadable_images={data_info.get('skip_unreadable_images', False)} "
+        f"read_retry_count={data_info.get('read_retry_count', 0)} "
+        f"unreadable_image_files={data_info.get('unreadable_image_files', 0)}"
+    )
     logger.info(f"[INFO] dataset sources: {data_info.get('source_names', [])}")
     logger.info(f"[INFO] all images per source: {data_info.get('all_source_images', {})}")
     logger.info(f"[INFO] train images per source: {data_info.get('train_source_images', {})}")
@@ -249,6 +256,7 @@ def main() -> None:
                 f"{src_name}: images={src.get('num_images', 0)} rows={src.get('num_rows', 0)} "
                 f"imgs_with/without_rows={src.get('images_with_annotation_rows', 0)}/{src.get('images_without_annotation_rows', 0)} "
                 f"boxes={src.get('num_ball_boxes', 0)} dup_rows={src.get('duplicate_rows', 0)} "
+                f"unreadable={src.get('unreadable_image_files', 0)} "
                 f"bbox_format={src.get('bbox_format', 'unknown')} dup_policy={src.get('duplicate_policy', 'unknown')}"
             )
     logger.info(f"[INFO] train batch mixing: {data_info.get('train_batch_mixing', {})}")
@@ -299,6 +307,9 @@ def main() -> None:
         assign_center_radius=int(cfg_runtime["loss"].get("assign_center_radius", 0)),
         decode_twth_clamp_min=float(cfg_runtime["loss"].get("decode_twth_clamp_min", -4.0)),
         decode_twth_clamp_max=float(cfg_runtime["loss"].get("decode_twth_clamp_max", 4.0)),
+        assigner_cfg=cfg_runtime.get("assigner", {"type": "center"}),
+        input_size=(int(cfg_runtime["input"]["height"]), int(cfg_runtime["input"]["width"])),
+        logger=logger,
     )
 
     optimizer = _build_optimizer(cfg_runtime, model)

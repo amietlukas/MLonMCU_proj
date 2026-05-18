@@ -61,6 +61,8 @@ def _validate_config(cfg: Dict[str, Any]) -> None:
     duplicate_policy = str(dataset_cfg.get("duplicate_policy", "append")).lower()
     if duplicate_policy not in {"append", "first", "last"}:
         raise ValueError("dataset.duplicate_policy must be one of: append, first, last")
+    if int(dataset_cfg.get("read_retry_count", 0)) < 0:
+        raise ValueError("dataset.read_retry_count must be >= 0")
 
     sources = dataset_cfg.get("sources", None)
     if sources is not None:
@@ -119,6 +121,39 @@ def _validate_config(cfg: Dict[str, Any]) -> None:
         raise ValueError("loss.obj_bce_pos_weight must be > 0")
     if int(loss_cfg.get("assign_center_radius", 0)) < 0:
         raise ValueError("loss.assign_center_radius must be >= 0")
+
+    assigner_cfg = cfg.get("assigner", {})
+    if assigner_cfg is None:
+        assigner_cfg = {}
+    if not isinstance(assigner_cfg, dict):
+        raise ValueError("assigner must be a dictionary when provided")
+    assigner_type = str(assigner_cfg.get("type", "center")).lower().strip()
+    if assigner_type not in {"center", "simota_lite"}:
+        raise ValueError("assigner.type must be one of: center, simota_lite")
+
+    simota_cfg = assigner_cfg.get("simota", {})
+    if simota_cfg is None:
+        simota_cfg = {}
+    if not isinstance(simota_cfg, dict):
+        raise ValueError("assigner.simota must be a dictionary when provided")
+    if assigner_type == "simota_lite":
+        if float(simota_cfg.get("center_radius", 2.5)) < 0.0:
+            raise ValueError("assigner.simota.center_radius must be >= 0")
+        if int(simota_cfg.get("topk_iou", 10)) <= 0:
+            raise ValueError("assigner.simota.topk_iou must be > 0")
+        min_k = int(simota_cfg.get("min_k", 1))
+        max_k = int(simota_cfg.get("max_k", 5))
+        if min_k <= 0:
+            raise ValueError("assigner.simota.min_k must be > 0")
+        if max_k < min_k:
+            raise ValueError("assigner.simota.max_k must be >= min_k")
+        if str(simota_cfg.get("iou_cost_type", "neg_log_iou")).lower().strip() not in {
+            "neg_log_iou",
+            "one_minus_iou",
+        }:
+            raise ValueError("assigner.simota.iou_cost_type must be one of: neg_log_iou, one_minus_iou")
+        if float(simota_cfg.get("eps", 1.0e-8)) <= 0.0:
+            raise ValueError("assigner.simota.eps must be > 0")
 
 
 def _resolve_path(path_value: str | None, *bases: Path) -> Path | None:
