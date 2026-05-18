@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    small_net_int8.h
   * @author  AST Embedded Analytics Research Platform
-  * @date    2026-05-07T03:11:00+0200
+  * @date    2026-05-18T15:00:37+0200
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * @attention
@@ -23,7 +23,7 @@
 
 /******************************************************************************/
 #define AI_SMALL_NET_INT8_MODEL_NAME          "small_net_int8"
-#define AI_SMALL_NET_INT8_ORIGIN_MODEL_NAME   "bignet_pruned20260505225640_bestepoch132_int8_qdq_op13"
+#define AI_SMALL_NET_INT8_ORIGIN_MODEL_NAME   "smallnet_greyscale20260504184641_bestepoch142_int8_qdq_op13"
 
 /******************************************************************************/
 #define AI_SMALL_NET_INT8_ACTIVATIONS_ALIGNMENT   (4)
@@ -69,7 +69,7 @@ AI_DEPRECATED
 #define AI_SMALL_NET_INT8_OUT_1_SIZE_BYTES  (6)
 
 /******************************************************************************/
-#define AI_SMALL_NET_INT8_N_NODES (13)
+#define AI_SMALL_NET_INT8_N_NODES (10)
 
 
 AI_API_DECLARE_BEGIN

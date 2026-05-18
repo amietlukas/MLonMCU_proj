@@ -437,6 +437,9 @@ def main() -> None:
             decode_twth_clamp_max=float(cfg_runtime["loss"].get("decode_twth_clamp_max", 4.0)),
             max_batches=max_val_batches,
             preview_dir=pred_preview_dir / f"epoch_{epoch:03d}",
+            epoch=epoch,
+            threshold_sweep_cfg=cfg_runtime["eval"].get("threshold_sweep"),
+            sweep_csv_dir=run_dir / "threshold_sweeps",
         )
 
         scheduler_name = str(cfg_runtime["train"].get("scheduler", "cosine")).lower()
@@ -463,6 +466,13 @@ def main() -> None:
             f"small/med/large recall={val_metrics['recall_small']:.4f}/{val_metrics['recall_medium']:.4f}/{val_metrics['recall_large']:.4f} "
             f"counts={val_metrics['count_small']}/{val_metrics['count_medium']}/{val_metrics['count_large']}"
         )
+        if "best_conf_threshold" in val_metrics:
+            logger.info(
+                "[INFO] threshold sweep | "
+                f"best_conf={val_metrics['best_conf_threshold']:.2f} "
+                f"P={val_metrics['best_conf_precision']:.4f} R={val_metrics['best_conf_recall']:.4f} "
+                f"F1={val_metrics['best_conf_f1']:.4f} fp/img={val_metrics['best_conf_fp_per_image']:.4f}"
+            )
 
         append_metrics_csv(
             run_dir / "metrics.csv",
@@ -496,6 +506,11 @@ def main() -> None:
                 "val_count_small": val_metrics["count_small"],
                 "val_count_medium": val_metrics["count_medium"],
                 "val_count_large": val_metrics["count_large"],
+                "val_best_conf_threshold": val_metrics.get("best_conf_threshold", ""),
+                "val_best_conf_precision": val_metrics.get("best_conf_precision", ""),
+                "val_best_conf_recall": val_metrics.get("best_conf_recall", ""),
+                "val_best_conf_f1": val_metrics.get("best_conf_f1", ""),
+                "val_best_conf_fp_per_image": val_metrics.get("best_conf_fp_per_image", ""),
             },
         )
         plot_metrics_svg(run_dir / "metrics.csv", run_dir / "metrics.svg")
@@ -539,6 +554,57 @@ def main() -> None:
     if best_ckpt_path.exists():
         logger.info(f"[INFO] Loading best checkpoint for export: {best_ckpt_path}")
         load_checkpoint(best_ckpt_path, model=model, map_location=device)
+
+        # Final confidence-threshold sweep on best.pt. Runs regardless of per-epoch
+        # threshold_sweep.enabled, controlled by threshold_sweep.run_at_end.
+        sweep_cfg_full = dict(cfg_runtime["eval"].get("threshold_sweep") or {})
+        if sweep_cfg_full.get("run_at_end", True):
+            logger.info("[INFO] Running final confidence-threshold sweep on best checkpoint")
+            sweep_force_cfg = dict(sweep_cfg_full)
+            sweep_force_cfg["enabled"] = True
+            sweep_force_cfg["every_n_epochs"] = 1
+            final_metrics = validate_one_epoch(
+                model=model,
+                loader=val_loader,
+                criterion=criterion,
+                device=device,
+                strides=cfg_runtime["model"]["strides"],
+                input_size=(int(cfg_runtime["input"]["height"]), int(cfg_runtime["input"]["width"])),
+                conf_threshold=float(cfg_runtime["eval"]["conf_threshold"]),
+                nms_iou_threshold=float(cfg_runtime["eval"]["nms_iou_threshold"]),
+                max_detections=int(cfg_runtime["eval"]["max_detections"]),
+                use_nms=bool(cfg_runtime["eval"].get("use_nms", True)),
+                single_object_mode=bool(cfg_runtime["eval"].get("single_object_mode", False)),
+                ap_conf_threshold=float(cfg_runtime["eval"].get("ap_conf_threshold", 0.001)),
+                ap_max_detections=int(cfg_runtime["eval"].get("ap_max_detections", max(200, int(cfg_runtime["eval"]["max_detections"])))),
+                ap_use_nms=bool(cfg_runtime["eval"].get("ap_use_nms", True)),
+                iou_thresholds=list(cfg_runtime["eval"]["iou_thresholds"]),
+                matching_iou_threshold=float(cfg_runtime["eval"].get("matching_iou_threshold", 0.5)),
+                small_area_threshold=float(cfg_runtime["eval"].get("small_area_threshold", 0.005)),
+                medium_area_threshold=float(cfg_runtime["eval"].get("medium_area_threshold", 0.03)),
+                decode_twth_clamp_min=float(cfg_runtime["loss"].get("decode_twth_clamp_min", -4.0)),
+                decode_twth_clamp_max=float(cfg_runtime["loss"].get("decode_twth_clamp_max", 4.0)),
+                max_batches=max_val_batches,
+                preview_dir=None,                       # no preview on final eval -- only sweep matters
+                epoch=0,                                # writes to threshold_sweeps/epoch_000.csv
+                threshold_sweep_cfg=sweep_force_cfg,
+                sweep_csv_dir=run_dir / "threshold_sweeps",
+            )
+            # Rename epoch_000.csv -> best.csv for clarity
+            from_path = run_dir / "threshold_sweeps" / "epoch_000.csv"
+            to_path = run_dir / "threshold_sweeps" / "best.csv"
+            if from_path.exists():
+                from_path.replace(to_path)
+            if "best_conf_threshold" in final_metrics:
+                logger.info(
+                    "[INFO] final sweep on best.pt | "
+                    f"best_conf={final_metrics['best_conf_threshold']:.2f} "
+                    f"P={final_metrics['best_conf_precision']:.4f} "
+                    f"R={final_metrics['best_conf_recall']:.4f} "
+                    f"F1={final_metrics['best_conf_f1']:.4f} "
+                    f"fp/img={final_metrics['best_conf_fp_per_image']:.4f} "
+                    f"-> {to_path}"
+                )
 
         export_cfg = cfg_runtime["export"]
         do_fp32 = bool(export_cfg.get("do_fp32_onnx", True))

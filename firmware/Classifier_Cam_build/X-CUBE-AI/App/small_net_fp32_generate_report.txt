@@ -1,0 +1,205 @@
+ST Edge AI Core v2.2.0-20266 2adc00962
+Created date          : 2026-05-02 17:31:20
+Parameters            : generate --target stm32u5 --name small_net_fp32 -m /mnt/core/MLonMCU_proj/software/classifier/runs/smallnet-20260423-010631/checkpoints/onnx/smallnet-20260423-010631_best-epoch149_fp32_op13.onnx --compression none --verbosity 1 --workspace /tmp/mxAI_workspace5504793319655617936127508231704698 --output /home/vishal/.stm32cubemx/small_net_fp32_output
+
+Exec/report summary (generate)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+model file         :   /mnt/core/MLonMCU_proj/software/classifier/runs/smallnet-20260423-010631/checkpoints/onnx/smallnet-20260423-010631_best-epoch149_fp32_op13.onnx   
+type               :   onnx                                                                                                                                              
+c_name             :   small_net_fp32                                                                                                                                    
+compression        :   none                                                                                                                                              
+options            :   allocate-inputs, allocate-outputs                                                                                                                 
+optimization       :   balanced                                                                                                                                          
+target/series      :   stm32u5                                                                                                                                           
+workspace dir      :   /tmp/mxAI_workspace5504793319655617936127508231704698                                                                                             
+output dir         :   /home/vishal/.stm32cubemx/small_net_fp32_output                                                                                                   
+model_fmt          :   float                                                                                                                                             
+model_name         :   smallnet20260423010631_bestepoch149_fp32_op13                                                                                                     
+model_hash         :   0x85e2560f411e9e516a95031516707f47                                                                                                                
+params #           :   98,214 items (383.65 KiB)                                                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+input 1/1          :   'input', f32(1x3x160x120), 225.00 KBytes, activations                                                                                             
+output 1/1         :   'logits', f32(1x6), 24 Bytes, activations                                                                                                         
+macc               :   75,837,814                                                                                                                                        
+weights (ro)       :   392,856 B (383.65 KiB) (1 segment)                                                                                                                
+activations (rw)   :   460,800 B (450.00 KiB) (1 segment) *                                                                                                              
+ram (total)        :   460,800 B (450.00 KiB) = 460,800 + 0 + 0                                                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(*) 'input'/'output' buffers are allocated in the activations buffer
+
+Model name - smallnet20260423010631_bestepoch149_fp32_op13
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+m_id   layer (type,original)                   oshape                   param/size               macc        connected to   | c_size              c_macc                   c_type          
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+14     classifier_weight (Placeholder, Gemm)   [b:6,c:128]              768/3,072                                           | +24(+0.8%)          +774(+100.0%)            Dense_[o][6]    
+       classifier_bias (Placeholder, Gemm)     [b:6]                    6/24                                                | -24(-100.0%)                                 
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+0      input (Input, )                         [b:1,h:160,w:120,c:3]                                                        |                                              
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+1      getitem (Conv2D, Conv)                  [b:1,h:160,w:120,c:16]   448/1,792           8,294,416               input   | -1,792(-100.0%)     -8,294,416(-100.0%)      
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+2      relu (Nonlinearity, Relu)               [b:1,h:160,w:120,c:16]                         307,200             getitem   |                     -278,400(-90.6%)         Transpose_[0]   
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+3      max_pool2d (Pool, MaxPool)              [b:1,h:80,w:60,c:16]                           307,200                relu   | +1,792(+100.0%)     +8,601,616(+2800.0%)     Conv2D_[1]      
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+4      getitem_3 (Conv2D, Conv)                [b:1,h:80,w:60,c:32]     4,640/18,560       22,118,432          max_pool2d   | -18,560(-100.0%)    -22,118,432(-100.0%)     
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+5      relu_1 (Nonlinearity, Relu)             [b:1,h:80,w:60,c:32]                           153,600           getitem_3   |                     -153,600(-100.0%)        
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+6      max_pool2d_1 (Pool, MaxPool)            [b:1,h:40,w:30,c:32]                           153,600              relu_1   | +18,560(+100.0%)    +22,272,032(+14500.0%)   Conv2D_[2]      
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+7      getitem_6 (Conv2D, Conv)                [b:1,h:40,w:30,c:64]     18,496/73,984      22,118,464        max_pool2d_1   | -73,984(-100.0%)    -22,118,464(-100.0%)     
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+8      relu_2 (Nonlinearity, Relu)             [b:1,h:40,w:30,c:64]                            76,800           getitem_6   |                     -76,800(-100.0%)         
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+9      max_pool2d_2 (Pool, MaxPool)            [b:1,h:20,w:15,c:64]                            76,800              relu_2   | +73,984(+100.0%)    +22,195,264(+28900.1%)   Conv2D_[3]      
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+10     getitem_9 (Conv2D, Conv)                [b:1,h:20,w:15,c:128]    73,856/295,424     22,118,528        max_pool2d_2   | -295,424(-100.0%)   -22,118,528(-100.0%)     
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+11     relu_3 (Nonlinearity, Relu)             [b:1,h:20,w:15,c:128]                           38,400           getitem_9   |                     -38,400(-100.0%)         
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+12     max_pool2d_3 (Pool, MaxPool)            [b:1,h:10,w:7,c:128]                            35,840              relu_3   | +295,424(+100.0%)   +22,156,928(+61821.8%)   Conv2D_[4]      
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+13     mean (Reduce, ReduceMean)               [b:1,c:128]                                     17,920        max_pool2d_3   |                     -8,960(-50.0%)           Reduce_[5]      
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+14     logits (Gemm, Gemm)                     [b:1,c:6]                                          774                mean   |                     -774(-100.0%)            
+                                                                                                        classifier_weight   | 
+                                                                                                          classifier_bias   | 
+------ --------------------------------------- ------------------------ ---------------- ------------ ------------------- --- ------------------- ------------------------ --------------- 
+model/c-model: macc=75,817,974/75,837,814 +19,840(+0.0%) weights=392,856/392,856  activations=--/460,800 io=--/0
+
+
+
+Generated C-graph summary
+------------------------------------------------------------------------------------------------------------------------
+model name            : smallnet20260423010631_bestepoch149_fp32_op13
+c-name                : small_net_fp32
+c-node #              : 7
+c-array #             : 26
+activations size      : 460800 (1 segment)
+weights size          : 392856 (1 segment)
+macc                  : 75837814
+inputs                : ['input_output']
+outputs               : ['logits_output']
+
+C-Arrays (26)
+------ ------------------------ -------------- ------------------------- ------------- --------- 
+c_id   name (*_array)           item/size      domain/mem-pool           c-type        comment   
+------ ------------------------ -------------- ------------------------- ------------- --------- 
+0      getitem_3_bias           32/128         weights/weights           const float             
+1      getitem_3_output         38400/153600   activations/**default**   float                   
+2      getitem_3_scratch0       144/576        activations/**default**   float                   
+3      getitem_3_scratch1       3840/15360     activations/**default**   float                   
+4      getitem_3_weights        4608/18432     weights/weights           const float             
+5      getitem_6_bias           64/256         weights/weights           const float             
+6      getitem_6_output         19200/76800    activations/**default**   float                   
+7      getitem_6_scratch0       288/1152       activations/**default**   float                   
+8      getitem_6_scratch1       3840/15360     activations/**default**   float                   
+9      getitem_6_weights        18432/73728    weights/weights           const float             
+10     getitem_9_bias           128/512        weights/weights           const float             
+11     getitem_9_output         8960/35840     activations/**default**   float                   
+12     getitem_9_scratch0       576/2304       activations/**default**   float                   
+13     getitem_9_scratch1       3840/15360     activations/**default**   float                   
+14     getitem_9_weights        73728/294912   weights/weights           const float             
+15     getitem_bias             16/64          weights/weights           const float             
+16     getitem_output           76800/307200   activations/**default**   float                   
+17     getitem_scratch0         27/108         activations/**default**   float                   
+18     getitem_scratch1         3840/15360     activations/**default**   float                   
+19     getitem_weights          432/1728       weights/weights           const float             
+20     input_Transpose_output   57600/230400   activations/**default**   float                   
+21     input_output             57600/230400   activations/**default**   float         /input    
+22     logits_bias              6/24           weights/weights           const float             
+23     logits_output            6/24           activations/**default**   float         /output   
+24     logits_weights           768/3072       weights/weights           const float             
+25     mean_output              128/512        activations/**default**   float                   
+------ ------------------------ -------------- ------------------------- ------------- --------- 
+
+C-Layers (7)
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+c_id   name (*_layer)    id   layer_type   macc       rom      tensors                     shape (array id)        
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+0      input_Transpose   2    Transpose    28800      0        I: input_output             f32(1x3x160x120) (21)   
+                                                               O: input_Transpose_output   f32(1x160x120x3) (20)   
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+1      getitem           3    Conv2D       8908816    1792     I: input_Transpose_output   f32(1x160x120x3) (20)   
+                                                               S: getitem_scratch0                                 
+                                                               S: getitem_scratch1                                 
+                                                               W: getitem_weights          f32(16x3x3x3) (19)      
+                                                               W: getitem_bias             f32(16) (15)            
+                                                               O: getitem_output           f32(1x80x60x16) (16)    
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+2      getitem_3         6    Conv2D       22425632   18560    I: getitem_output           f32(1x80x60x16) (16)    
+                                                               S: getitem_3_scratch0                               
+                                                               S: getitem_3_scratch1                               
+                                                               W: getitem_3_weights        f32(32x3x3x16) (4)      
+                                                               W: getitem_3_bias           f32(32) (0)             
+                                                               O: getitem_3_output         f32(1x40x30x32) (1)     
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+3      getitem_6         9    Conv2D       22272064   73984    I: getitem_3_output         f32(1x40x30x32) (1)     
+                                                               S: getitem_6_scratch0                               
+                                                               S: getitem_6_scratch1                               
+                                                               W: getitem_6_weights        f32(64x3x3x32) (9)      
+                                                               W: getitem_6_bias           f32(64) (5)             
+                                                               O: getitem_6_output         f32(1x20x15x64) (6)     
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+4      getitem_9         12   Conv2D       22192768   295424   I: getitem_6_output         f32(1x20x15x64) (6)     
+                                                               S: getitem_9_scratch0                               
+                                                               S: getitem_9_scratch1                               
+                                                               W: getitem_9_weights        f32(128x3x3x64) (14)    
+                                                               W: getitem_9_bias           f32(128) (10)           
+                                                               O: getitem_9_output         f32(1x10x7x128) (11)    
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+5      mean              13   Reduce       8960       0        I: getitem_9_output         f32(1x10x7x128) (11)    
+                                                               O: mean_output              f32(1x1x1x128) (25)     
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+6      logits            14   Dense        774        3096     I: mean_output              f32(1x1x1x128) (25)     
+                                                               W: logits_weights           f32(6x128) (24)         
+                                                               W: logits_bias              f32(6) (22)             
+                                                               O: logits_output            f32(1x6) (23)           
+------ ----------------- ---- ------------ ---------- -------- --------------------------- ----------------------- 
+
+
+
+Number of operations per c-layer
+------- ------ ----------------------------- ------------ -------------- 
+c_id    m_id   name (type)                            #op           type 
+------- ------ ----------------------------- ------------ -------------- 
+0       2      input_Transpose (Transpose)         28,800   smul_f32_f32 
+1       3      getitem (Conv2D)                 8,908,816   smul_f32_f32 
+2       6      getitem_3 (Conv2D)              22,425,632   smul_f32_f32 
+3       9      getitem_6 (Conv2D)              22,272,064   smul_f32_f32 
+4       12     getitem_9 (Conv2D)              22,192,768   smul_f32_f32 
+5       13     mean (Reduce)                        8,960   smul_f32_f32 
+6       14     logits (Dense)                         774   smul_f32_f32 
+------- ------ ----------------------------- ------------ -------------- 
+total                                          75,837,814 
+
+Number of operation types
+---------------- ------------ ----------- 
+operation type              #           % 
+---------------- ------------ ----------- 
+smul_f32_f32       75,837,814      100.0% 
+
+Complexity report (model)
+------ ------------------- ------------------------- ------------------------- ------ 
+m_id   name                c_macc                    c_rom                     c_id   
+------ ------------------- ------------------------- ------------------------- ------ 
+14     classifier_weight   |                  0.0%   |                  0.8%   [6]    
+2      relu                |                  0.0%   |                  0.0%   [0]    
+3      max_pool2d          ||||||            11.7%   |                  0.5%   [1]    
+6      max_pool2d_1        ||||||||||||||||  29.6%   |                  4.7%   [2]    
+9      max_pool2d_2        |||||||||||||||   29.4%   ||||              18.8%   [3]    
+12     max_pool2d_3        |||||||||||||||   29.3%   ||||||||||||||||  75.2%   [4]    
+13     mean                |                  0.0%   |                  0.0%   [5]    
+------ ------------------- ------------------------- ------------------------- ------ 
+macc=75,837,814 weights=392,856 act=460,800 ram_io=0
+
+Generated files (7)
+------------------------------------------------------------------------------ 
+/home/vishal/.stm32cubemx/small_net_fp32_output/small_net_fp32_data_params.h   
+/home/vishal/.stm32cubemx/small_net_fp32_output/small_net_fp32_data_params.c   
+/home/vishal/.stm32cubemx/small_net_fp32_output/small_net_fp32_data.h          
+/home/vishal/.stm32cubemx/small_net_fp32_output/small_net_fp32_data.c          
+/home/vishal/.stm32cubemx/small_net_fp32_output/small_net_fp32_config.h        
+/home/vishal/.stm32cubemx/small_net_fp32_output/small_net_fp32.h               
+/home/vishal/.stm32cubemx/small_net_fp32_output/small_net_fp32.c               

@@ -49,8 +49,8 @@ model:
 
 train:
   epochs: 150 # was 100
-  batch_size: 32
-  num_workers: 4
+  batch_size: 32 # reverted -- 64 doubled per-batch CPU loss-assignment work and stalled epoch 1
+  num_workers: 4 # known-good from runs/20260516-022816 (5.4 min/epoch)
   optimizer: adamw
   optimizer_params:
     betas: [0.9, 0.999]
@@ -60,7 +60,7 @@ train:
   scheduler: cosine
   scheduler_params:
     t_max: 150         # keep cosine schedule aligned with train.epochs
-    eta_min: 1.0e-6    # avoid collapsing LR to exact 0 too early
+    eta_min: 1.0e-5    # prev run flatlined after epoch ~30 because LR -> 0; floor at 1e-5 keeps late epochs alive
     factor: 0.5        # used for plateau
     patience: 5        # used for plateau
     threshold: 1.0e-4  # used for plateau
@@ -72,10 +72,10 @@ train:
   grad_clip_norm: 10.0
   early_stopping:
     enabled: true
-    monitor: val_map5095
+    monitor: val_map50    # val_map5095 was too noisy (single-epoch flukes triggered bad_epochs)
     mode: max
     patience: 30
-    min_delta: 0.0003
+    min_delta: 0.001      # was 0.0003 -- noise floor on val_map50 across epochs is ~0.005-0.01
 
 loss:
   obj_weight: 1.0
@@ -83,18 +83,18 @@ loss:
   obj_loss_mode: mean
   obj_pos_weight: 1.0
   obj_neg_weight: 1.0
-  obj_bce_pos_weight: 1.0 # was 20.0
+  obj_bce_pos_weight: 8.0  # 20 was too eager (P=0.25, fp/img=2.13). 8 keeps obj_loss alive but less trigger-happy
   focal_loss: true
   focal_alpha: 0.25
   focal_gamma: 2.0
-  assign_scale_target: 1.5 # was 3.0
+  assign_scale_target: 2.0 # 3.0 over-assigned at scale boundaries; 2.0 keeps coverage with fewer ghost positives
   assign_conflict_policy: largest_area   # largest_area | last
-  assign_center_radius: 1 # was 0
+  assign_center_radius: 1 # 3x3 positive region around the ball center for more positives
   decode_twth_clamp_min: -4.0
   decode_twth_clamp_max: 4.0
 
 eval:
-  conf_threshold: 0.25 # was 0.40
+  conf_threshold: 0.60 # picked from epoch_019 sweep on runs/20260516-192555-spl_our_v4_sweep_fixed (F1=0.664)
   nms_iou_threshold: 0.25
   max_detections: 3
   use_nms: true
@@ -106,6 +106,15 @@ eval:
   small_area_threshold: 0.005
   medium_area_threshold: 0.03
   iou_thresholds: [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
+  threshold_sweep:        # sweep of conf_threshold to find best operating point
+    enabled: false        # per-epoch sweep OFF (was ~1-3 min of CPU work per validation)
+    run_at_end: true      # dataset changed (~165 imgs + pip_natLight_ball_2 folder removed); rerun final sweep to recalibrate conf_threshold
+    every_n_epochs: 1
+    start: 0.05
+    end: 0.95
+    step: 0.05
+    objective: f1
+    save_csv: true
 
 export:
   opset: 13

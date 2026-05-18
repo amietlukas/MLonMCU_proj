@@ -1,0 +1,5 @@
+# file created : 2026-05-07 03:23:22
+# dtype=int8
+# c-model features - 24/24
+# (24, 120, 160, 1)/int8, min/max=[-125, 127], mean/std=[27.059397, 58.115617], scale=1.000000000 zp=-128, input
+# Note: w/o data, number of item by sample is exceeded: 19200 > 512

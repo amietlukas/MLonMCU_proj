@@ -1,0 +1,13 @@
+../Core/Src/stm32u5xx_it.c:71:6:NMI_Handler	1
+../Core/Src/stm32u5xx_it.c:86:6:HardFault_Handler	4
+../Core/Src/stm32u5xx_it.c:120:6:MemManage_Handler	1
+../Core/Src/stm32u5xx_it.c:135:6:BusFault_Handler	1
+../Core/Src/stm32u5xx_it.c:150:6:UsageFault_Handler	1
+../Core/Src/stm32u5xx_it.c:165:6:SVC_Handler	1
+../Core/Src/stm32u5xx_it.c:178:6:DebugMon_Handler	1
+../Core/Src/stm32u5xx_it.c:191:6:PendSV_Handler	1
+../Core/Src/stm32u5xx_it.c:204:6:SysTick_Handler	1
+../Core/Src/stm32u5xx_it.c:225:6:EXTI14_IRQHandler	1
+../Core/Src/stm32u5xx_it.c:236:6:EXTI15_IRQHandler	1
+../Core/Src/stm32u5xx_it.c:244:6:GPDMA1_Channel12_IRQHandler	1
+../Core/Src/stm32u5xx_it.c:269:6:DCMI_PSSI_IRQHandler	1

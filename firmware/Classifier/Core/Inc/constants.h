@@ -1,36 +1,45 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-/* Model: bignet_pruned int8 (HAGRID 6-class gesture classifier, grayscale)
- * Input  : int8(1,1,120,160) NCHW (H=120, W=160 — landscape),
- *          QLinear(s=1.0, zp=-128)
- * Output : int8(1,6),         QLinear(s=0.22004639, zp=-39)
- *
- * The exported ONNX has the per-channel mean/std normalization fused into the
- * first Conv, so the model expects raw [0,255] FLOAT pixel values. With
- * INPUT_SCALE=1.0 and INPUT_ZP=-128 the on-MCU quantization reduces to:
- *     int8 q = (int8_t)(u - 128)         for each uint8 pixel u
- * i.e. a flat uint8 -> int8 reinterpretation. No mean/std math on the MCU.
- *
- * Host sends post-letterbox uint8 grayscale HW bytes (H=120, W=160 = 19200 B).
- * Layout is row-major HW, which matches NCHW for C=1.
+/* =============================================================
+ * Active model selection
+ * -------------------------------------------------------------
+ * Set USE_INT8_MODEL to:
+ *   1  -> int8 quantized variant (small_net_int8 entry)
+ *   0  -> fp32 variant            (small_net_fp32 entry)
+ * Both networks are compiled in via the X-CUBE-AI multi-network
+ * registry; this flag just picks which one to instantiate at boot.
+ * =============================================================
  */
+#define USE_INT8_MODEL     0
 
+/* =============================================================
+ * Current model: smallnet_greyscale baseline (HAGRID 6-class)
+ *
+ * The ONNX export bakes the full inference preprocessing into the
+ * first Conv (both /255 and (x-mu)/sigma), so the graph expects
+ * raw [0, 255] FLOAT pixel values:
+ *   - fp32 model: cast each uint8 pixel to float, feed directly.
+ *   - int8 model: INPUT_SCALE=1.0, INPUT_ZP=-128 so the on-MCU
+ *                 quantization reduces to int8 q = (int8)(u - 128).
+ *
+ * Output dequant params come from the DequantizeLinear at the
+ * int8 model's output (see small_net_int8_generate_report.txt).
+ * =============================================================
+ */
 #define NUM_CLASSES        6
 
 #define MODEL_H            120
 #define MODEL_W            160
 #define MODEL_C            1
-#define MODEL_INPUT_BYTES  (MODEL_H * MODEL_W * MODEL_C)    /* 19200 */
-#define MODEL_OUTPUT_BYTES NUM_CLASSES                       /* 6 int8 logits */
+#define MODEL_INPUT_BYTES  (MODEL_H * MODEL_W * MODEL_C)    /* 19200 host bytes */
+#define MODEL_OUTPUT_BYTES NUM_CLASSES
 
-/* Input quantization (from the ONNX QuantizeLinear at the model input) */
+/* int8 input/output quant (smallnet_greyscale int8, fused export). */
 #define INPUT_SCALE        1.0f
 #define INPUT_ZP           (-128)
-
-/* Output quantization (from the ONNX DequantizeLinear at the model output) */
-#define OUTPUT_SCALE       0.22004639f
-#define OUTPUT_ZP          (-39)
+#define OUTPUT_SCALE       0.168752477f
+#define OUTPUT_ZP          25
 
 #define UART_TIMEOUT       HAL_MAX_DELAY
 

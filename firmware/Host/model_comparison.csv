@@ -1,0 +1,8 @@
+model,n_samples,accuracy,macro_precision,macro_recall,macro_f1,pre_ms_mean,infer_ms_mean,post_ms_mean,infer_ms_p50,infer_ms_p95,params,macc,flash_KB,ram_KB,energy_mJ,results_csv
+smallnet_fp32,1095,0.8237,0.8272,0.8243,0.8187,1.200,8244.90,0.007,8244.90,8244.90,93446,184666598,365.0,690.5,138.891,/mnt/core/MLonMCU_proj/software/classifier/runs/smallnet_greyscale-20260504-184641_BASELINE_SMALL/metrics/results_smallnet_fp32.csv
+smallnet_int8,5000,0.8238,0.8274,0.8221,0.8179,0.840,1677.76,0.008,1677.76,1677.76,93446,183668710,92.9,179.8,28.273,/mnt/core/MLonMCU_proj/software/classifier/runs/smallnet_greyscale-20260504-184641_BASELINE_SMALL/metrics/results_smallnet_int8.csv
+bignet_fp32,30000,0.9766,0.9765,0.9766,0.9765,,,,,,190182,72482390,742.9,345.0,,/mnt/core/MLonMCU_proj/software/classifier/runs/bignet-20260505-163101_BASELINE/metrics/results_bignet_fp32.csv
+bignet_int8,30000,0.8781,0.8892,0.8781,0.8798,,,,,,190182,71911382,187.7,91.7,,/mnt/core/MLonMCU_proj/software/classifier/runs/bignet-20260505-163101_BASELINE/metrics/results_bignet_int8.csv
+bignet_pruned_fp32,30000,0.9369,0.9372,0.9369,0.9369,,,,,,17417,7614225,68.0,107.4,,/mnt/core/MLonMCU_proj/software/classifier/runs/bignet_pruned-20260505-225640_BASELINE_PRUNED/metrics/results_bignet_pruned_fp32.csv
+bignet_pruned_int8,30000,0.9357,0.9360,0.9360,0.9358,0.840,155.78,0.008,155.78,155.78,17417,7437357,17.6,27.0,2.638,/mnt/core/MLonMCU_proj/software/classifier/runs/bignet_pruned-20260505-225640_BASELINE_PRUNED/metrics/results_bignetpruned.csv
+bignet_pruned_int8_1_8V

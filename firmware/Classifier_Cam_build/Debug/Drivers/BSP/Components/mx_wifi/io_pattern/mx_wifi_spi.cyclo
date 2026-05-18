@@ -1,0 +1,12 @@
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:292:17:MX_WIFI_SPI_Read	1
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:160:13:MX_WIFI_IO_DELAY	1
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:238:15:wait_flow_high	2
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:257:17:MX_WIFI_SPI_Write	5
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:193:15:MX_WIFI_SPI_DeInit	1
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:171:15:MX_WIFI_SPI_Init	3
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:200:6:HAL_SPI_TransferCallback	1
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:207:6:HAL_SPI_ErrorCallback	2
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:223:6:mxchip_WIFI_ISR	3
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:383:6:process_txrx_poll	21
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:660:9:mxwifi_probe	3
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:682:18:wifi_obj_get	1
