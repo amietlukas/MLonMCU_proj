@@ -15,7 +15,7 @@ This module implements a complete training/eval/export pipeline for single-class
 - Optional train augmentations (hflip, color jitter, blur)
 - Optional utility to export parsed labels in YOLO txt format (`export_yolo_labels`)
 - STYOLO-style compact detector (strides `8/16/32`)
-- Anchor-free grid assignment and BCE+IoU training loss
+- Anchor-free grid assignment and BCE+IoU training loss, with optional SimOTA-lite assignment
 - Validation metrics:
   - `mAP@0.5`
   - `mAP@0.5:0.95`
@@ -72,6 +72,7 @@ This guarantees per-batch source presence, but can oversample the smaller source
 ## Main config
 
 - `software/ball_detection/configs/ball_styolo_nano.yaml` (multi-ball profile, `max_detections=3`)
+- `software/ball_detection/configs/ball_styolo_nano_simota.yaml` (same multi-ball profile with SimOTA-lite assignment)
 - `software/ball_detection/configs/ball_styolo_nano_oneball.yaml` (single-ball profile, top-1 without NMS)
 
 Key settings:
@@ -87,6 +88,7 @@ Key settings:
 - loss/assignment knobs for convergence:
   - `loss.obj_loss_mode`, `loss.obj_pos_weight`, `loss.obj_neg_weight`, `loss.obj_bce_pos_weight`
   - `loss.assign_center_radius` (0=center cell only, 1=3x3 neighborhood)
+  - optional top-level `assigner.type`: `center` (default) or `simota_lite`
 - export: ONNX opset 13, optional INT8 QDQ
 
 ## Training
@@ -113,6 +115,25 @@ python -m ball_detection.train \
   --max-train-batches 2 \
   --max-val-batches 2
 ```
+
+SimOTA-lite experiment:
+
+```bash
+python -m ball_detection.train \
+  --config ball_detection/configs/ball_styolo_nano_simota.yaml \
+  --name ball_nano_simota \
+  --device auto
+```
+
+The SimOTA config uses `eval.conf_threshold: 0.45` as the default operating
+threshold. In the short validation sweep this gave the best F1 while reducing
+false positives versus `0.40`; use `0.50` if the deployment should trade more
+missed balls for fewer false positives.
+
+For long runs the SimOTA config also enables image read guards:
+`dataset.validate_images: true`, `dataset.skip_unreadable_images: true`, and
+`dataset.read_retry_count: 8`. This decodes images before training and prevents
+one bad or transiently unreadable file from killing an overnight run.
 
 Force a fresh split generation:
 
@@ -211,6 +232,23 @@ Optional split control is also available for export:
   - `target["boxes_orig"]` (`xyxy` in original image)
   - `target["boxes_orig_xywh_topleft"]`
 
+## Assignment options
+
+The default assignment remains the existing center assigner. If `assigner.type` is missing, training uses `center` and keeps honoring the existing `loss.assign_scale_target`, `loss.assign_conflict_policy`, and `loss.assign_center_radius` fields.
+
+`assigner.type: simota_lite` enables a training-time dynamic assigner adapted to the single-class objectness-only head. For each GT, candidates are cells across all strides whose centers fall inside the GT box or a configurable center-prior square (`assigner.simota.center_radius` in stride units). The assigner decodes candidate predictions with the same training/inference decoder, scores them with IoU cost, objectness BCE-to-one cost, and image-diagonal-normalized center distance, then chooses a bounded dynamic-k set of lowest-cost positives. If multiple GTs claim the same cell, the lower-cost GT wins.
+
+SimOTA-lite changes only target assignment during loss computation. The model architecture, raw output heads, ONNX export, and deployment postprocessing stay unchanged, so it does not add ONNX or STM32 runtime cost.
+
+Sanity check:
+
+```bash
+python -m ball_detection.debug_check_assigner \
+  --config ball_detection/configs/ball_styolo_nano_simota.yaml
+```
+
+When `assigner.simota.debug: true`, training logs compact train/val batch stats every `assigner.simota.debug_every_n_batches` loss calls. The stride-positive counts show where positives land (`positives_stride8/16/32`), `candidate_count_*` summarizes candidate pool sizes per GT, `dynamic_k_*` shows requested positives before conflicts, `unmatched_gt_count` tracks GTs with no final positive after conflict resolution, and `fallback_count` counts GTs that needed nearest-cell fallback.
+
 ## ONNX / deployment notes
 
 - ONNX graph intentionally contains raw head outputs only (`p8/p16/p32`).
@@ -220,7 +258,7 @@ Optional split control is also available for export:
 
 ## Known limitations
 
-- First version assignment is simple center-cell matching (not SimOTA/QAT).
+- SimOTA-lite is an experimental training assigner; QAT is not implemented.
 - Only `ball_styolo_nano` is implemented right now.
 - TinyissimoYOLO and additional STYOLO variants are not implemented yet.
 - No ONNX-side NMS or decode by design.

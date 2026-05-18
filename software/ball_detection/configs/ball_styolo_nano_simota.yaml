@@ -1,0 +1,149 @@
+project:
+  name: ball_detector
+
+paths:
+  dataset_root: ../../../datasets/BALL
+  images_dir: ../../../datasets/BALL
+  annotations_csv: null
+  output_dir: ball_detection/runs
+  export_dir: ball_detection/exports
+  splits_dir: ball_detection/splits
+
+dataset:
+  class_name: Ball
+  bbox_format: xywh_topleft   # fallback when no dataset.sources are provided
+  duplicate_policy: append    # fallback when no dataset.sources are provided
+  sources:
+    - name: spl
+      images_dir: SPLDataset
+      annotation_file: annotations.csv
+      annotation_format: csv_xywh_topleft
+      bbox_format: xywh_topleft
+      duplicate_policy: append
+    - name: our
+      images_dir: OurDataset
+      annotation_file: annotations.csv
+      annotation_format: csv_xywh_topleft
+      bbox_format: xywh_topleft
+      duplicate_policy: append
+  train_val_split: 0.8
+  reuse_splits: true          # reuse split files from ball_detection/splits if valid
+  mix_sources_per_batch: true
+  validate_images: true       # decode images once before training so bad files fail early
+  skip_unreadable_images: true
+  read_retry_count: 8         # fallback attempts if a worker hits a transient read error
+  seed: 42
+
+input:                        # image resolution
+  width: 640
+  height: 480
+  color_mode: rgb
+  channels: 3
+  resize_policy: resize      # resize (direct warp) | letterbox (keep aspect + pad)
+  interpolation: bilinear
+  letterbox_fill_value: 114  # used only when resize_policy=letterbox
+
+model:
+  name: ball_styolo_nano
+  num_classes: 1            # ball
+  strides: [8, 16, 32]
+  width_mult: 1.0
+  neck_out_ch: 96
+
+train:
+  epochs: 150 # was 100
+  batch_size: 32
+  num_workers: 4
+  optimizer: adamw
+  optimizer_params:
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+    momentum: 0.9      # used for SGD
+    nesterov: true     # used for SGD
+  scheduler: cosine
+  scheduler_params:
+    t_max: 150         # keep cosine schedule aligned with train.epochs
+    eta_min: 1.0e-6    # avoid collapsing LR to exact 0 too early
+    factor: 0.5        # used for plateau
+    patience: 5        # used for plateau
+    threshold: 1.0e-4  # used for plateau
+    min_lr: 0.0        # used for plateau
+    cooldown: 0        # used for plateau
+  lr: 0.001
+  weight_decay: 0.0001 # was 0.0005
+  amp: true
+  grad_clip_norm: 10.0
+  early_stopping:
+    enabled: true
+    monitor: val_map5095
+    mode: max
+    patience: 30
+    min_delta: 0.0003
+
+loss:
+  obj_weight: 1.0
+  box_weight: 5.0
+  obj_loss_mode: mean
+  obj_pos_weight: 1.0
+  obj_neg_weight: 1.0
+  obj_bce_pos_weight: 1.0 # was 20.0
+  focal_loss: true
+  focal_alpha: 0.25
+  focal_gamma: 2.0
+  assign_scale_target: 1.5 # was 3.0
+  assign_conflict_policy: largest_area   # largest_area | last
+  assign_center_radius: 1 # was 0
+  decode_twth_clamp_min: -4.0
+  decode_twth_clamp_max: 4.0
+
+assigner:
+  type: simota_lite
+  simota:
+    center_radius: 2.5
+    topk_iou: 10
+    min_k: 1
+    max_k: 5
+    iou_weight: 3.0
+    obj_weight: 1.0
+    center_weight: 0.5
+    iou_cost_type: neg_log_iou
+    eps: 1.0e-8
+    debug: true
+    debug_every_n_batches: 20
+
+eval:
+  conf_threshold: 0.45 # best F1 in SimOTA threshold sweep; lower FP/image than 0.40
+  nms_iou_threshold: 0.25
+  max_detections: 3
+  use_nms: true
+  single_object_mode: false
+  ap_conf_threshold: 0.001
+  ap_max_detections: 200
+  ap_use_nms: true
+  matching_iou_threshold: 0.5
+  small_area_threshold: 0.005
+  medium_area_threshold: 0.03
+  iou_thresholds: [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
+
+export:
+  opset: 13
+  dynamic_batch: false
+  do_fp32_onnx: true
+  do_int8_ptq_qdq: true
+  calibration_batches: 20
+  int8:
+    per_channel: true
+    activation_type: uint8
+    weight_type: int8
+    calibrate_method: minmax
+
+augmentation:
+  horizontal_flip: true
+  hflip_prob: 0.5
+  color_jitter: true
+  brightness: 0.2
+  contrast: 0.2
+  saturation: 0.2
+  blur: true # was false
+  blur_prob: 0.15 # was 0.2
+  blur_radius: 0.8

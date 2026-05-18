@@ -243,6 +243,9 @@ def main() -> None:
         assign_center_radius=int(cfg["loss"].get("assign_center_radius", 0)),
         decode_twth_clamp_min=float(cfg["loss"].get("decode_twth_clamp_min", -4.0)),
         decode_twth_clamp_max=float(cfg["loss"].get("decode_twth_clamp_max", 4.0)),
+        assigner_cfg=cfg.get("assigner", {"type": "center"}),
+        input_size=(int(cfg["input"]["height"]), int(cfg["input"]["width"])),
+        logger=logger,
     )
 
     metrics = validate_one_epoch(
