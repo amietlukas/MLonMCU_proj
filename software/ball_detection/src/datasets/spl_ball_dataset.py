@@ -1019,6 +1019,11 @@ def build_dataloaders(
         and bs >= len(train_source_indices)
     )
 
+    # Default PyTorch behavior (no persistent_workers, no explicit prefetch_factor). Earlier
+    # attempts to enable both stalled the trainer; keep this baseline until we can A/B test
+    # them in isolation. Re-introduce via knobs (not unconditionally) when revisited.
+    loader_extra: dict = {}
+
     if use_mixed_train_sampler:
         train_batch_sampler = MixedSourceBatchSampler(
             source_to_indices=dict(train_source_indices),
@@ -1033,6 +1038,7 @@ def build_dataloaders(
             pin_memory=torch.cuda.is_available(),
             collate_fn=detection_collate_fn,
             worker_init_fn=worker_init_fn,
+            **loader_extra,
         )
         info["train_batch_mixing"] = {
             "enabled": True,
@@ -1051,6 +1057,7 @@ def build_dataloaders(
             collate_fn=detection_collate_fn,
             worker_init_fn=worker_init_fn,
             generator=generator,
+            **loader_extra,
         )
         info["train_batch_mixing"] = {
             "enabled": False,
@@ -1066,6 +1073,7 @@ def build_dataloaders(
         drop_last=False,
         collate_fn=detection_collate_fn,
         worker_init_fn=worker_init_fn,
+        **loader_extra,
     )
 
     return train_loader, val_loader, info

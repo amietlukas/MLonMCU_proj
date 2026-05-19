@@ -8,7 +8,7 @@ import torch.nn as nn
 from ball_detection.src.training.assigners import SimOTALiteAssigner, build_targets
 # Re-export decode helpers from this module for existing train/eval imports.
 from ball_detection.src.training.decode import decode_outputs, decode_single_scale, decode_single_scale_with_params
-from ball_detection.src.utils.boxes import pairwise_iou_diag
+from ball_detection.src.utils.boxes import pairwise_diou_diag, pairwise_iou_diag
 
 
 class BallDetectionLoss(nn.Module):
@@ -29,6 +29,7 @@ class BallDetectionLoss(nn.Module):
         assign_center_radius: int = 0,
         decode_twth_clamp_min: float = -4.0,
         decode_twth_clamp_max: float = 4.0,
+        box_loss_type: str = "iou",
         assigner_cfg: Dict[str, Any] | None = None,
         input_size: tuple[int, int] | None = None,
         logger=None,
@@ -49,6 +50,12 @@ class BallDetectionLoss(nn.Module):
         self.assign_center_radius = int(assign_center_radius)
         self.decode_twth_clamp_min = float(decode_twth_clamp_min)
         self.decode_twth_clamp_max = float(decode_twth_clamp_max)
+        self.box_loss_type = str(box_loss_type).lower().strip()
+        if self.box_loss_type not in {"iou", "diou"}:
+            raise ValueError(
+                f"Unsupported box_loss_type: {self.box_loss_type}. "
+                "Expected one of ['iou', 'diou']."
+            )
         self.bce = nn.BCEWithLogitsLoss(reduction="none")
         self.input_size = input_size
         self.logger = logger
@@ -76,6 +83,7 @@ class BallDetectionLoss(nn.Module):
 
         if self.logger is not None:
             self.logger.info(f"[INFO] assigner: {self.assigner_type}")
+            self.logger.info(f"[INFO] box_loss_type: {self.box_loss_type}")
 
     def set_assigner_debug_context(self, context: str) -> None:
         self.assigner_debug_context = str(context).strip().lower() or "unknown"
@@ -154,8 +162,11 @@ class BallDetectionLoss(nn.Module):
                 )
                 pred_boxes_flat = decoded_boxes.permute(0, 2, 3, 1)[pos_mask]
                 tgt_boxes_flat = box_targets_abs[scale_idx].permute(0, 2, 3, 1)[pos_mask]
-                iou = pairwise_iou_diag(pred_boxes_flat, tgt_boxes_flat)
-                box_loss = box_loss + (1.0 - iou).mean()
+                if self.box_loss_type == "diou":
+                    score = pairwise_diou_diag(pred_boxes_flat, tgt_boxes_flat)
+                else:
+                    score = pairwise_iou_diag(pred_boxes_flat, tgt_boxes_flat)
+                box_loss = box_loss + (1.0 - score).mean()
 
         n_scales = max(len(raw_outputs), 1)
         obj_loss = obj_loss / n_scales

@@ -4,7 +4,7 @@
  *
  * Protocol (per inference, repeats forever):
  *   MCU -> "READY_IN\r\n"
- *   host -> 19200 raw bytes (uint8 grayscale, row-major HW, H=120, W=160)
+ *   host -> MODEL_INPUT_BYTES raw bytes (uint8 grayscale, row-major HW)
  *   MCU  -> "READY_OUT\r\n"
  *   MCU  -> 24 bytes binary "<ifIIII":
  *               i32  pred_class
@@ -14,11 +14,15 @@
  *               u32  t_post_cycles
  *               u32  t_all_cycles
  *
- * NOTE: The bignet_pruned ONNX has mean/std normalization fused in and was
- * quantized with INPUT_SCALE=1.0 / INPUT_ZP=-128. Preprocessing on the MCU is
- * therefore just a uint8 -> int8 shift by 128.
+ * Model variant (fp32 vs int8) is selected by USE_INT8_MODEL in constants.h.
  *
- * Network setup uses the multi-network registry (ai_mnetwork_create + init),
+ * Preprocessing: the smallnet/bignet/bignet_pruned ONNX exports all bake the
+ * full (pixel/255 - mu)/sigma normalization into the first Conv, so the graph
+ * expects raw [0, 255] floats. With INPUT_SCALE=1.0 and INPUT_ZP=-128 the
+ * int8 quantization reduces to a flat u - 128 shift; the fp32 path is a
+ * straight uint8 -> float cast.
+ *
+ * Network setup uses the multi-network registry (ai_mnetwork_create + init)
  * and inference reads/writes through s_report.inputs[0].data /
  * s_report.outputs[0].data. The cached return value of ai_..._inputs_get /
  * outputs_get does NOT alias the buffer the runtime actually uses for I/O on
@@ -36,9 +40,17 @@
 #include "classifier_app.h"
 
 #include "ai_platform.h"
+#include "small_net_fp32.h"
+#include "small_net_fp32_data.h"
 #include "small_net_int8.h"
 #include "small_net_int8_data.h"
-#include "app_x-cube-ai.h"  /* ai_mnetwork_* + AI_SMALL_NET_INT8_MODEL_NAME */
+#include "app_x-cube-ai.h"  /* ai_mnetwork_* + AI_SMALL_NET_*_MODEL_NAME */
+
+#if USE_INT8_MODEL
+  #define ACTIVE_MODEL_NAME   AI_SMALL_NET_INT8_MODEL_NAME
+#else
+  #define ACTIVE_MODEL_NAME   AI_SMALL_NET_FP32_MODEL_NAME
+#endif
 
 /* ------------------------------------------------------------------ */
 /* AI runtime state                                                   */
@@ -70,8 +82,10 @@ static void uart_recv_bytes(void *buf, uint32_t len)
 }
 
 /* ------------------------------------------------------------------ */
-/* Pre / post-processing (1-channel int8)                             */
+/* Pre / post-processing                                              */
 /* ------------------------------------------------------------------ */
+
+#if USE_INT8_MODEL
 
 static void preprocess(const uint8_t *rx, int8_t *dst)
 {
@@ -97,26 +111,47 @@ static int postprocess(const int8_t *out_q, float *confidence)
     return pred;
 }
 
+#else  /* fp32 model */
+
+static void preprocess(const uint8_t *rx, float *dst)
+{
+    for (int i = 0; i < MODEL_INPUT_BYTES; i++) {
+        dst[i] = (float)rx[i];
+    }
+}
+
+static int postprocess(const float *out_f, float *confidence)
+{
+    int pred = 0;
+    for (int i = 1; i < NUM_CLASSES; i++) {
+        if (out_f[i] > out_f[pred]) pred = i;
+    }
+    const float max_l = out_f[pred];
+    float sum = 0.0f;
+    for (int i = 0; i < NUM_CLASSES; i++) {
+        sum += expf(out_f[i] - max_l);
+    }
+    *confidence = 1.0f / sum;
+    return pred;
+}
+
+#endif
+
 /* ------------------------------------------------------------------ */
-/* Init — same path aiValidation uses                                 */
+/* Init                                                               */
 /* ------------------------------------------------------------------ */
 void classifier_init(void)
 {
-    /* 1. Create the int8 network instance via the multi-network registry. */
-    ai_error err = ai_mnetwork_create(AI_SMALL_NET_INT8_MODEL_NAME, &s_net, NULL);
+    ai_error err = ai_mnetwork_create(ACTIVE_MODEL_NAME, &s_net, NULL);
     if (err.type != AI_ERROR_NONE) { uart_send_str("CREATE_FAIL\r\n"); Error_Handler(); }
 
-    /* 2. Pull the report (we need report.inputs / report.outputs as the
-     *    canonical I/O buffer descriptors for ai_mnetwork_run). */
     if (!ai_mnetwork_get_report(s_net, &s_report)) { uart_send_str("REPORT_FAIL\r\n"); Error_Handler(); }
 
-    /* 3. Initialize. ai_mnetwork_init walks the network entry's activations
-     *    list and binds the shared activation pool internally. */
     if (!ai_mnetwork_init(s_net)) { uart_send_str("INIT_FAIL\r\n"); Error_Handler(); }
 
-    /* 4. Refresh report so report.inputs[i].data / report.outputs[i].data
-     *    reflect the post-init pointers (--allocate-inputs/-outputs land them
-     *    inside the activations pool). */
+    /* Refresh report so report.inputs[i].data / report.outputs[i].data
+     * reflect the post-init pointers (--allocate-inputs/-outputs land them
+     * inside the activations pool). */
     if (!ai_mnetwork_get_report(s_net, &s_report)) { uart_send_str("REPORT2_FAIL\r\n"); Error_Handler(); }
 }
 
@@ -126,7 +161,7 @@ void classifier_init(void)
 void classifier_process(void)
 {
     /* Boot handshake: wait for a single byte from the host before the first
-     * inference. This avoids losing the first READY_IN to the host's
+     * inference. Avoids losing the first READY_IN to the host's
      * reset_input_buffer() drain after it opens the serial port. */
     uart_send_str("BOOT\r\n");
     uint8_t sync = 0;
@@ -138,8 +173,13 @@ void classifier_process(void)
 
         const uint32_t t0 = dwt_now();
 
+#if USE_INT8_MODEL
         int8_t *in_data  = (int8_t *)s_report.inputs[0].data;
         int8_t *out_data = (int8_t *)s_report.outputs[0].data;
+#else
+        float  *in_data  = (float  *)s_report.inputs[0].data;
+        float  *out_data = (float  *)s_report.outputs[0].data;
+#endif
 
         preprocess(s_rx_buffer, in_data);
         const uint32_t t_after_pre = dwt_now();

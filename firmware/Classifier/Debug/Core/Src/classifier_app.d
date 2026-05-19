@@ -28,15 +28,17 @@ Core/Src/classifier_app.o: ../Core/Src/classifier_app.c \
  ../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal_exti.h \
  ../Core/Inc/usart.h ../Core/Inc/main.h ../Core/Inc/constants.h \
  ../Core/Inc/classifier_app.h ../Middlewares/ST/AI/Inc/ai_platform.h \
+ ../X-CUBE-AI/App/small_net_fp32.h \
+ ../X-CUBE-AI/App/small_net_fp32_config.h \
+ ../X-CUBE-AI/App/small_net_fp32_data.h \
+ ../X-CUBE-AI/App/small_net_fp32_data_params.h \
  ../X-CUBE-AI/App/small_net_int8.h \
  ../X-CUBE-AI/App/small_net_int8_config.h \
  ../X-CUBE-AI/App/small_net_int8_data.h \
  ../X-CUBE-AI/App/small_net_int8_data_params.h \
  ../X-CUBE-AI/App/app_x-cube-ai.h ../X-CUBE-AI/App/small_net_fp32.h \
- ../X-CUBE-AI/App/small_net_fp32_config.h \
- ../X-CUBE-AI/App/small_net_fp32_data.h \
- ../X-CUBE-AI/App/small_net_fp32_data_params.h \
- ../X-CUBE-AI/App/small_net_int8.h ../X-CUBE-AI/App/small_net_int8_data.h
+ ../X-CUBE-AI/App/small_net_fp32_data.h ../X-CUBE-AI/App/small_net_int8.h \
+ ../X-CUBE-AI/App/small_net_int8_data.h
 ../Core/Inc/main.h:
 ../Drivers/STM32U5xx_HAL_Driver/Inc/stm32u5xx_hal.h:
 ../Core/Inc/stm32u5xx_hal_conf.h:
@@ -70,14 +72,16 @@ Core/Src/classifier_app.o: ../Core/Src/classifier_app.c \
 ../Core/Inc/constants.h:
 ../Core/Inc/classifier_app.h:
 ../Middlewares/ST/AI/Inc/ai_platform.h:
+../X-CUBE-AI/App/small_net_fp32.h:
+../X-CUBE-AI/App/small_net_fp32_config.h:
+../X-CUBE-AI/App/small_net_fp32_data.h:
+../X-CUBE-AI/App/small_net_fp32_data_params.h:
 ../X-CUBE-AI/App/small_net_int8.h:
 ../X-CUBE-AI/App/small_net_int8_config.h:
 ../X-CUBE-AI/App/small_net_int8_data.h:
 ../X-CUBE-AI/App/small_net_int8_data_params.h:
 ../X-CUBE-AI/App/app_x-cube-ai.h:
 ../X-CUBE-AI/App/small_net_fp32.h:
-../X-CUBE-AI/App/small_net_fp32_config.h:
 ../X-CUBE-AI/App/small_net_fp32_data.h:
-../X-CUBE-AI/App/small_net_fp32_data_params.h:
 ../X-CUBE-AI/App/small_net_int8.h:
 ../X-CUBE-AI/App/small_net_int8_data.h:

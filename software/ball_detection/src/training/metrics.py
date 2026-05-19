@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
-from typing import Dict, Iterable, Sequence
+from pathlib import Path
+from typing import Any, Dict, Iterable, Sequence
 
 import torch
 
@@ -403,3 +405,129 @@ def compute_detection_metrics(
     }
 
     return metrics
+
+
+SWEEP_CSV_COLUMNS = [
+    "conf_threshold",
+    "precision",
+    "recall",
+    "f1",
+    "fp_per_image",
+    "mean_iou",
+    "recall_small",
+    "recall_medium",
+    "recall_large",
+    "map50",
+    "map5095",
+]
+
+
+def build_threshold_grid(start: float, end: float, step: float) -> list[float]:
+    """Inclusive grid of conf thresholds. Clipped to [0,1]."""
+    if step <= 0:
+        raise ValueError(f"threshold_sweep.step must be > 0 (got {step})")
+    if end < start:
+        raise ValueError(f"threshold_sweep.end ({end}) must be >= start ({start})")
+    vals: list[float] = []
+    cur = start
+    guard = 0
+    while cur <= end + 1e-12 and guard < 10000:
+        vals.append(round(float(cur), 6))
+        cur += step
+        guard += 1
+    uniq = sorted(set(v for v in vals if 0.0 <= v <= 1.0))
+    if not uniq:
+        raise ValueError("Threshold sweep grid empty after bounds filtering")
+    return uniq
+
+
+def run_conf_threshold_sweep(
+    *,
+    decoded_boxes_all: torch.Tensor,
+    decoded_scores_all: torch.Tensor,
+    targets_all: list[dict],
+    conf_grid: Sequence[float],
+    nms_iou_threshold: float,
+    max_detections: int,
+    use_nms: bool,
+    single_object_mode: bool,
+    iou_thresholds: Sequence[float],
+    matching_iou_threshold: float,
+    small_area_threshold: float,
+    medium_area_threshold: float,
+    ap_conf_threshold: float,
+    ap_max_detections: int,
+    ap_use_nms: bool,
+) -> list[dict]:
+    """For each conf threshold, build operating predictions and recompute deployment metrics.
+
+    map_predictions are computed once (at ap_conf_threshold) and shared across the grid -- mAP
+    does not depend on the deployment threshold, only P/R/F1/fp_per_image do.
+    """
+    map_preds_all = build_image_predictions(
+        decoded_boxes=decoded_boxes_all,
+        decoded_scores=decoded_scores_all,
+        targets=targets_all,
+        conf_threshold=float(ap_conf_threshold),
+        nms_iou_threshold=float(nms_iou_threshold),
+        max_detections=int(ap_max_detections),
+        use_nms=bool(ap_use_nms),
+        single_object_mode=False,
+        return_in_original=True,
+    )
+
+    rows: list[dict] = []
+    for conf in conf_grid:
+        op_preds_all = build_image_predictions(
+            decoded_boxes=decoded_boxes_all,
+            decoded_scores=decoded_scores_all,
+            targets=targets_all,
+            conf_threshold=float(conf),
+            nms_iou_threshold=float(nms_iou_threshold),
+            max_detections=int(max_detections),
+            use_nms=bool(use_nms),
+            single_object_mode=bool(single_object_mode),
+            return_in_original=True,
+        )
+        m = compute_detection_metrics(
+            map_predictions=map_preds_all,
+            operating_predictions=op_preds_all,
+            targets_all=targets_all,
+            iou_thresholds=list(iou_thresholds),
+            matching_iou_threshold=float(matching_iou_threshold),
+            small_area_threshold=float(small_area_threshold),
+            medium_area_threshold=float(medium_area_threshold),
+        )
+        rows.append({
+            "conf_threshold": float(conf),
+            "precision": float(m["precision"]),
+            "recall": float(m["recall"]),
+            "f1": float(m["f1"]),
+            "fp_per_image": float(m["fp_per_image"]),
+            "mean_iou": float(m["mean_iou"]),
+            "recall_small": float(m["recall_small"]),
+            "recall_medium": float(m["recall_medium"]),
+            "recall_large": float(m["recall_large"]),
+            "map50": float(m["map50"]),
+            "map5095": float(m["map5095"]),
+        })
+    return rows
+
+
+def pick_best_sweep_row(rows: list[dict], objective: str) -> dict:
+    """Choose the threshold maximizing `objective`, tie-breaking on F1, P, then fewest FPs."""
+    key = str(objective).lower()
+    if key not in {"f1", "precision", "recall"}:
+        raise ValueError(f"threshold_sweep.objective must be one of f1/precision/recall (got {objective})")
+    return max(rows, key=lambda r: (r[key], r["f1"], r["precision"], -r["fp_per_image"]))
+
+
+def write_sweep_csv(path: Path, rows: list[dict]) -> None:
+    if not rows:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=SWEEP_CSV_COLUMNS)
+        w.writeheader()
+        for row in rows:
+            w.writerow({k: row.get(k, "") for k in SWEEP_CSV_COLUMNS})

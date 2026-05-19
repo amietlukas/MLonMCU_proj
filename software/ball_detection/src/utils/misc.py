@@ -5,7 +5,7 @@ import math
 from datetime import datetime
 from html import escape
 from pathlib import Path
-from typing import Dict, Iterable
+from typing import Dict
 
 import torch
 import yaml
@@ -34,80 +34,55 @@ def count_parameters(model: torch.nn.Module) -> int:
     return sum(p.numel() for p in model.parameters())
 
 
+METRICS_CSV_COLUMNS: tuple[str, ...] = (
+    "epoch",
+    "lr",
+    "train_total_loss",
+    "train_obj_loss",
+    "train_box_loss",
+    "train_num_pos",
+    "val_total_loss",
+    "val_obj_loss",
+    "val_box_loss",
+    "val_num_pos",
+    "val_map50",
+    "val_map5095",
+    "val_precision",
+    "val_recall",
+    "val_f1",
+    "val_mean_iou",
+    "val_center_error_px",
+    "val_center_error_px_median",
+    "val_center_error_px_p95",
+    "val_center_error_norm_diag",
+    "val_center_error_norm_diag_median",
+    "val_center_error_norm_diag_p95",
+    "val_fp_per_image",
+    "val_recall_small",
+    "val_recall_medium",
+    "val_recall_large",
+    "val_count_small",
+    "val_count_medium",
+    "val_count_large",
+    "val_best_conf_threshold",
+    "val_best_conf_precision",
+    "val_best_conf_recall",
+    "val_best_conf_f1",
+    "val_best_conf_fp_per_image",
+)
+
+
 def init_metrics_csv(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(
-            [
-                "epoch",
-                "lr",
-                "train_total_loss",
-                "train_obj_loss",
-                "train_box_loss",
-                "train_num_pos",
-                "val_total_loss",
-                "val_obj_loss",
-                "val_box_loss",
-                "val_num_pos",
-                "val_map50",
-                "val_map5095",
-                "val_precision",
-                "val_recall",
-                "val_f1",
-                "val_mean_iou",
-                "val_center_error_px",
-                "val_center_error_px_median",
-                "val_center_error_px_p95",
-                "val_center_error_norm_diag",
-                "val_center_error_norm_diag_median",
-                "val_center_error_norm_diag_p95",
-                "val_fp_per_image",
-                "val_recall_small",
-                "val_recall_medium",
-                "val_recall_large",
-                "val_count_small",
-                "val_count_medium",
-                "val_count_large",
-            ]
-        )
+        writer.writerow(list(METRICS_CSV_COLUMNS))
 
 
 def append_metrics_csv(path: Path, row: Dict[str, float | int]) -> None:
-    keys: Iterable[str] = [
-        "epoch",
-        "lr",
-        "train_total_loss",
-        "train_obj_loss",
-        "train_box_loss",
-        "train_num_pos",
-        "val_total_loss",
-        "val_obj_loss",
-        "val_box_loss",
-        "val_num_pos",
-        "val_map50",
-        "val_map5095",
-        "val_precision",
-        "val_recall",
-        "val_f1",
-        "val_mean_iou",
-        "val_center_error_px",
-        "val_center_error_px_median",
-        "val_center_error_px_p95",
-        "val_center_error_norm_diag",
-        "val_center_error_norm_diag_median",
-        "val_center_error_norm_diag_p95",
-        "val_fp_per_image",
-        "val_recall_small",
-        "val_recall_medium",
-        "val_recall_large",
-        "val_count_small",
-        "val_count_medium",
-        "val_count_large",
-    ]
     with path.open("a", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow([row.get(k, "") for k in keys])
+        writer.writerow([row.get(k, "") for k in METRICS_CSV_COLUMNS])
 
 
 def _safe_float(value: str | float | int | None) -> float | None:
@@ -187,6 +162,16 @@ def plot_metrics_svg(metrics_csv_path: Path, out_svg_path: Path) -> bool:
                 ("val_center_error_px", "center_err_px", "#2ca02c"),
                 ("val_center_error_norm_diag", "center_err_norm_diag", "#9467bd"),
                 ("val_fp_per_image", "fp_per_image", "#d62728"),
+            ],
+        ),
+        (
+            "Threshold sweep (best by config objective)",
+            [
+                ("val_best_conf_threshold", "best_conf", "#1f77b4"),
+                ("val_best_conf_precision", "P @ best_conf", "#2ca02c"),
+                ("val_best_conf_recall", "R @ best_conf", "#d62728"),
+                ("val_best_conf_f1", "F1 @ best_conf", "#9467bd"),
+                ("val_best_conf_fp_per_image", "fp/img @ best_conf", "#ff7f0e"),
             ],
         ),
     ]

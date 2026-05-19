@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    small_net_fp32_data_params.h
   * @author  AST Embedded Analytics Research Platform
-  * @date    2026-05-02T17:31:19+0200
+  * @date    2026-05-19T01:36:30+0200
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * Copyright (c) 2026 STMicroelectronics.
@@ -28,18 +28,18 @@
 
 
 #define AI_SMALL_NET_FP32_DATA_ACTIVATIONS_SIZES \
-  { 460800, }
-#define AI_SMALL_NET_FP32_DATA_ACTIVATIONS_SIZE     (460800)
+  { 109976, }
+#define AI_SMALL_NET_FP32_DATA_ACTIVATIONS_SIZE     (109976)
 #define AI_SMALL_NET_FP32_DATA_ACTIVATIONS_COUNT    (1)
-#define AI_SMALL_NET_FP32_DATA_ACTIVATION_1_SIZE    (460800)
+#define AI_SMALL_NET_FP32_DATA_ACTIVATION_1_SIZE    (109976)
 
 
 
 #define AI_SMALL_NET_FP32_DATA_WEIGHTS_SIZES \
-  { 392856, }
-#define AI_SMALL_NET_FP32_DATA_WEIGHTS_SIZE         (392856)
+  { 69668, }
+#define AI_SMALL_NET_FP32_DATA_WEIGHTS_SIZE         (69668)
 #define AI_SMALL_NET_FP32_DATA_WEIGHTS_COUNT        (1)
-#define AI_SMALL_NET_FP32_DATA_WEIGHT_1_SIZE        (392856)
+#define AI_SMALL_NET_FP32_DATA_WEIGHT_1_SIZE        (69668)
 
 
 

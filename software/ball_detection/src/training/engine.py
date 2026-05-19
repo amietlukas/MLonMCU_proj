@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import time
 from pathlib import Path
 from typing import Any, Dict, Sequence
@@ -7,9 +8,19 @@ from typing import Any, Dict, Sequence
 import torch
 from torch.utils.data import DataLoader
 
-from ball_detection.src.datasets.visualization import save_prediction_preview
+from ball_detection.src.datasets.visualization import (
+    save_prediction_preview,
+    tensor_to_pil,
+)
 from ball_detection.src.training.losses import decode_outputs
-from ball_detection.src.training.metrics import build_image_predictions, compute_detection_metrics
+from ball_detection.src.training.metrics import (
+    build_image_predictions,
+    build_threshold_grid,
+    compute_detection_metrics,
+    pick_best_sweep_row,
+    run_conf_threshold_sweep,
+    write_sweep_csv,
+)
 
 
 
@@ -23,6 +34,27 @@ def _move_targets_to_device(targets: list[dict], device: torch.device) -> list[d
     return out
 
 
+def _save_train_input_preview(
+    images_cpu: torch.Tensor,
+    targets: list[dict],
+    out_dir: Path,
+    prefix: str,
+    image_offset: int,
+) -> None:
+    """Dump the exact post-augmentation tensor that the model trains on, with NO overlay.
+
+    `images_cpu[i]` is [C,H,W] in [0,1]. We convert it straight back to a PIL image and save it --
+    this PNG is byte-identical (up to PIL uint8 quantization of float32) to what `model(images)`
+    receives. No bounding boxes, no labels, no draw calls.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    i = int(image_offset)
+    pil_img = tensor_to_pil(images_cpu[i])
+    image_id_raw = str(targets[i].get("image_id", i))
+    image_id = Path(image_id_raw).stem.replace("/", "_")
+    pil_img.save(out_dir / f"{prefix}_{image_id}.png")
+
+
 def train_one_epoch(
     model: torch.nn.Module,
     loader: DataLoader,
@@ -34,6 +66,9 @@ def train_one_epoch(
     amp_enabled: bool,
     grad_clip_norm: float,
     max_batches: int | None,
+    train_input_preview_dir: Path | None = None,
+    train_input_preview_max: int = 5,
+    epoch: int | None = None,
 ) -> Dict[str, float]:
     model.train()
     if hasattr(criterion, "set_assigner_debug_context"):
@@ -47,9 +82,36 @@ def train_one_epoch(
 
     t0 = time.time()
 
+    # Decide upfront which batch indices contribute a preview image. We pick `train_input_preview_max`
+    # distinct batch indices and save one randomly chosen image per chosen batch -- this gives the
+    # user a varied snapshot of post-augmentation inputs without dumping every image.
+    preview_rng = random.Random((int(epoch) if epoch is not None else 0) * 1000003 + 11)
+    preview_batch_indices: set[int] = set()
+    if train_input_preview_dir is not None and int(train_input_preview_max) > 0:
+        total_batches = len(loader) if max_batches is None else min(len(loader), int(max_batches))
+        if total_batches > 0:
+            k = min(int(train_input_preview_max), total_batches)
+            preview_batch_indices = set(preview_rng.sample(range(total_batches), k))
+
     for b_idx, (images, targets) in enumerate(loader):
         if max_batches is not None and b_idx >= max_batches:
             break
+
+        if b_idx in preview_batch_indices:
+            # Snapshot the *augmented* tensor before it hits the device / autocast / model.
+            n_in_batch = int(images.shape[0])
+            offset = preview_rng.randint(0, max(0, n_in_batch - 1))
+            try:
+                _save_train_input_preview(
+                    images_cpu=images.detach().cpu(),
+                    targets=targets,
+                    out_dir=train_input_preview_dir,
+                    prefix=f"train_input_b{b_idx:04d}",
+                    image_offset=offset,
+                )
+            except Exception:
+                # Preview is debug-only -- never fail training because of it.
+                pass
 
         images = images.to(device, non_blocking=True)
         targets_dev = _move_targets_to_device(targets, device)
@@ -113,6 +175,10 @@ def validate_one_epoch(
     decode_twth_clamp_max: float,
     max_batches: int | None,
     preview_dir: Path | None,
+    epoch: int | None = None,
+    threshold_sweep_cfg: Dict[str, Any] | None = None,
+    sweep_csv_dir: Path | None = None,
+    n_preview: int = 8,
 ) -> Dict[str, float]:
     model.eval()
     if hasattr(criterion, "set_assigner_debug_context"):
@@ -127,6 +193,30 @@ def validate_one_epoch(
     map_preds_all = []
     op_preds_all = []
     targets_all = []
+
+    # Sweep is enabled when the config opts in AND the current epoch matches every_n_epochs.
+    sweep_enabled = False
+    if threshold_sweep_cfg is not None and bool(threshold_sweep_cfg.get("enabled", False)):
+        every_n = int(threshold_sweep_cfg.get("every_n_epochs", 1))
+        every_n = max(1, every_n)
+        sweep_enabled = epoch is None or (epoch % every_n == 0)
+
+    decoded_boxes_chunks: list[torch.Tensor] = []
+    decoded_scores_chunks: list[torch.Tensor] = []
+
+    # Per-epoch RNG keeps preview selection deterministic for that epoch but varied across epochs.
+    preview_rng = random.Random((int(epoch) if epoch is not None else 0) * 1000003 + 7)
+
+    # Decide which batch indices will contribute a preview image. len(loader) is the total batch count;
+    # if max_batches caps it, we only sample from the capped range. One random image is saved per chosen batch.
+    total_batches = len(loader)
+    if max_batches is not None:
+        total_batches = min(total_batches, int(max_batches))
+    if preview_dir is not None and total_batches > 0 and n_preview > 0:
+        k = min(n_preview, total_batches)
+        preview_batch_indices = set(preview_rng.sample(range(total_batches), k))
+    else:
+        preview_batch_indices = set()
 
     for b_idx, (images, targets) in enumerate(loader):
         if max_batches is not None and b_idx >= max_batches:
@@ -180,7 +270,11 @@ def validate_one_epoch(
         op_preds_all.extend(op_preds)
         targets_all.extend(targets)
 
-        if preview_dir is not None and b_idx == 0:
+        if sweep_enabled:
+            decoded_boxes_chunks.append(decoded_boxes.detach().cpu())
+            decoded_scores_chunks.append(decoded_scores.detach().cpu())
+
+        if preview_dir is not None and b_idx in preview_batch_indices:
             op_preds_preview = build_image_predictions(
                 decoded_boxes=decoded_boxes,
                 decoded_scores=decoded_scores,
@@ -192,13 +286,15 @@ def validate_one_epoch(
                 single_object_mode=single_object_mode,
                 return_in_original=False,
             )
+            n_in_batch = int(images.shape[0])
+            offset = preview_rng.randint(0, max(0, n_in_batch - 1))
             save_prediction_preview(
-                images=images.detach().cpu(),
-                pred_boxes=[p.boxes for p in op_preds_preview],
-                targets=targets,
+                images=images[offset:offset + 1].detach().cpu(),
+                pred_boxes=[op_preds_preview[offset].boxes],
+                targets=[targets[offset]],
                 out_dir=preview_dir,
-                prefix="val_pred",
-                max_images=min(8, images.shape[0]),
+                prefix=f"val_pred_b{b_idx:03d}",
+                max_images=1,
             )
 
     metric_dict = compute_detection_metrics(
@@ -220,5 +316,45 @@ def validate_one_epoch(
             "num_pos": pos_sum / denom,
         }
     )
+
+    # Threshold sweep -- reuses the decoded outputs from this epoch's validation pass.
+    # Adds five keys: best_conf_threshold, best_conf_{precision,recall,f1,fp_per_image}.
+    if sweep_enabled and decoded_boxes_chunks:
+        decoded_boxes_all = torch.cat(decoded_boxes_chunks, dim=0)
+        decoded_scores_all = torch.cat(decoded_scores_chunks, dim=0)
+
+        conf_grid = build_threshold_grid(
+            start=float(threshold_sweep_cfg.get("start", 0.05)),
+            end=float(threshold_sweep_cfg.get("end", 0.95)),
+            step=float(threshold_sweep_cfg.get("step", 0.05)),
+        )
+        sweep_rows = run_conf_threshold_sweep(
+            decoded_boxes_all=decoded_boxes_all,
+            decoded_scores_all=decoded_scores_all,
+            targets_all=targets_all,
+            conf_grid=conf_grid,
+            nms_iou_threshold=nms_iou_threshold,
+            max_detections=max_detections,
+            use_nms=use_nms,
+            single_object_mode=single_object_mode,
+            iou_thresholds=iou_thresholds,
+            matching_iou_threshold=matching_iou_threshold,
+            small_area_threshold=small_area_threshold,
+            medium_area_threshold=medium_area_threshold,
+            ap_conf_threshold=ap_conf_threshold,
+            ap_max_detections=ap_max_detections,
+            ap_use_nms=ap_use_nms,
+        )
+        objective = str(threshold_sweep_cfg.get("objective", "f1")).lower()
+        best_row = pick_best_sweep_row(sweep_rows, objective)
+        metric_dict["best_conf_threshold"] = float(best_row["conf_threshold"])
+        metric_dict["best_conf_precision"] = float(best_row["precision"])
+        metric_dict["best_conf_recall"] = float(best_row["recall"])
+        metric_dict["best_conf_f1"] = float(best_row["f1"])
+        metric_dict["best_conf_fp_per_image"] = float(best_row["fp_per_image"])
+
+        if sweep_csv_dir is not None and bool(threshold_sweep_cfg.get("save_csv", True)):
+            tag = f"epoch_{int(epoch):03d}" if epoch is not None else "latest"
+            write_sweep_csv(sweep_csv_dir / f"{tag}.csv", sweep_rows)
 
     return metric_dict

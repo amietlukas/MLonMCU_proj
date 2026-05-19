@@ -1,0 +1,2 @@
+../Drivers/BSP/Components/mx_wifi/core/mx_address.c:211:9:mx_aton_r	40	static
+../Drivers/BSP/Components/mx_wifi/core/mx_address.c:225:12:mx_ntoa	32	static

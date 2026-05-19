@@ -64,6 +64,50 @@ def pairwise_iou_diag(boxes1: torch.Tensor, boxes2: torch.Tensor) -> torch.Tenso
     return inter / union.clamp(min=1e-6)
 
 
+def pairwise_diou_diag(boxes1: torch.Tensor, boxes2: torch.Tensor, eps: float = 1e-7) -> torch.Tensor:
+    """Diagonal-paired DIoU: DIoU[i] for boxes1[i] vs boxes2[i] (xyxy).
+
+    Formula (Zheng et al. 2020, "Distance-IoU Loss"):
+        DIoU = IoU - rho^2(b, b_gt) / c^2
+    where rho is the L2 distance between box centers and c is the diagonal length of
+    the smallest enclosing axis-aligned box covering both boxes.
+
+    Output range is [-1, 1]: 1 = identical boxes, -> -1 as boxes get far apart.
+    Use `(1 - pairwise_diou_diag(...)).mean()` as a regression loss (range [0, 2]).
+    """
+    if boxes1.numel() == 0 or boxes2.numel() == 0:
+        return torch.zeros((0,), dtype=boxes1.dtype, device=boxes1.device)
+
+    # IoU term (same as pairwise_iou_diag, recomputed here to keep this function standalone).
+    inter_x1 = torch.maximum(boxes1[:, 0], boxes2[:, 0])
+    inter_y1 = torch.maximum(boxes1[:, 1], boxes2[:, 1])
+    inter_x2 = torch.minimum(boxes1[:, 2], boxes2[:, 2])
+    inter_y2 = torch.minimum(boxes1[:, 3], boxes2[:, 3])
+    inter = (inter_x2 - inter_x1).clamp(min=0) * (inter_y2 - inter_y1).clamp(min=0)
+    a1 = (boxes1[:, 2] - boxes1[:, 0]).clamp(min=0) * (boxes1[:, 3] - boxes1[:, 1]).clamp(min=0)
+    a2 = (boxes2[:, 2] - boxes2[:, 0]).clamp(min=0) * (boxes2[:, 3] - boxes2[:, 1]).clamp(min=0)
+    union = (a1 + a2 - inter).clamp(min=eps)
+    iou = inter / union
+
+    # Center distance squared.
+    cx1 = 0.5 * (boxes1[:, 0] + boxes1[:, 2])
+    cy1 = 0.5 * (boxes1[:, 1] + boxes1[:, 3])
+    cx2 = 0.5 * (boxes2[:, 0] + boxes2[:, 2])
+    cy2 = 0.5 * (boxes2[:, 1] + boxes2[:, 3])
+    center_dist_sq = (cx1 - cx2).pow(2) + (cy1 - cy2).pow(2)
+
+    # Enclosing box diagonal squared.
+    enc_x1 = torch.minimum(boxes1[:, 0], boxes2[:, 0])
+    enc_y1 = torch.minimum(boxes1[:, 1], boxes2[:, 1])
+    enc_x2 = torch.maximum(boxes1[:, 2], boxes2[:, 2])
+    enc_y2 = torch.maximum(boxes1[:, 3], boxes2[:, 3])
+    enc_w = (enc_x2 - enc_x1).clamp(min=0)
+    enc_h = (enc_y2 - enc_y1).clamp(min=0)
+    enc_diag_sq = enc_w.pow(2) + enc_h.pow(2) + eps
+
+    return iou - center_dist_sq / enc_diag_sq
+
+
 def centers_of_boxes(boxes: torch.Tensor) -> torch.Tensor:
     cx = 0.5 * (boxes[:, 0] + boxes[:, 2])
     cy = 0.5 * (boxes[:, 1] + boxes[:, 3])

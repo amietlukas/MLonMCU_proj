@@ -79,6 +79,8 @@ train:
     mode: max
     patience: 30
     min_delta: 0.0003
+  preview_train_inputs: true       # save a few post-augmentation training images each epoch
+  train_input_preview_max: 5       # how many train-input previews per epoch
 
 loss:
   obj_weight: 1.0
@@ -95,6 +97,7 @@ loss:
   assign_center_radius: 1 # was 0
   decode_twth_clamp_min: -4.0
   decode_twth_clamp_max: 4.0
+  box_loss_type: iou       # iou (pure 1-IoU) | diou (1-IoU + center-distance penalty)
 
 assigner:
   type: simota_lite
