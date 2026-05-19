@@ -28,7 +28,7 @@ MODEL_C = 1
 # Number of inferences to run.
 #   None  -> full test set, each image exactly once (shuffled)
 #   int N -> N random samples (with replacement)
-N_INFERENCES = 5000
+N_INFERENCES = None
 
 CLASS_NAMES = ["palm", "rock", "pinkie", "one", "fist", "others"]
 CLASS_TO_IDX = {name: i for i, name in enumerate(CLASS_NAMES)}

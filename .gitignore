@@ -40,3 +40,6 @@ venv/
 
 # version control
 /local_version
+
+# pred
+**/pred_images/**

@@ -194,6 +194,7 @@ def main() -> None:
     export_dir = run_dir / "exports"
     gt_preview_dir = run_dir / "groundtruth_preview"
     pred_preview_dir = run_dir / "predictions_preview"
+    train_input_preview_root = run_dir / "train_input_previews"
 
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     export_dir.mkdir(parents=True, exist_ok=True)
@@ -307,6 +308,7 @@ def main() -> None:
         assign_center_radius=int(cfg_runtime["loss"].get("assign_center_radius", 0)),
         decode_twth_clamp_min=float(cfg_runtime["loss"].get("decode_twth_clamp_min", -4.0)),
         decode_twth_clamp_max=float(cfg_runtime["loss"].get("decode_twth_clamp_max", 4.0)),
+        box_loss_type=str(cfg_runtime["loss"].get("box_loss_type", "iou")),
         assigner_cfg=cfg_runtime.get("assigner", {"type": "center"}),
         input_size=(int(cfg_runtime["input"]["height"]), int(cfg_runtime["input"]["width"])),
         logger=logger,
@@ -408,10 +410,26 @@ def main() -> None:
     max_train_batches = args.max_train_batches
     max_val_batches = args.max_val_batches
 
+    # Train-input preview controls: save N augmented training images per epoch so the user
+    # can eyeball exactly what the model trains on (post-augmentation, post-resize). Toggle
+    # via train.preview_train_inputs (default true). Count via train.train_input_preview_max.
+    preview_train_inputs = bool(cfg_runtime["train"].get("preview_train_inputs", True))
+    train_input_preview_max = int(cfg_runtime["train"].get("train_input_preview_max", 5))
+    logger.info(
+        f"[INFO] train input previews: enabled={preview_train_inputs} "
+        f"max_per_epoch={train_input_preview_max} dir={train_input_preview_root}"
+    )
+
     # traning loop
     for epoch in range(start_epoch, epochs + 1):
         lr_now = float(optimizer.param_groups[0]["lr"])
         logger.info(f"[INFO] epoch {epoch}/{epochs} start | lr={lr_now:.6g}")
+
+        train_input_preview_dir = (
+            (train_input_preview_root / f"epoch_{epoch:03d}")
+            if preview_train_inputs
+            else None
+        )
 
         train_metrics = train_one_epoch(
             model=model,
@@ -423,6 +441,9 @@ def main() -> None:
             amp_enabled=amp_enabled,
             grad_clip_norm=grad_clip_norm,
             max_batches=max_train_batches,
+            train_input_preview_dir=train_input_preview_dir,
+            train_input_preview_max=train_input_preview_max,
+            epoch=epoch,
         )
 
         val_metrics = validate_one_epoch(
@@ -536,6 +557,19 @@ def main() -> None:
             cfg=cfg_runtime,
             best_metric=best_metric,
         )
+
+        per_epoch_ckpt_path = ckpt_dir / f"{epoch:03d}_epoch.pt"
+        save_checkpoint(
+            per_epoch_ckpt_path,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            scaler=scaler,
+            epoch=epoch,
+            cfg=cfg_runtime,
+            best_metric=best_metric,
+        )
+        logger.info(f"[INFO] saved per-epoch checkpoint: {per_epoch_ckpt_path}")
 
         current = _resolve_validation_metric(val_metrics, monitor)
 

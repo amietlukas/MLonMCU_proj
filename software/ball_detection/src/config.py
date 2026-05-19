@@ -122,6 +122,10 @@ def _validate_config(cfg: Dict[str, Any]) -> None:
     if int(loss_cfg.get("assign_center_radius", 0)) < 0:
         raise ValueError("loss.assign_center_radius must be >= 0")
 
+    box_loss_type = str(loss_cfg.get("box_loss_type", "iou")).lower().strip()
+    if box_loss_type not in {"iou", "diou"}:
+        raise ValueError("loss.box_loss_type must be one of: iou, diou")
+
     assigner_cfg = cfg.get("assigner", {})
     if assigner_cfg is None:
         assigner_cfg = {}

@@ -8,7 +8,10 @@ from typing import Any, Dict, Sequence
 import torch
 from torch.utils.data import DataLoader
 
-from ball_detection.src.datasets.visualization import save_prediction_preview
+from ball_detection.src.datasets.visualization import (
+    save_prediction_preview,
+    tensor_to_pil,
+)
 from ball_detection.src.training.losses import decode_outputs
 from ball_detection.src.training.metrics import (
     build_image_predictions,
@@ -31,6 +34,27 @@ def _move_targets_to_device(targets: list[dict], device: torch.device) -> list[d
     return out
 
 
+def _save_train_input_preview(
+    images_cpu: torch.Tensor,
+    targets: list[dict],
+    out_dir: Path,
+    prefix: str,
+    image_offset: int,
+) -> None:
+    """Dump the exact post-augmentation tensor that the model trains on, with NO overlay.
+
+    `images_cpu[i]` is [C,H,W] in [0,1]. We convert it straight back to a PIL image and save it --
+    this PNG is byte-identical (up to PIL uint8 quantization of float32) to what `model(images)`
+    receives. No bounding boxes, no labels, no draw calls.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    i = int(image_offset)
+    pil_img = tensor_to_pil(images_cpu[i])
+    image_id_raw = str(targets[i].get("image_id", i))
+    image_id = Path(image_id_raw).stem.replace("/", "_")
+    pil_img.save(out_dir / f"{prefix}_{image_id}.png")
+
+
 def train_one_epoch(
     model: torch.nn.Module,
     loader: DataLoader,
@@ -42,6 +66,9 @@ def train_one_epoch(
     amp_enabled: bool,
     grad_clip_norm: float,
     max_batches: int | None,
+    train_input_preview_dir: Path | None = None,
+    train_input_preview_max: int = 5,
+    epoch: int | None = None,
 ) -> Dict[str, float]:
     model.train()
     if hasattr(criterion, "set_assigner_debug_context"):
@@ -55,9 +82,36 @@ def train_one_epoch(
 
     t0 = time.time()
 
+    # Decide upfront which batch indices contribute a preview image. We pick `train_input_preview_max`
+    # distinct batch indices and save one randomly chosen image per chosen batch -- this gives the
+    # user a varied snapshot of post-augmentation inputs without dumping every image.
+    preview_rng = random.Random((int(epoch) if epoch is not None else 0) * 1000003 + 11)
+    preview_batch_indices: set[int] = set()
+    if train_input_preview_dir is not None and int(train_input_preview_max) > 0:
+        total_batches = len(loader) if max_batches is None else min(len(loader), int(max_batches))
+        if total_batches > 0:
+            k = min(int(train_input_preview_max), total_batches)
+            preview_batch_indices = set(preview_rng.sample(range(total_batches), k))
+
     for b_idx, (images, targets) in enumerate(loader):
         if max_batches is not None and b_idx >= max_batches:
             break
+
+        if b_idx in preview_batch_indices:
+            # Snapshot the *augmented* tensor before it hits the device / autocast / model.
+            n_in_batch = int(images.shape[0])
+            offset = preview_rng.randint(0, max(0, n_in_batch - 1))
+            try:
+                _save_train_input_preview(
+                    images_cpu=images.detach().cpu(),
+                    targets=targets,
+                    out_dir=train_input_preview_dir,
+                    prefix=f"train_input_b{b_idx:04d}",
+                    image_offset=offset,
+                )
+            except Exception:
+                # Preview is debug-only -- never fail training because of it.
+                pass
 
         images = images.to(device, non_blocking=True)
         targets_dev = _move_targets_to_device(targets, device)
