@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    small_net_fp32_data.c
   * @author  AST Embedded Analytics Research Platform
-  * @date    2026-05-19T01:36:30+0200
+  * @date    2026-05-20T03:17:49+0200
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * @attention
@@ -21,13 +21,13 @@
 AI_API_DECLARE_BEGIN
 ai_buffer g_small_net_fp32_data_map_activations[AI_SMALL_NET_FP32_DATA_ACTIVATIONS_COUNT] = {
   AI_BUFFER_INIT(AI_FLAG_NONE,  AI_BUFFER_FORMAT_U8,
-    AI_BUFFER_SHAPE_INIT(AI_SHAPE_BCWH, 4, 1, 109976, 1, 1),
-    109976, NULL, NULL),    /* heap_overlay_pool */
+    AI_BUFFER_SHAPE_INIT(AI_SHAPE_BCWH, 4, 1, 353252, 1, 1),
+    353252, NULL, NULL),    /* heap_overlay_pool */
   };
 ai_buffer g_small_net_fp32_data_map_weights[AI_SMALL_NET_FP32_DATA_WEIGHTS_COUNT] = {
   AI_BUFFER_INIT(AI_FLAG_NONE,  AI_BUFFER_FORMAT_U8,
-    AI_BUFFER_SHAPE_INIT(AI_SHAPE_BCWH, 4, 1, 69668, 1, 1),
-    69668, NULL, s_small_net_fp32_weights_array_u64),   /* weights_array */
+    AI_BUFFER_SHAPE_INIT(AI_SHAPE_BCWH, 4, 1, 760728, 1, 1),
+    760728, NULL, s_small_net_fp32_weights_array_u64),   /* weights_array */
   };
 
 

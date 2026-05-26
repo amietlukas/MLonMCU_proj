@@ -13,6 +13,7 @@ venv/
 .venv/
 **/venv/
 **/.venv/
+**/venv_tflite/**
 .env/
 
 # jupiter
@@ -41,5 +42,10 @@ venv/
 # version control
 /local_version
 
-# pred
+# pred and other folders
 **/pred_images/**
+**/Classifier_CMSISNN/**
+
+# stedgeai outputs
+**/st_ai_output/**
+**/st_ai_ws/**

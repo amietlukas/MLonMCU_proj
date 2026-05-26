@@ -135,9 +135,11 @@ static void preprocess(const uint8_t *gray, int8_t *dst)
 /*   fist   '4' BACKWARD                                              */
 /*   others '0' STOP                                                  */
 /*                                                                    */
-/* The U5 sends one byte over USART3 (PA7 TX) per inference. Wire     */
-/* PA7 to the HC-05/06 RXD; the U5-side module is the master, paired  */
-/* and bound to the slave on the Arduino side.                        */
+/* The U5 sends one byte over USART3 per inference at 9600 8N1 — the  */
+/* HC-05/HC-06 factory default. USART3 is routed to the B-U585I-IOT02A */
+/* Arduino-header pins: D1 = PD8 (TX) -> HC-05 RXD, D0 = PD9 (RX) <-  */
+/* HC-05 TXD. HC-05 is master, paired+bound to the HC-06 slave on the */
+/* Arduino side. See README.md for the AT-command pairing flow.       */
 /*                                                                    */
 /* Edit the gesture->command map here to taste. Anything below the    */
 /* confidence floor is sent as '5' so a flickery low-conf prediction  */
@@ -151,8 +153,8 @@ static char prediction_to_cmd(int pred_class, float confidence)
     switch (pred_class) {
         case 0: return '0';   /* palm   -> STOP        */
         case 1: return '1';   /* rock   -> FORWARD     */
-        case 2: return '3';   /* pinkie -> FWD-LEFT    */
-        case 3: return '2';   /* one    -> FWD-RIGHT   */
+        case 2: return '2';   /* pinkie -> FWD-RIGHT   */
+        case 3: return '3';   /* one    -> FWD-LEFT    */
         case 4: return '4';   /* fist   -> BACKWARD    */
         case 5: return '0';   /* others -> STOP        */
         default: return '0';

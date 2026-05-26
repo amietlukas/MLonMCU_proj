@@ -1,0 +1,9 @@
+# ST reference app — 600 MB, pull fresh via the README's clone+submodule init.
+stm32ai-modelzoo-services/
+
+# stedgeai output
+build/
+X-CUBE-AI/
+
+# host-side test artifacts
+app/__pycache__/

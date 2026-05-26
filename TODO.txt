@@ -1,0 +1,17 @@
+General:
+- N6 kaufen
+- Präsentation
+- Kommunikation zwischen beiden STM32
+- Demo Video aufnehmen
+
+Classifier:
+- Paul zu deployen (fahren)
+- TFlite (CMSIS-NN Library)
+- Bignet laufen
+- Bignet_pruned 1.8V (latency, clock cycle, acc?)
+
+
+Ball-Detection:
+- Kamera Tracking
+- Tunen
+- Prunen + Quantization

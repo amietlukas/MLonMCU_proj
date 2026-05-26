@@ -35,8 +35,8 @@ dataset:
   seed: 42
 
 input:                        # image resolution
-  width: 640
-  height: 480
+  width: 320
+  height: 256
   color_mode: rgb
   channels: 3
   resize_policy: resize      # resize (direct warp) | letterbox (keep aspect + pad)
@@ -79,7 +79,7 @@ train:
     mode: max
     patience: 30
     min_delta: 0.0003
-  preview_train_inputs: true       # save a few post-augmentation training images each epoch
+  preview_train_inputs: false       # save a few post-augmentation training images each epoch
   train_input_preview_max: 5       # how many train-input previews per epoch
 
 loss:
@@ -97,7 +97,7 @@ loss:
   assign_center_radius: 1 # was 0
   decode_twth_clamp_min: -4.0
   decode_twth_clamp_max: 4.0
-  box_loss_type: iou       # iou (pure 1-IoU) | diou (1-IoU + center-distance penalty)
+  box_loss_type: diou       # iou (pure 1-IoU) | diou (1-IoU + center-distance penalty)
 
 assigner:
   type: simota_lite
@@ -115,7 +115,7 @@ assigner:
     debug_every_n_batches: 20
 
 eval:
-  conf_threshold: 0.45 # best F1 in SimOTA threshold sweep; lower FP/image than 0.40
+  conf_threshold: 0.50 # was 0.45 -- DIoU best.pt conf_buckets showed 73% of FPs in [0.45,0.55]; bumping to 0.50 cuts FPs 271->142 (-48%) and lifts F1 0.920->0.926 on the same checkpoint
   nms_iou_threshold: 0.25
   max_detections: 3
   use_nms: true
@@ -136,7 +136,7 @@ export:
   calibration_batches: 20
   int8:
     per_channel: true
-    activation_type: uint8
+    activation_type: int8
     weight_type: int8
     calibrate_method: minmax
 

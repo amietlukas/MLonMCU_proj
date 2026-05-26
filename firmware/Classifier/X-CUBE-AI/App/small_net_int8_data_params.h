@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    small_net_int8_data_params.h
   * @author  AST Embedded Analytics Research Platform
-  * @date    2026-05-18T15:00:37+0200
+  * @date    2026-05-25T12:59:47+0200
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * Copyright (c) 2026 STMicroelectronics.
@@ -28,18 +28,18 @@
 
 
 #define AI_SMALL_NET_INT8_DATA_ACTIVATIONS_SIZES \
-  { 184100, }
-#define AI_SMALL_NET_INT8_DATA_ACTIVATIONS_SIZE     (184100)
+  { 93888, }
+#define AI_SMALL_NET_INT8_DATA_ACTIVATIONS_SIZE     (93888)
 #define AI_SMALL_NET_INT8_DATA_ACTIVATIONS_COUNT    (1)
-#define AI_SMALL_NET_INT8_DATA_ACTIVATION_1_SIZE    (184100)
+#define AI_SMALL_NET_INT8_DATA_ACTIVATION_1_SIZE    (93888)
 
 
 
 #define AI_SMALL_NET_INT8_DATA_WEIGHTS_SIZES \
-  { 95160, }
-#define AI_SMALL_NET_INT8_DATA_WEIGHTS_SIZE         (95160)
+  { 192232, }
+#define AI_SMALL_NET_INT8_DATA_WEIGHTS_SIZE         (192232)
 #define AI_SMALL_NET_INT8_DATA_WEIGHTS_COUNT        (1)
-#define AI_SMALL_NET_INT8_DATA_WEIGHT_1_SIZE        (95160)
+#define AI_SMALL_NET_INT8_DATA_WEIGHT_1_SIZE        (192232)
 
 
 

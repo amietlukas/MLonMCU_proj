@@ -39,8 +39,12 @@ MODEL_RUNS = {
     "smallnet_int8":     "software/classifier/runs/smallnet_greyscale-20260504-184641_BASELINE_SMALL",
     "bignet_fp32":       "software/classifier/runs/bignet-20260505-163101_BASELINE",
     "bignet_int8":       "software/classifier/runs/bignet-20260505-163101_BASELINE",
+    # TFLite-Micro + CMSIS-NN port of the same bignet int8 model; lives in the
+    # same run dir so plots can group both flash targets under one network.
+    "bignet_int8_cmsisnn": "software/classifier/runs/bignet-20260505-163101_BASELINE",
     "bignet_pruned_fp32": "software/classifier/runs/bignet_pruned-20260505-225640_BASELINE_PRUNED",
     "bignet_pruned_int8": "software/classifier/runs/bignet_pruned-20260505-225640_BASELINE_PRUNED",
+    "bignet_pruned_int8_cmsisnn": "software/classifier/runs/bignet_pruned-20260505-225640_BASELINE_PRUNED",
 }
 REPO_ROOT = "/mnt/core/MLonMCU_proj"
 

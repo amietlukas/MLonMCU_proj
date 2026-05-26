@@ -120,7 +120,7 @@ def quantize_int8_qdq(
         "percentile": CalibrationMethod.Percentile,
     }
 
-    act_qtype = act_type_map.get(str(activation_type).lower(), QuantType.QUInt8)
+    act_qtype = act_type_map.get(str(activation_type).lower(), QuantType.QInt8)
     wt_qtype = wt_type_map.get(str(weight_type).lower(), QuantType.QInt8)
     cal_method = method_map.get(str(calibrate_method).lower(), CalibrationMethod.MinMax)
 

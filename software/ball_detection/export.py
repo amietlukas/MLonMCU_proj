@@ -97,7 +97,7 @@ def main() -> None:
             calibration_batches=int(export_cfg.get("calibration_batches", 20)),
             batch_size=int(cfg["train"]["batch_size"]),
             per_channel=bool(int8_cfg.get("per_channel", True)),
-            activation_type=str(int8_cfg.get("activation_type", "uint8")),
+            activation_type=str(int8_cfg.get("activation_type", "int8")),
             weight_type=str(int8_cfg.get("weight_type", "int8")),
             calibrate_method=str(int8_cfg.get("calibrate_method", "minmax")),
             report_path=default_out / "calibration_report.json",

@@ -69,7 +69,7 @@ ai_handle data_activations1[] = {pool0};
 /* Flip this to 1 to dispatch to ST's aiValidation protocol firmware (used by
  *   stedgeai validate --mode target --desc serial:/dev/ttyACM0:921600 ...).
  * Flip back to 0 to use our custom classifier UART loop with host.py. */
-#define USE_AI_VALIDATION_FW 0
+#define USE_AI_VALIDATION_FW 1
 
 #if USE_AI_VALIDATION_FW
 #include "aiValidation.h"

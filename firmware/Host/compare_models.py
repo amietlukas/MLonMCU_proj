@@ -38,12 +38,18 @@ ROWS = [
     ("bignet_int8",
      "software/classifier/runs/bignet-20260505-163101_BASELINE",
      "results_bignet_int8.csv",         False),
+    ("bignet_int8_cmsisnn",
+     "software/classifier/runs/bignet-20260505-163101_BASELINE",
+     "results_bignet_int8_cmsisnn.csv", True),
     ("bignet_pruned_fp32",
      "software/classifier/runs/bignet_pruned-20260505-225640_BASELINE_PRUNED",
      "results_bignet_pruned_fp32.csv",  False),
     ("bignet_pruned_int8",
      "software/classifier/runs/bignet_pruned-20260505-225640_BASELINE_PRUNED",
      "results_bignet_pruned_int8.csv",  False),
+    ("bignet_pruned_int8_cmsisnn",
+     "software/classifier/runs/bignet_pruned-20260505-225640_BASELINE_PRUNED",
+     "results_bignet_pruned_int8_cmsisnn.csv", True),
 ]
 
 LEGACY_ALIAS = {
@@ -59,8 +65,16 @@ STATIC_INFO = {
     "smallnet_int8":      {"params":  93446, "macc": 183_668_710, "weights_B":  95_160, "acts_B": 184_100},
     "bignet_fp32":        {"params": 190182, "macc":  72_482_390, "weights_B": 760_728, "acts_B": 353_252},
     "bignet_int8":        {"params": 190182, "macc":  71_911_382, "weights_B": 192_232, "acts_B":  93_888},
+    # CMSIS-NN/TFLM build of the same bignet int8 network.
+    # weights_B: actual .tflite file size embedded in flash (model_data.cc).
+    # acts_B   : TFLM tensor arena reservation (set in Core/Src/classifier_app.cc).
+    "bignet_int8_cmsisnn": {"params": 190182, "macc": 71_911_382, "weights_B": 204_416, "acts_B": 196_608},
     "bignet_pruned_fp32": {"params":  17417, "macc":   7_614_225, "weights_B":  69_668, "acts_B": 109_976},
     "bignet_pruned_int8": {"params":  17417, "macc":   7_437_357, "weights_B":  18_052, "acts_B":  27_640},
+    # CMSIS-NN/TFLM build of bignet_pruned int8. weights_B is the .tflite blob
+    # size (model_data.cc); acts_B is the TFLM arena reservation. Refine after
+    # a real run via g_interp->arena_used_bytes() if you want a tighter ram_KB.
+    "bignet_pruned_int8_cmsisnn": {"params": 17417, "macc": 7_437_357, "weights_B": 32_768, "acts_B": 196_608},
 }
 
 # STM32U585 datasheet DS13086 (Rev 10), Run1 mode, fHCLK = 160 MHz,

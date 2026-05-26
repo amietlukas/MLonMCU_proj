@@ -11,7 +11,7 @@
  * registry; this flag just picks which one to instantiate at boot.
  * =============================================================
  */
-#define USE_INT8_MODEL     0
+#define USE_INT8_MODEL     1
 
 /* =============================================================
  * Current model: smallnet_greyscale baseline (HAGRID 6-class)
@@ -38,8 +38,8 @@
 /* int8 input/output quant (smallnet_greyscale int8, fused export). */
 #define INPUT_SCALE        1.0f
 #define INPUT_ZP           (-128)
-#define OUTPUT_SCALE       0.168752477f
-#define OUTPUT_ZP          25
+#define OUTPUT_SCALE       0.231398404f   /* bignet int8 */
+#define OUTPUT_ZP          (-46)
 
 #define UART_TIMEOUT       HAL_MAX_DELAY
 

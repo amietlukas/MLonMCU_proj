@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    small_net_fp32.h
   * @author  AST Embedded Analytics Research Platform
-  * @date    2026-05-19T01:36:30+0200
+  * @date    2026-05-20T03:17:49+0200
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * @attention
@@ -23,7 +23,7 @@
 
 /******************************************************************************/
 #define AI_SMALL_NET_FP32_MODEL_NAME          "small_net_fp32"
-#define AI_SMALL_NET_FP32_ORIGIN_MODEL_NAME   "bignet_pruned20260505225640_bestepoch132_fp32_op13"
+#define AI_SMALL_NET_FP32_ORIGIN_MODEL_NAME   "bignet20260505163101_bestepoch128_fp32_op13"
 
 /******************************************************************************/
 #define AI_SMALL_NET_FP32_ACTIVATIONS_ALIGNMENT   (4)

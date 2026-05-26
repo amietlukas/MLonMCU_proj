@@ -4,4 +4,4 @@
 ../Core/Src/classifier_cam_app.c:205:6:BSP_CAMERA_LineEventCallback	0	static
 ../Core/Src/classifier_cam_app.c:211:6:BSP_CAMERA_ErrorCallback	0	static
 ../Core/Src/classifier_cam_app.c:220:6:classifier_cam_init	8	static
-../Core/Src/classifier_cam_app.c:240:6:classifier_cam_process	168	static
+../Core/Src/classifier_cam_app.c:283:6:classifier_cam_process	168	static

@@ -151,8 +151,8 @@ static char prediction_to_cmd(int pred_class, float confidence)
     switch (pred_class) {
         case 0: return '0';   /* palm   -> STOP        */
         case 1: return '1';   /* rock   -> FORWARD     */
-        case 2: return '3';   /* pinkie -> FWD-LEFT    */
-        case 3: return '2';   /* one    -> FWD-RIGHT   */
+        case 2: return '2';   /* pinkie -> FWD-RIGHT   */
+        case 3: return '3';   /* one    -> FWD-LEFT    */
         case 4: return '4';   /* fist   -> BACKWARD    */
         case 5: return '0';   /* others -> STOP        */
         default: return '0';
@@ -219,6 +219,12 @@ void BSP_CAMERA_ErrorCallback(uint32_t Instance)
 /* ------------------------------------------------------------------ */
 void classifier_cam_init(void)
 {
+#if BT_AT_BRIDGE
+    /* Bridge mode — skip AI + camera, just retune USART3 to 38400 */
+    huart3.Init.BaudRate = 38400;
+    if (HAL_UART_Init(&huart3) != HAL_OK) { uart_send_str("BR_INIT_FAIL\r\n"); Error_Handler(); }
+    return;
+#else
     /* --- AI network ------------------------------------------------ */
     ai_error err = ai_mnetwork_create(AI_BIG_NET_PRUNED_INT8_MODEL_NAME, &s_net, NULL);
     if (err.type != AI_ERROR_NONE) { uart_send_str("CREATE_FAIL\r\n"); Error_Handler(); }
@@ -232,13 +238,54 @@ void classifier_cam_init(void)
         uart_send_str("CAM_INIT_FAIL\r\n");
         Error_Handler();
     }
+#endif
 }
+
+#if BT_AT_BRIDGE
+/* ------------------------------------------------------------------ */
+/* AT bridge: USART1 (115200) <-> USART3 (38400). Polls ISR directly  */
+/* (no HAL timeout overhead) so back-to-back bytes from HC-05 don't   */
+/* get lost in the 1-byte RX register before the next poll.            */
+/* ------------------------------------------------------------------ */
+static void bt_at_bridge(void)
+{
+    const char *banner =
+        "\r\nBT_AT_BRIDGE: USART1(115200) <-> USART3(38400, HC-05 AT)\r\n"
+        "Hold HC-05 EN/KEY high (or press its small button) while powering\r\n"
+        "it on, then type AT commands with CR+LF line ending.\r\n\r\n";
+    HAL_UART_Transmit(&huart1, (uint8_t *)banner, (uint16_t)strlen(banner), HAL_MAX_DELAY);
+
+    USART_TypeDef *u1 = huart1.Instance;
+    USART_TypeDef *u3 = huart3.Instance;
+
+    for (;;) {
+        /* USART1 RX -> USART3 TX (+ local echo back to USART1) */
+        if (u1->ISR & USART_ISR_RXNE_RXFNE) {
+            uint8_t b = (uint8_t)(u1->RDR & 0xFF);
+            while (!(u3->ISR & USART_ISR_TXE_TXFNF)) { }
+            u3->TDR = b;
+            while (!(u1->ISR & USART_ISR_TXE_TXFNF)) { }
+            u1->TDR = b;
+        }
+        /* USART3 RX -> USART1 TX */
+        if (u3->ISR & USART_ISR_RXNE_RXFNE) {
+            uint8_t b = (uint8_t)(u3->RDR & 0xFF);
+            while (!(u1->ISR & USART_ISR_TXE_TXFNF)) { }
+            u1->TDR = b;
+        }
+    }
+}
+#endif
 
 /* ------------------------------------------------------------------ */
 /* Capture + infer loop                                               */
 /* ------------------------------------------------------------------ */
 void classifier_cam_process(void)
 {
+#if BT_AT_BRIDGE
+    bt_at_bridge();   /* never returns */
+#endif
+
     /* No sync handshake — the MCU drives the BT command on its own and the
      * host (host_cam.py / picocom) is just a passive viewer. */
     uart_send_str("BOOT\r\n");

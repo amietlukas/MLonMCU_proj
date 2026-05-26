@@ -144,6 +144,30 @@ DWT->CTRL  |= DWT_CTRL_CYCCNTENA_Msk;
 huart1.Init.BaudRate = 921600;   /* was 115200 */
 ```
 
+**USART3 pin reassignment + baud (Arduino-header pins for HC-05)**:
+the inherited Classifier `.ioc` routes USART3 to PA7/PA5, which sit on
+the on-board STMod+ area, not the Arduino headers. Reassign USART3 to
+the Arduino D0/D1 pins **PD9 (RX) / PD8 (TX)** so an HC-05 plugged into
+the Arduino socket "just works", and drop the baud to 9600.
+
+In the `.ioc`: clear PA7/PA5, set **PD8 = USART3_TX**, **PD9 =
+USART3_RX**, regenerate. Then in `Core/Src/usart.c`:
+
+```c
+/* MX_USART3_UART_Init, line ~115 */
+huart3.Init.BaudRate = 9600;     /* was 115200 — HC-05/06 default is 9600 */
+
+/* HAL_UART_MspInit USART3 branch, line ~210 — CubeMX will write this
+ * for you after the pin reassignment + regen; shown here for review:  */
+__HAL_RCC_GPIOD_CLK_ENABLE();
+GPIO_InitStruct.Pin       = GPIO_PIN_8 | GPIO_PIN_9;   /* PD8=TX, PD9=RX */
+GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+GPIO_InitStruct.Pull      = GPIO_NOPULL;
+GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_LOW;
+GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+```
+
 **`Core/Src/usart.c`** (USER CODE BEGIN 0 area): wrap the `_write`
 function in `#if 0 ... #endif` to avoid colliding with the same
 symbol in `X-CUBE-AI/App/aiTestUtility.c`.
@@ -209,6 +233,76 @@ Bandwidth: ~19.2 KB/frame × ~10 fps target ≈ 200 KB/s. Comfortable
 at 921600 baud (~92 KB/s of raw payload after overhead → ~4–5 fps
 sustained on the link). If you want more fps, drop the image stream
 and send only the 24-byte result.
+
+## Bluetooth (HC-05 on U585 → HC-06 on Arduino)
+
+The capture loop sends one ASCII byte per inference over **USART3** to
+drive the `paul_car.ino` Arduino sketch. The U585 carries the HC-05
+(master) and pairs with the HC-06 (slave) on the Arduino side.
+
+### Board wiring (B-U585I-IOT02A Arduino header)
+
+USART3 is routed to the Arduino UNO R3 UART pins **D0 (PD9) = RX** and
+**D1 (PD8) = TX** via `GPIO_AF7_USART3`. On the B-U585I-IOT02A the
+Arduino digital header is the row labelled CN13 — D0/D1 are the two
+pins closest to the corner of the board, silk-screened "D0" and "D1".
+
+| HC-05 pin | B-U585I-IOT02A pin           | Notes |
+|-----------|------------------------------|-------|
+| VCC       | `5V` on the Arduino power header (CN8) | HC-05 breakouts need 5V; on-board regulator drops it to 3.3V for the radio. |
+| GND       | any `GND` on CN8             | Common ground with the U585. |
+| **RXD**   | **D1** = PD8 (USART3_TX)     | 3.3V TX from PD8 is fine for HC-05 RXD (3.3V-tolerant on most breakouts). |
+| TXD       | **D0** = PD9 (USART3_RX)     | Optional — only needed if you want to read AT responses or replies from the Arduino. |
+| EN / KEY  | (leave floating)             | Only pulled high to enter AT-command mode for pairing/baud changes. |
+| STATE     | (leave floating)             | Optional connection-state indicator. |
+
+Do **not** swap RXD/TXD — HC-05 RXD is an input, so it goes to **D1
+(PD8, U585 TX)**. HC-05 TXD goes to **D0 (PD9, U585 RX)**.
+
+### Arduino side
+
+Standard HC-06 wiring: VCC→5V, GND→GND, HC-06 RXD→Arduino TX, HC-06
+TXD→Arduino RX. The `paul_car.ino` sketch reads single chars and
+already maps `'0'..'5'` to STOP/FWD/FWD-RIGHT/FWD-LEFT/BACKWARD/OTHER.
+
+### Pairing HC-05 (master) to HC-06 (slave) — one time
+
+The HC-05 needs to be told which HC-06 to dial. With the HC-05's `EN`
+pin held high at power-up it enters AT mode at **38400 baud**. From a
+USB-UART:
+
+```
+AT+ROLE=1            // master
+AT+CMODE=0           // connect to a specific address only
+AT+BIND=xxxx,xx,xxxxxx   // HC-06's MAC, comma-separated
+AT+INIT              // initialize SPP profile
+AT+LINK=xxxx,xx,xxxxxx   // optional, force-connect now
+```
+
+Find the HC-06 MAC by powering it up and running `AT+ADDR?` on it
+(HC-06 AT mode is always-on at 9600 baud as long as it's not paired).
+
+After pairing, both modules sit at 9600 8N1 and the link is transparent
+— the U585's `HAL_UART_Transmit(&huart3, ...)` byte pops out of the
+Arduino's hardware UART RX.
+
+### Gesture → command map
+
+Defined in `prediction_to_cmd()` in `classifier_cam_app.c`. Edit there
+to taste:
+
+| Class | Gesture | Byte | Meaning      |
+|-------|---------|------|--------------|
+| 0     | palm    | `'0'`| STOP         |
+| 1     | rock    | `'1'`| FORWARD      |
+| 2     | pinkie  | `'3'`| FWD-LEFT     |
+| 3     | one     | `'2'`| FWD-RIGHT    |
+| 4     | fist    | `'4'`| BACKWARD     |
+| 5     | others  | `'0'`| STOP         |
+
+Predictions below `CMD_MIN_CONF` (default 0.5) are forced to `'0'`
+(STOP) to keep a flickery low-confidence frame from slamming the car
+between directions.
 
 ## Running the host
 

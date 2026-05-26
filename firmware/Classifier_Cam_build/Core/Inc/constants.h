@@ -62,6 +62,13 @@
  * ================================================================== */
 #define STREAM_FRAMES_TO_HOST   0
 
+/* When set, skip camera/AI entirely and run a transparent USART1 <->
+ * USART3 byte bridge so the ST-LINK VCP (picocom on /dev/ttyACM0) talks
+ * directly to the HC-05 wired on PD8/PD9. USART3 is re-initialised to
+ * 38400 baud (HC-05 AT-mode baud) at startup. Use this to configure
+ * HC-05 once (AT+ROLE/AT+BIND/...), then set back to 0 and reflash. */
+#define BT_AT_BRIDGE            0
+
 /* DWT cycles -> ms conversion. 160 MHz HCLK on B-U585I-IOT02A. */
 #define CPU_FREQ_HZ_GUESS       160000000u
 
