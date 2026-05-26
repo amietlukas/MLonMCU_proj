@@ -35,8 +35,8 @@ dataset:
   seed: 42
 
 input:                        # image resolution
-  width: 320
-  height: 256
+  width: 640
+  height: 480
   color_mode: rgb
   channels: 3
   resize_policy: resize      # resize (direct warp) | letterbox (keep aspect + pad)

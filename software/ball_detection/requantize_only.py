@@ -23,10 +23,21 @@ if __package__ is None or __package__ == "":
     if str(software_root) not in sys.path:
         sys.path.insert(0, str(software_root))
 
+import onnx
+
 from ball_detection.src.config import load_config
 from ball_detection.src.datasets.spl_ball_dataset import build_dataloaders
 from ball_detection.src.export.quantize_onnx import quantize_int8_qdq
 from ball_detection.src.logging_utils import setup_logger
+
+
+def _read_onnx_hw(onnx_path: Path) -> tuple[int, int]:
+    """Return (height, width) of the first input of an ONNX model."""
+    m = onnx.load(str(onnx_path))
+    dims = [d.dim_value for d in m.graph.input[0].type.tensor_type.shape.dim]
+    if len(dims) != 4 or dims[2] <= 0 or dims[3] <= 0:
+        raise ValueError(f"Unexpected ONNX input shape {dims} in {onnx_path}")
+    return int(dims[2]), int(dims[3])
 
 
 def main() -> None:
@@ -43,6 +54,17 @@ def main() -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
 
     logger = setup_logger(out.parent / "requantize.log")
+
+    onnx_h, onnx_w = _read_onnx_hw(fp32)
+    cfg_h = int(cfg["input"]["height"])
+    cfg_w = int(cfg["input"]["width"])
+    if (onnx_h, onnx_w) != (cfg_h, cfg_w):
+        logger.warning(
+            f"[WARN] Config input is {cfg_w}x{cfg_h} but ONNX expects {onnx_w}x{onnx_h}; "
+            f"overriding calibration input size to match the ONNX."
+        )
+        cfg["input"]["height"] = onnx_h
+        cfg["input"]["width"] = onnx_w
 
     _train_loader, val_loader, _info = build_dataloaders(
         cfg, logger=logger, num_workers_override=args.num_workers,
