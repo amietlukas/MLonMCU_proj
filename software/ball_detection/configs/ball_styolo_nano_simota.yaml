@@ -35,8 +35,8 @@ dataset:
   seed: 42
 
 input:                        # image resolution
-  width: 640
-  height: 480
+  width: 384
+  height: 288
   color_mode: rgb
   channels: 3
   resize_policy: resize      # resize (direct warp) | letterbox (keep aspect + pad)
@@ -52,8 +52,8 @@ model:
 
 train:
   epochs: 150 # was 100
-  batch_size: 32
-  num_workers: 4
+  batch_size: 48 # was 32
+  num_workers: 8 # was 4
   optimizer: adamw
   optimizer_params:
     betas: [0.9, 0.999]
