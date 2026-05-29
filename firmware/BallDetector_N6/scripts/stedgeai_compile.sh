@@ -1,77 +1,64 @@
 #!/usr/bin/env bash
-# Compile the int8 ball-detector ONNX for Neural-ART and drop the
-# generated files into the ST reference app's Model directory, ready
-# for `make`. Mirrors ST's own Model/generate-n6-model_NUCLEO-N657X0-Q.sh.
+# Regenerate the Neural-ART network code + weight blob from the int8 ONNX
+# straight into this project's X-CUBE-AI/App/ directory.
+#
+# Run this whenever model/int8_ptq_qdq.onnx changes. CubeMX runs the same
+# stedgeai step at project-generation time; this script lets you re-roll the
+# network without re-opening CubeMX. Output dir matches what CubeMX uses, so
+# the next `build.sh` picks the new network.{c,h} + weights up.
+#
+# Empirically confirmed on X-CUBE-AI 10.2.0 (ST Edge AI Core v2.2.0): this
+# path emits network.{c,h} (the LL_ATON C API), NOT stai_network.{c,h}. The
+# app calls LL_ATON directly — see Core/Src/balldetector_app.c.
 
 set -euo pipefail
 
 # --- adjust me ----------------------------------------------------------------
-STEDGEAI="${STEDGEAI:-$HOME/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/Utilities/linux/stedgeai}"
-GCC_BIN="${GCC_BIN:-/opt/st/stm32cubeide_2.1.1/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.14.3.rel1.linux64_1.0.100.202602081740/tools/bin}"
-
-# Weights base address in external OSPI — must match Application linker
-# script (Application/NUCLEO-N657X0-Q/STM32CubeIDE/STM32N657xx.ld).
-# ST's reference uses 0x70380000.
-WEIGHTS_ADDR="${WEIGHTS_ADDR:-0x70380000}"
+XAI_ROOT="${XAI_ROOT:-$HOME/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0}"
+STEDGEAI="${STEDGEAI:-$XAI_ROOT/Utilities/linux/stedgeai}"
+# Neural-ART profile JSON + profile name. The pack ships a working JSON with
+# named profiles; n6-allmems-O3 -> stm32n6.mpool (on-chip-only, no hyperRAM),
+# which is what the Nucleo-N657X0-Q actually has. If CubeMX generated its own
+# user_neuralart.json in the project, point NEURAL_ART_JSON at that instead.
+NEURAL_ART_JSON="${NEURAL_ART_JSON:-$XAI_ROOT/scripts/N6_scripts/user_neuralart.json}"
+NEURAL_ART_PROFILE="${NEURAL_ART_PROFILE:-n6-allmems-O3}"
 # ------------------------------------------------------------------------------
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJ="$(cd "$HERE/.." && pwd)"
-REPO="$(cd "$PROJ/../.." && pwd)"
 
-ST_APP="$PROJ/stm32ai-modelzoo-services/application_code/object_detection/STM32N6"
-MODEL_DIR_REL="Model/NUCLEO-N657X0-Q"
-NEURAL_ART_JSON="$ST_APP/Model/user_neuralart_NUCLEO-N657X0-Q.json"
-
-MODEL_ONNX="$REPO/software/ball_detector_n6/model/int8_ptq_qdq.onnx"
-WORK_DIR="$PROJ/build/st_ai_output"
-DST_DIR="$ST_APP/Model/NUCLEO-N657X0-Q"
+MODEL_ONNX="$PROJ/model/int8_ptq_qdq.onnx"
+OUT_DIR="$PROJ/X-CUBE-AI/App"
 
 if [[ ! -x "$STEDGEAI" ]]; then
-  echo "stedgeai not found: $STEDGEAI" >&2; exit 1
-fi
-if [[ ! -d "$ST_APP" ]]; then
-  echo "ST reference app missing: $ST_APP" >&2
-  echo "init the submodule:  cd stm32ai-modelzoo-services && git submodule update --init application_code/object_detection/STM32N6" >&2
-  exit 1
+  echo "stedgeai not found/executable: $STEDGEAI" >&2; exit 1
 fi
 if [[ ! -f "$NEURAL_ART_JSON" ]]; then
   echo "Neural-ART JSON missing: $NEURAL_ART_JSON" >&2; exit 1
 fi
 if [[ ! -f "$MODEL_ONNX" ]]; then
   echo "model missing: $MODEL_ONNX" >&2
-  echo "run: python software/ball_detector_n6/prepare_model.py" >&2; exit 1
-fi
-if [[ ! -x "$GCC_BIN/arm-none-eabi-objcopy" ]]; then
-  echo "arm-none-eabi-objcopy not found at: $GCC_BIN" >&2; exit 1
+  echo "run: python scripts/prepare_model.py" >&2; exit 1
 fi
 
-mkdir -p "$WORK_DIR" "$DST_DIR"
+mkdir -p "$OUT_DIR"
 
-echo "==> stedgeai generate (ST recipe: epoch-controller, int8 activations)"
-( cd "$WORK_DIR" && \
-  "$STEDGEAI" generate \
-    --model "$MODEL_ONNX" \
-    --target stm32n6 \
-    --st-neural-art "default@$NEURAL_ART_JSON" \
-    --input-data-type uint8 \
-    --output-data-type int8 \
-    --output . )
-
-echo
-echo "==> copy generated files into $MODEL_DIR_REL/"
-for f in network.c network_ecblobs.h stai_network.c stai_network.h; do
-  cp -v "$WORK_DIR/$f" "$DST_DIR/$f"
-done
-cp -v "$WORK_DIR/network_atonbuf.xSPI2.raw" "$DST_DIR/network_data.xSPI2.bin"
+echo "==> stedgeai generate  (profile: $NEURAL_ART_PROFILE)"
+echo "    model : $MODEL_ONNX"
+echo "    out   : $OUT_DIR"
+# uint8 input (DCMIPP delivers RGB888), int8 outputs (the three YOLO heads).
+# --c-api st-ai is harmless here; the N6 path emits LL_ATON regardless.
+"$STEDGEAI" generate \
+  --model "$MODEL_ONNX" \
+  --target stm32n6 \
+  --st-neural-art "$NEURAL_ART_PROFILE@$NEURAL_ART_JSON" \
+  --c-api st-ai \
+  --input-data-type uint8 \
+  --output-data-type int8 \
+  --output "$OUT_DIR"
 
 echo
-echo "==> convert weights to ihex at $WEIGHTS_ADDR"
-"$GCC_BIN/arm-none-eabi-objcopy" \
-  -I binary "$DST_DIR/network_data.xSPI2.bin" \
-  --change-addresses "$WEIGHTS_ADDR" \
-  -O ihex "$DST_DIR/network_data.hex"
-
+echo "==> generated in $OUT_DIR:"
+ls -1 "$OUT_DIR"/network.c "$OUT_DIR"/network.h "$OUT_DIR"/network_atonbuf.xSPI2.raw 2>/dev/null | sed 's/^/  /'
 echo
-echo "ready in $DST_DIR:"
-ls -1 "$DST_DIR" | sed 's/^/  /'
+echo "weights blob -> flash.sh programs network_atonbuf.xSPI2.raw at 0x70380000"

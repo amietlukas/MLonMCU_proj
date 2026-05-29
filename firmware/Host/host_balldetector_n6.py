@@ -4,7 +4,7 @@ Two modes:
   --mode img  : push test images from a folder, draw the returned bboxes.
   --mode cam  : ask the board to stream camera frames + detections, display live.
 
-Wire format is defined in protocol.md.
+Wire format is defined in protocol_balldetector_n6.md.
 """
 from __future__ import annotations
 
@@ -39,7 +39,10 @@ T_LOG       = 0xFE
 T_ACK       = 0xFF
 
 CHUNK = 4096
-MODEL_W, MODEL_H, MODEL_C = 640, 480, 3
+# Matches the deployed int8 model (firmware/BallDetector_N6/model/int8_ptq_qdq.onnx):
+# 384x288 RGB, 4:3 to match the B-CAMS-IMX sensor aspect. The board echoes these
+# back in its INFO frame; hello() prints them so a mismatch is visible at connect.
+MODEL_W, MODEL_H, MODEL_C = 384, 288, 3
 
 
 def crc16_ccitt(data: bytes, crc: int = 0xFFFF) -> int:

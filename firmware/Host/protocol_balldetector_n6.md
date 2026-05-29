@@ -22,7 +22,7 @@ All frames start with a 4-byte magic and a 1-byte type:
 | `0x10` | H → F     | `IMG_BEGIN` | `width:u16, height:u16, channels:u8, fmt:u8` (fmt: 0=RGB888 planar NCHW, 1=RGB888 packed HWC) |
 | `0x11` | H → F     | `IMG_CHUNK` | `chunk_idx:u16, bytes[]` — up to 4096 bytes payload |
 | `0x12` | H → F     | `IMG_END`   | empty |
-| `0x20` | F → H     | `INFER_RAW` | `inference_us:u32, p8_bytes[60*80*5*sizeof(int8)], p16_bytes[30*40*5*int8], p32_bytes[15*20*5*int8], scales+zero_points` |
+| `0x20` | F → H     | `INFER_RAW` | `inference_us:u32, p8_bytes[36*48*5*sizeof(int8)], p16_bytes[18*24*5*int8], p32_bytes[9*12*5*int8], scales+zero_points` |
 | `0x21` | F → H     | `INFER_DEC` | `inference_us:u32, n_boxes:u16, box[n] = {x1:f32, y1:f32, x2:f32, y2:f32, score:f32}` (after NPU + on-board NMS) |
 | `0x30` | H → F     | `CAM_START` | `period_ms:u16` (0 = free-run) |
 | `0x31` | H → F     | `CAM_STOP`  | empty |
@@ -37,8 +37,9 @@ All frames start with a 4-byte magic and a 1-byte type:
   raw via a future config flag). Use this for accuracy validation against
   the eval set.
 - **CAM mode**: host sends `CAM_START`. Board grabs frames from B-CAMS-IMX
-  via DCMIPP, downscales to 640×480 RGB888, runs NPU, replies with
-  `CAM_FRAME` + decoded boxes per frame. Host sends `CAM_STOP` to end.
+  via DCMIPP, downscales to 384×288 RGB888 (the model input), runs NPU,
+  replies with `CAM_FRAME` + decoded boxes per frame. Host sends `CAM_STOP`
+  to end.
 
 ## Open questions (resolve when firmware exists)
 

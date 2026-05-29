@@ -77,50 +77,109 @@ def _voc_ap(rec: torch.Tensor, prec: torch.Tensor) -> float:
     return float(ap.item())
 
 
+def _compute_aps_for_thresholds(
+    pred_items: list[PredItem],
+    gt_by_image: Dict[str, torch.Tensor],
+    iou_thresholds: Sequence[float],
+) -> list[float]:
+    """Vectorized AP computation that handles multiple IoU thresholds in one pass.
+
+    Computes IoU(image_preds, image_gts) once per image (instead of once per
+    prediction × threshold), then walks the score-sorted predictions and assigns
+    TP/FP independently per threshold. Returns one AP per input threshold,
+    matching plain IoU-based VOC AP semantics.
+    """
+    n_thr = len(iou_thresholds)
+    if n_thr == 0:
+        return []
+    npos = int(sum(v.shape[0] for v in gt_by_image.values()))
+    n_pred = len(pred_items)
+    if npos == 0 or n_pred == 0:
+        return [0.0] * n_thr
+
+    thr_t = torch.tensor([float(t) for t in iou_thresholds], dtype=torch.float32)
+
+    # ---- Group predictions by image, precompute IoU per image (once) ----
+    preds_per_image: dict[str, list[int]] = {}
+    for i, item in enumerate(pred_items):
+        preds_per_image.setdefault(item.image_id, []).append(i)
+
+    best_iou_per_pred = torch.zeros(n_pred, dtype=torch.float32)
+    best_gt_per_pred = torch.full((n_pred,), -1, dtype=torch.long)
+
+    for image_id, idx_list in preds_per_image.items():
+        gt = gt_by_image.get(image_id)
+        if gt is None or gt.numel() == 0:
+            continue
+        pred_boxes_img = torch.stack(
+            [pred_items[i].box for i in idx_list], dim=0
+        ).float()
+        ious = box_iou(pred_boxes_img, gt.float())  # (P, K)
+        if ious.numel() == 0:
+            continue
+        best_iou_i, best_gt_i = ious.max(dim=1)
+        idx_tensor = torch.tensor(idx_list, dtype=torch.long)
+        best_iou_per_pred[idx_tensor] = best_iou_i
+        best_gt_per_pred[idx_tensor] = best_gt_i
+
+    # ---- Sort globally by score (descending), pre-materialize CPU views ----
+    scores_t = torch.tensor([item.score for item in pred_items], dtype=torch.float32)
+    order = scores_t.argsort(descending=True)
+
+    best_iou_sorted = best_iou_per_pred[order].tolist()
+    best_gt_sorted = best_gt_per_pred[order].tolist()
+    image_id_sorted = [pred_items[int(idx)].image_id for idx in order.tolist()]
+
+    # ---- Per-threshold matching trackers ----
+    matched_per_thr: list[dict[str, list[bool]]] = [
+        {k: [False] * int(v.shape[0]) for k, v in gt_by_image.items()}
+        for _ in range(n_thr)
+    ]
+    tp_per_thr = [[0.0] * n_pred for _ in range(n_thr)]
+    fp_per_thr = [[0.0] * n_pred for _ in range(n_thr)]
+    thresholds_list = [float(t) for t in iou_thresholds]
+
+    for rank in range(n_pred):
+        img_id = image_id_sorted[rank]
+        b_gt = best_gt_sorted[rank]
+        b_iou = best_iou_sorted[rank]
+        if b_gt < 0:
+            # No GT in this image -- always a FP at every threshold.
+            for t in range(n_thr):
+                fp_per_thr[t][rank] = 1.0
+            continue
+        for t in range(n_thr):
+            if b_iou >= thresholds_list[t] and not matched_per_thr[t][img_id][b_gt]:
+                matched_per_thr[t][img_id][b_gt] = True
+                tp_per_thr[t][rank] = 1.0
+            else:
+                fp_per_thr[t][rank] = 1.0
+
+    aps: list[float] = []
+    npos_f = float(npos)
+    for t in range(n_thr):
+        tp_t = torch.tensor(tp_per_thr[t], dtype=torch.float32)
+        fp_t = torch.tensor(fp_per_thr[t], dtype=torch.float32)
+        tp_c = torch.cumsum(tp_t, dim=0)
+        fp_c = torch.cumsum(fp_t, dim=0)
+        rec = tp_c / npos_f
+        prec = tp_c / (tp_c + fp_c + 1e-9)
+        aps.append(_voc_ap(rec, prec))
+    return aps
+
+
 def _compute_ap_for_iou(
     pred_items: list[PredItem],
     gt_by_image: Dict[str, torch.Tensor],
     iou_threshold: float,
 ) -> float:
-    npos = int(sum(v.shape[0] for v in gt_by_image.values()))
-    if npos == 0:
-        return 0.0
-
-    pred_items = sorted(pred_items, key=lambda x: x.score, reverse=True)
-
-    matched = {k: torch.zeros((v.shape[0],), dtype=torch.bool) for k, v in gt_by_image.items()}
-    tp = []
-    fp = []
-
-    for item in pred_items:
-        gt = gt_by_image.get(item.image_id)
-        if gt is None or gt.numel() == 0:
-            tp.append(0.0)
-            fp.append(1.0)
-            continue
-
-        ious = box_iou(item.box.unsqueeze(0), gt).squeeze(0)
-        best_iou, best_idx = (ious.max(dim=0) if ious.numel() > 0 else (torch.tensor(0.0), torch.tensor(0)))
-        bi = int(best_idx.item())
-
-        if float(best_iou.item()) >= iou_threshold and not matched[item.image_id][bi]:
-            matched[item.image_id][bi] = True
-            tp.append(1.0)
-            fp.append(0.0)
-        else:
-            tp.append(0.0)
-            fp.append(1.0)
-
-    tp_t = torch.tensor(tp, dtype=torch.float32)
-    fp_t = torch.tensor(fp, dtype=torch.float32)
-
-    tp_c = torch.cumsum(tp_t, dim=0)
-    fp_c = torch.cumsum(fp_t, dim=0)
-
-    rec = tp_c / float(npos)
-    prec = tp_c / (tp_c + fp_c + 1e-9)
-
-    return _voc_ap(rec, prec)
+    """Thin shim over the multi-threshold vectorized AP for the single-threshold call sites."""
+    aps = _compute_aps_for_thresholds(
+        pred_items=pred_items,
+        gt_by_image=gt_by_image,
+        iou_thresholds=[float(iou_threshold)],
+    )
+    return float(aps[0]) if aps else 0.0
 
 
 def _match_predictions(
@@ -129,51 +188,69 @@ def _match_predictions(
     gt_boxes: torch.Tensor,
     iou_threshold: float,
 ):
-    if pred_boxes.numel() == 0:
+    n_gt = int(gt_boxes.shape[0]) if gt_boxes.numel() > 0 else 0
+    n_pred = int(pred_boxes.shape[0]) if pred_boxes.numel() > 0 else 0
+
+    if n_pred == 0:
         return {
             "tp": 0,
             "fp": 0,
-            "fn": int(gt_boxes.shape[0]),
+            "fn": n_gt,
             "matched_pred_indices": torch.zeros((0,), dtype=torch.long),
             "matched_gt_indices": torch.zeros((0,), dtype=torch.long),
             "matched_ious": torch.zeros((0,), dtype=torch.float32),
         }
 
     order = pred_scores.argsort(descending=True)
-    used_gt = torch.zeros((gt_boxes.shape[0],), dtype=torch.bool, device=pred_boxes.device)
 
+    if n_gt == 0:
+        return {
+            "tp": 0,
+            "fp": n_pred,
+            "fn": 0,
+            "matched_pred_indices": torch.zeros((0,), dtype=torch.long),
+            "matched_gt_indices": torch.zeros((0,), dtype=torch.long),
+            "matched_ious": torch.zeros((0,), dtype=torch.float32),
+        }
+
+    # Compute the full IoU matrix ONCE, then do greedy matching with plain
+    # Python on small CPU tensors (per-image: P <= max_detections, K typically tiny).
+    pred_boxes_ord = pred_boxes[order].cpu().float()
+    gt_cpu = gt_boxes.cpu().float()
+    ious_full = box_iou(pred_boxes_ord, gt_cpu)  # (P, K)
+    ious_rows = ious_full.tolist()
+    order_list = order.tolist()
+
+    used_gt = [False] * n_gt
     tp = 0
     fp = 0
-    matched_pred_idx = []
-    matched_gt_idx = []
-    matched_ious = []
+    matched_pred_idx: list[int] = []
+    matched_gt_idx: list[int] = []
+    matched_ious: list[float] = []
+    thr = float(iou_threshold)
 
-    for idx in order:
-        i = int(idx.item())
-        pb = pred_boxes[i : i + 1]
+    for rank in range(n_pred):
+        row = ious_rows[rank]
+        best_iou = -1.0
+        best_gt = -1
+        for k in range(n_gt):
+            if used_gt[k]:
+                continue
+            v = row[k]
+            if v > best_iou:
+                best_iou = v
+                best_gt = k
 
-        if gt_boxes.numel() == 0:
-            fp += 1
-            continue
-
-        ious = box_iou(pb, gt_boxes).squeeze(0)
-        if ious.numel() == 0:
-            fp += 1
-            continue
-
-        best_iou, best_gt = ious.max(dim=0)
-        best_gt_i = int(best_gt.item())
-
-        if float(best_iou.item()) >= iou_threshold and not bool(used_gt[best_gt_i].item()):
-            used_gt[best_gt_i] = True
+        if best_gt >= 0 and best_iou >= thr:
+            used_gt[best_gt] = True
             tp += 1
-            matched_pred_idx.append(i)
-            matched_gt_idx.append(best_gt_i)
-            matched_ious.append(float(best_iou.item()))
+            matched_pred_idx.append(order_list[rank])
+            matched_gt_idx.append(best_gt)
+            matched_ious.append(best_iou)
         else:
             fp += 1
 
-    fn = int(gt_boxes.shape[0] - used_gt.sum().item())
+    fn = n_gt - sum(used_gt)
 
     return {
         "tp": tp,
@@ -294,11 +371,17 @@ def compute_detection_metrics(
         for box, score in zip(pred.boxes, pred.scores):
             pred_items.append(PredItem(image_id=pred.image_id, score=float(score.item()), box=box.float()))
 
-    aps = []
-    for thr in iou_thresholds:
-        aps.append(_compute_ap_for_iou(pred_items=pred_items, gt_by_image=gt_by_image, iou_threshold=float(thr)))
-
-    map50 = _compute_ap_for_iou(pred_items=pred_items, gt_by_image=gt_by_image, iou_threshold=0.5)
+    # Bundle the requested sweep thresholds with the standalone 0.5 threshold so
+    # the whole AP computation walks the pred list ONCE (instead of len(thresholds)+1 times).
+    iou_thresholds_list = [float(t) for t in iou_thresholds]
+    threshold_for_map = iou_thresholds_list + [0.5]
+    all_aps = _compute_aps_for_thresholds(
+        pred_items=pred_items,
+        gt_by_image=gt_by_image,
+        iou_thresholds=threshold_for_map,
+    )
+    aps = all_aps[: len(iou_thresholds_list)]
+    map50 = all_aps[-1] if all_aps else 0.0
     map5095 = float(sum(aps) / max(len(aps), 1))
 
     op_by_image = {p.image_id: p for p in operating_predictions}

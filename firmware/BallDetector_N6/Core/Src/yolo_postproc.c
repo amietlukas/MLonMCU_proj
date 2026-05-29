@@ -26,9 +26,9 @@ typedef struct {
 } yolo_head_cfg_t;
 
 static const yolo_head_cfg_t HEADS[YOLO_NUM_HEADS] = {
-    { 0.234361604f, 149,  8, 60, 80 },  /* p8  */
-    { 0.235901356f, 124, 16, 30, 40 },  /* p16 */
-    { 0.220821530f, 155, 32, 15, 20 },  /* p32 */
+    { 0.256579876f,  41,  8, 36, 48 },  /* p8  */
+    { 0.204285681f,   0, 16, 18, 24 },  /* p16 */
+    { 0.146335885f,   0, 32,  9, 12 },  /* p32 */
 };
 
 /* Match the training-time decode clamp range. */

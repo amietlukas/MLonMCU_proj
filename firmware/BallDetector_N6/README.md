@@ -1,201 +1,196 @@
-# BallDetector_N6
+# BallDetector_N6 — on-board YOLO ball detection (B-CAMS-IMX / IMX335)
 
-YOLO ball detector on **STM32 Nucleo-N657X0-Q + B-CAMS-IMX**, no LCD —
-results stream to PC over UART (`software/ball_detector_n6/host.py`).
+YOLO ball detector on the **STM32 Nucleo-N657X0-Q + B-CAMS-IMX**, no LCD:
+the IMX335 feeds the DCMIPP NN pipe, the Neural-ART NPU runs a pruned int8
+STYOLO-nano at **384×288**, the three raw YOLO heads are decoded + NMS'd in
+C on-chip, and the decoded boxes (and optionally JPEG frames) stream to the
+PC over UART. The host script (`firmware/Host/host_balldetector_n6.py`) draws
+the boxes live.
 
-Approach: take ST's reference object-detection app for STM32N6 as the
-base (it already wires DCMIPP camera capture + Neural-ART NPU inference),
-strip the LCD display layer, replace it with the UART protocol defined
-in `software/ball_detector_n6/protocol.md`.
+Built from a **fresh CubeMX project** that pulls X-CUBE-AI from the locally
+installed pack — deliberately **not** layered on ST's modelzoo app (that path
+died on a middleware version clash, see "Why LL_ATON-direct" below).
 
-## You need to do (one-time)
+## What's in this folder (tracked — survives clean rebuilds)
 
-1. **Install X-CUBE-AI 10.x with the N6 Neural-ART add-on.**
-   - CubeIDE → Help → Manage Embedded Software Packages → STMicroelectronics
-   - Install `X-CUBE-AI` ≥ 10.0.0
-   - Confirm `stedgeai --version` works on the CLI and supports
-     `--target stm32n6 --st-neural-art`.
+| File | Purpose |
+|------|---------|
+| `Core/Inc/constants.h`        | Detection thresholds, UART config, protocol caps. Model dims come from `yolo_postproc.h` / `network.h` (not duplicated). |
+| `Core/Inc/uart_protocol.h`    | Wire-format contract (frame types, CRC, framer API). |
+| `Core/Src/uart_protocol.c`    | HELLO/INFO/IMG/CAM/INFER framing over the VCP UART. |
+| `Core/Inc/balldetector_app.h` | App entry points + `g_frame_ready` flag. |
+| `Core/Src/balldetector_app.c` | Main loop: frame → NPU (LL_ATON) → decode → UART. |
+| `Core/Inc/yolo_postproc.h`    | Single-class STYOLO decode + NMS API. |
+| `Core/Src/yolo_postproc.c`    | Decoder impl (cross-checked against `yolo_decode.py`). |
+| `Core/Src/main.c`             | CubeMX-generated: clocks, DCMIPP, UART, AI runtime init. |
+| `scripts/prepare_model.py`    | ONNX sanity-check + copy into `model/`. |
+| `scripts/patch_onnx_input_size.py` | Re-shape the FCN ONNX to a new fixed input size. |
+| `scripts/stedgeai_compile.sh` | ONNX → `X-CUBE-AI/App/network.{c,h}` + weight blob. |
+| `scripts/build.sh`            | Headless CubeIDE build → `Debug/*.elf,*.bin`. |
+| `scripts/flash.sh`            | Sign + flash app + weights to external OctoFlash. |
+| `scripts/all.sh`              | prepare → compile → build → flash. |
+| `tests/test_postproc.py`      | C-vs-Python decoder cross-check (must PASS before flashing). |
+| `model/int8_ptq_qdq.onnx`     | The deployed quantized model. |
 
-2. **Install STM32CubeProgrammer + the N6 signing tool.**
-   - N6 boots from external flash; weights/binary need to be signed with
-     `STM32_SigningTool_CLI` (bundled with CubeProgrammer).
-   - Update the `SIGNING_TOOL` path at the top of
-     `scripts/flash_n6_signed.sh`.
+What this folder **does not** contain (CubeMX-managed / generated — `.gitignore`d):
 
-3. **Clone ST's reference app into this directory.**
-   ```
-   cd firmware/BallDetector_N6
-   git clone https://github.com/STMicroelectronics/stm32ai-modelzoo-services.git
-   cp -r stm32ai-modelzoo-services/object_detection/STM32N6/Application/* .
-   ```
-   *(Repo URL / path may differ across releases — open the modelzoo
-   readme and look for the `STM32N6` object-detection application. Pick
-   the variant for **Nucleo-N657X0-Q** if multiple exist.)*
+- `Drivers/` — STM32N6 HAL + BSP (DCMIPP, IMX335 sensor, xSPI2)
+- `Middlewares/` — the X-CUBE-AI **LL_ATON** runtime
+- `X-CUBE-AI/App/network.{c,h}` + `network_atonbuf.xSPI2.raw` (weights),
+  emitted by `stedgeai_compile.sh`
+- `Debug/` build outputs, `st_ai_ws/` stedgeai scratch
 
-4. **Strip the LCD/display layer.**
-   In the cloned app, remove or stub out:
-   - `Src/display_*.c`, LTDC init in `Src/main.c`
-   - any `BSP_LCD_*` or `osd_*` calls in the inference loop
-   - the OSD/bbox-drawing code (we draw on PC instead)
+## Why LL_ATON-direct (and not stai_network)
 
-5. **Add the UART transport.**
-   - Enable a USART/UART instance routed to the ST-LINK VCP at 921600 8N1.
-   - Add a `comm/uart_protocol.c` implementing the framing in
-     `software/ball_detector_n6/protocol.md` (HELLO/IMG/CAM/INFER frames).
-   - In the main inference loop, replace the LCD draw with one of:
-     - **IMG mode**: poll UART for `IMG_BEGIN/CHUNK/END`, copy the
-       received RGB888 buffer straight into the NPU input tensor (skip
-       the camera path).
-     - **CAM mode**: keep the camera path, JPEG-encode the captured
-       frame (use the hardware JPEG codec on N6), and send
-       `CAM_FRAME` + `INFER_DEC` per inference.
+On this install (X-CUBE-AI **10.2.0**, ST Edge AI Core v2.2.0), the N6
+Neural-ART code generator emits **`network.{c,h}` (the LL_ATON C API)** and
+**not** `stai_network.{c,h}` — verified empirically with `stedgeai generate
+--c-api st-ai`. So the app calls **LL_ATON directly** (`#include
+"ll_aton_runtime.h"`, the `LL_ATON_DEFAULT_*` I/O descriptors in
+`network.h`). This keeps a single, consistent X-CUBE-AI version end-to-end —
+the previous modelzoo-based attempt failed because its bundled middleware
+(atonn-v1.1.3) clashed with the installed runtime (atonn-v1.1.1).
 
-6. **Generate the network code.** From this directory:
-   ```
-   scripts/stedgeai_compile.sh
-   ```
-   Produces `X-CUBE-AI/App/network.c/.h` and the weight blob.
+## Setup steps (one time)
 
-7. **Build + flash from the terminal** (no GUI). Either run the whole chain:
-   ```
-   scripts/all.sh
-   ```
-   or step through it manually:
-   ```
-   scripts/build_n6.sh         # headless CubeIDE build -> Debug/*.elf,*.bin
-   scripts/flash_n6_signed.sh  # sign + flash to external OSPI
-   ```
+### 1. Generate the project in CubeMX (in STM32CubeIDE)
 
-8. **Run the host.** From the repo root:
-   ```
-   source software/venv/bin/activate
-   python software/ball_detector_n6/host.py --port /dev/ttyACM0 cam
-   ```
+There is no standalone CubeMX here; drive it from CubeIDE's wizard.
+**File → New → STM32 Project → Board Selector → NUCLEO-N657X0-Q** (load the
+default board config so pinmux + clock tree + BSP are auto-filled). Set the
+project name to `BallDetector_N6` and the location to `firmware/` so output
+lands in-place. Then:
 
-## Terminal-only build details
+- **Software Packs → X-CUBE-AI**: enable the **Neural-ART** runtime. Add a
+  network named `network`, load `model/int8_ptq_qdq.onnx`, target
+  **STM32N6 / Neural-ART**, memory pool **`stm32n6.mpool`** (profile
+  `n6-allmems-O3` — on-chip only, no hyperRAM), **input uint8 / output
+  int8**. (CubeMX runs `stedgeai` for you; `scripts/stedgeai_compile.sh`
+  re-rolls it after a model swap.)
+- **Multimedia → DCMIPP** + the **IMX335** sensor on the B-CAMS-IMX FPC —
+  CubeMX routes the MIPI-CSI2 pins. Configure the NN downscale pipe to
+  **384×288 RGB888** (sensor is 2592×1944 4:3, so no crop/letterbox).
+- **Connectivity → USART** routed to the **ST-LINK VCP**, **921600 8N1**.
+- Motor/servo PWM: **deferred** — not configured yet. When added, claim
+  timer channels that don't collide with DCMIPP/UART (pinmux only).
+- **Project Manager → Toolchain: STM32CubeIDE**. Generate.
 
-The headless build uses STM32CubeIDE's bundled Eclipse with the CDT
-`headlessbuild` application — no window opens. On this machine the
-toolchain lives inside the CubeIDE install (no separate CubeProgrammer
-install needed):
+> Edits to CubeMX-generated files (step 2) go inside `USER CODE` blocks so
+> they survive future `.ioc` regenerations.
 
-```
-export CUBEIDE=/opt/st/stm32cubeide_2.1.1/headless-build.sh
-export STEDGEAI=$HOME/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/Utilities/linux/stedgeai
-export CUBEPROG_BIN=/opt/st/stm32cubeide_2.1.1/plugins/com.st.stm32cube.ide.mcu.externaltools.cubeprogrammer.linux64_2.2.400.202601091506/tools/bin
-export SIGNING_TOOL=$CUBEPROG_BIN/STM32_SigningTool_CLI
-export PROG_TOOL=$CUBEPROG_BIN/STM32_Programmer_CLI
-export EXT_LOADER=$CUBEPROG_BIN/ExternalLoader/MX25UM51245G_STM32N6570-NUCLEO.stldr
-```
+### 2. Wire the app into the X-CUBE-AI lifecycle
 
-stedgeai for N6 uses `--target stm32n6 --memory-pool <file.mpool>`.
-Pick the layout via the `MPOOL` env var (default: ext PSRAM for
-activations, which we need for the 921 KB 640×480 input). Override:
-```
-MPOOL=$HOME/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/my_mpools/stm32n6.mpool \
-  scripts/stedgeai_compile.sh
+In `X-CUBE-AI/App/app_x-cube-ai.c` (USER CODE blocks):
+
+```c
+/* USER CODE BEGIN includes */
+#include "balldetector_app.h"
+/* USER CODE END includes */
+
+void MX_X_CUBE_AI_Init(void)    { /* USER CODE BEGIN 5 */ balldetector_init();    /* USER CODE END 5 */ }
+void MX_X_CUBE_AI_Process(void) { /* USER CODE BEGIN 6 */ balldetector_run();     /* USER CODE END 6 */ }  /* never returns */
 ```
 
-Raw commands behind the scripts:
-```
-# stedgeai (verified working on this model)
-$STEDGEAI generate \
-  --target stm32n6 \
-  --model software/ball_detector_n6/model/int8_ptq_qdq.onnx \
-  --name ball_n6 \
-  --memory-pool $HOME/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0/scripts/N6_scripts/my_mpools/stm32n6__extRam.mpool \
-  --binary --address 0x71000000 \
-  --output firmware/BallDetector_N6/X-CUBE-AI/App
+The DCMIPP frame-ready callback flips `g_frame_ready` (declared in
+`balldetector_app.h`); the capture loop consumes it.
 
-# build (no GUI)
-$CUBEIDE -data /tmp/cubeide_ws_ball_n6 \
-  -import firmware/BallDetector_N6 \
-  -cleanBuild BallDetector_N6/Debug
-
-# sign + flash (app at 0x70000000, weights at 0x71000000)
-$SIGNING_TOOL -bin Debug/BallDetector_N6.bin -nk -t ssbl -hv 2.3 \
-              -o Debug/BallDetector_N6-signed.bin
-$PROG_TOOL -c port=SWD mode=HOTPLUG -el $EXT_LOADER \
-           -w Debug/BallDetector_N6-signed.bin       0x70000000 \
-           -w X-CUBE-AI/App/ball_n6_data.bin         0x71000000 \
-           -hardRst
-```
-
-## What stedgeai analyze reports for this model
+### 3. Generate the network code
 
 ```
-input        : uint8(1x3x480x640)  900.00 KiB  scale=1/255  zp=0      → activations
-output p8    : uint8(1x5x60x80)     23.44 KiB  scale=0.234  zp=149
-output p16   : uint8(1x5x30x40)      5.86 KiB  scale=0.236  zp=124
-output p32   : uint8(1x5x15x20)      1.46 KiB  scale=0.221  zp=155
-macc         : 1,732,443,223  (~1.7 GMAC)
-weights      : 997 KiB (1 segment)
-activations  : 1.95 MiB (2 segments) — xSPI1 hyperRAM + AXISRAM3 npuRAM3
+scripts/stedgeai_compile.sh        # -> X-CUBE-AI/App/network.{c,h} + weights
 ```
 
-Two host-side implications baked into `yolo_decode.py` later:
-- inputs are **uint8 NCHW** scaled by 1/255 (i.e. /255 of RGB888)
-- outputs are **uint8** — dequantize with the per-head `(u8 - zp) * scale`
-  before running the existing sigmoid/exp decode
+### 4. Build (headless — no GUI window)
 
-## Model
+```
+scripts/build.sh                   # -> Debug/BallDetector_N6.{elf,bin}
+```
 
-Pulled from `software/ball_detection`:
-- 1.1 MB int8 QDQ ONNX, 640×480 RGB input, 1 class ("Ball"), strides 8/16/32.
-- Pre-flight check: `python software/ball_detector_n6/prepare_model.py`
-  (copies the chosen checkpoint to `software/ball_detector_n6/model/`).
+### 5. Sign + flash to external OctoFlash (xSPI2)
 
-## Memory budget (rough — verify with stedgeai analyze)
+```
+scripts/flash.sh                   # app(signed)@0x70000000, weights@0x70380000
+```
 
-- Input tensor: 640·480·3·1 B = 921 600 B (fits in PSRAM, not in NPU SRAM)
-- Outputs: 60·80·5 + 30·40·5 + 15·20·5 = 31 500 B (int8) → trivial
-- Weights: 1.1 MB → external flash, signed binary
-- Activations: ~MB scale, will need PSRAM. Configure in `scripts/user_neuralart.json`.
+### 6. Run the host
+
+```
+source software/venv/bin/activate
+python firmware/Host/host_balldetector_n6.py --port /dev/ttyACM0 cam
+```
+
+Or the whole chain: `scripts/all.sh`.
+
+## Memory budget (fits entirely on-chip)
+
+From `stedgeai generate` on the deployed model (profile `n6-allmems-O3`,
+`stm32n6.mpool`):
+
+```
+input        : uint8(1x3x288x384)  324.00 KiB  QLinear(s=1/255, zp=0)   → activations
+output p8    : int8 (1x5x36x48)      8.44 KiB  QLinear(s=0.256579876, zp=41)
+output p16   : int8 (1x5x18x24)      2.11 KiB  QLinear(s=0.204285681, zp=0)
+output p32   : int8 (1x5x9x12)        540 B    QLinear(s=0.146335885, zp=0)
+params       : 1,013,727 items
+weights      : 1,029,089 B (1004.97 KiB, 1 segment)  →  xSPI2 OctoFlash
+activations  : 1,396,224 B (1.33 MiB, 3 segments)    →  on-chip SRAM
+```
+
+Per-bank placement (no external PSRAM — the Nucleo-N657X0-Q has none):
+
+| Bank      | Capacity | Used      | %     |
+|-----------|---------:|----------:|------:|
+| flexMEM / cpuRAM1  |  —     |     0 B   |  0%   |
+| cpuRAM2   | 1.000 MB | 594.0 kB  | 58.0% |
+| npuRAM3   |  448 kB  |     0 B   |  0%   (free) |
+| npuRAM4   |  448 kB  | 324.0 kB  | 72.3% |
+| npuRAM5   |  448 kB  | 445.5 kB  | 99.4% |
+| npuRAM6   |  448 kB  |     0 B   |  0%   (free for CPU / future growth) |
+| octoFlash | 112 MB   | 1004.97 kB|  0.9% (weights only) |
+
+The per-head `scale`/`zero_point` above are baked into `yolo_postproc.c`'s
+`HEADS[]` table. Re-run `scripts/stedgeai_compile.sh` (it prints the same
+summary) after any re-quantization and update that table + `yolo_decode.py`
+to match, then re-run the cross-check.
 
 ## Post-processing
 
-The model emits **raw YOLO head tensors only** — no decode/NMS on the
-NPU. We do that ourselves:
+The NPU emits **raw YOLO head tensors only** — decode + NMS run on the CPU:
 
-- **`app/yolo_postproc.{c,h}`** — single-class STYOLO decode + NMS in C.
-  Self-contained (only `<math.h>`, `<stdint.h>`, `<string.h>`); pass the
-  three uint8 head buffers from `ai_run`/`stai_run` and get `yolo_box_t[]`.
-  Per-head quant params (scale/zero_point) are hard-coded from the
-  `stedgeai analyze` report — re-update them if the model is re-quantized.
-- **Fast path**: each cell is rejected with a single uint8 compare
-  before any float math. For the typical busy scene only ~tens of
-  cells survive to the dequant + sigmoid + exp stage out of 6300.
-- **`app/test_postproc.py`** — cross-check harness. Builds the C file
-  into a `.so`, calls it via ctypes on a seeded synthetic input, runs
-  the same input through `software/ball_detector_n6/yolo_decode.py`,
-  asserts boxes match within 1e-3. Currently **PASSES** with 8/8 boxes.
-  Re-run after any change to the C decoder or its quant table.
+- **`Core/{Inc,Src}/yolo_postproc.{c,h}`** — single-class STYOLO decode + NMS.
+  Self-contained (`<math.h>`, `<stdint.h>`, `<string.h>`); pass the three
+  int8 head buffers from the LL_ATON output and get `yolo_box_t[]`
+  (conf 0.50, NMS IoU 0.25, ≤8 boxes). Each of the **2268** grid cells
+  (36·48 + 18·24 + 9·12) is rejected with a single int8 compare before any
+  float math, so only a handful reach dequant + sigmoid + exp.
+- **`tests/test_postproc.py`** — builds `yolo_postproc.c` into a `.so`, runs
+  it via ctypes on a seeded synthetic input, and asserts the boxes match
+  `firmware/Host/yolo_decode.py` within 1e-3. **Currently PASSES (8/8).**
+  Re-run after any change to the C decoder or its quant table:
 
-Where the NMS runs (firmware vs host) decides the wire format:
+  ```
+  python firmware/BallDetector_N6/tests/test_postproc.py
+  ```
 
-| Where postproc runs | UART frame | Bytes / inference | Notes |
-| --- | --- | --- | --- |
-| Firmware (default)  | `INFER_DEC` | ~60–160 (≤8 boxes) | Real-time CAM mode |
-| Host                | `INFER_RAW` | ~31 500 (24k+6k+1.5k) | ~30 ms at 921600 baud — caps to ~30 fps |
+Where NMS runs decides the wire format:
 
-Default plan: firmware always runs `yolo_postprocess()` and sends
-`INFER_DEC`. Keep `INFER_RAW` as a debug path (toggle via a future
-config frame) so we can compare on-board decode against host decode on
-real captures, not just synthetic data.
+| postproc runs | UART frame  | bytes/inference | notes |
+|---------------|-------------|-----------------|-------|
+| Firmware (default) | `INFER_DEC` | ~60–160 (≤8 boxes) | real-time CAM mode |
+| Host (debug)       | `INFER_RAW` | ~11,340 (8.6k+2.2k+0.5k) | compare on-board vs host decode |
 
-## Layout (what survives clean rebuilds)
+## Common gotchas
 
-```
-firmware/BallDetector_N6/
-  README.md                 <- this file
-  scripts/
-    stedgeai_compile.sh     <- ONNX -> NPU code (verified working)
-    build_n6.sh             <- headless CubeIDE build
-    flash_n6_signed.sh      <- sign + flash via STM32CubeProgrammer
-    all.sh                  <- model prep -> stedgeai -> build -> flash
-  app/
-    yolo_postproc.h         <- single-class YOLO decode + NMS API
-    yolo_postproc.c         <- impl (verified against host yolo_decode.py)
-    test_postproc.py        <- cross-check harness (PASS)
-  (Application/, X-CUBE-AI/, Drivers/, Middlewares/  cloned from ST app)
-```
+- **Weights address mismatch**: `stedgeai`'s mdesc models xSPI2 at
+  `0x71000000`, but the board flash map programs weights at `0x70380000`
+  (app at `0x70000000`). The CubeMX-generated linker script reconciles the
+  two — confirm `flash.sh`'s `WEIGHTS_ADDR` matches it before trusting a
+  flash.
+- **LL_ATON I/O via cached pointers**: read the input/output buffer
+  addresses from the `network.h` descriptors (`LL_ATON_DEFAULT_IN_1_*` /
+  `OUT_*`) each run; don't cache a stale pointer. See
+  `feedback_xcubeai_inputs_get_gotcha`.
+- **Garbage detections after a retrain**: the per-head scale/zp in
+  `yolo_postproc.c` and `yolo_decode.py` are hard-coded. Re-run
+  `stedgeai_compile.sh`, copy the new quant params into both decoders, and
+  confirm `test_postproc.py` passes before flashing.

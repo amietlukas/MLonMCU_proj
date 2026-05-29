@@ -1,17 +1,25 @@
 General:
-- N6 kaufen
++ N6 kaufen
 - Präsentation
 - Kommunikation zwischen beiden STM32
 - Demo Video aufnehmen
 
 Classifier:
-- Paul zu deployen (fahren)
-- TFlite (CMSIS-NN Library)
-- Bignet laufen
-- Bignet_pruned 1.8V (latency, clock cycle, acc?)
++ Paul zu deployen (fahren)
++ TFlite (CMSIS-NN Library)
++ Bignet laufen
+~ Bignet_pruned 1.8V (latency, clock cycle, acc?) (kein 1.8V auf board)
 
 
 Ball-Detection:
 - Kamera Tracking
 - Tunen
 - Prunen + Quantization
+
+Ball-Detection - Smaller:
+- Images downsamplen and new run
+- Images greyscale + old image size and new run (low-prio)
+- Images splitted in 4 sections and new run
+- Drop few heads
+- Aggressive pruning
+- Reduce neck_out_ch

@@ -13,6 +13,8 @@ venv/
 .venv/
 **/venv/
 **/.venv/
+venv_tflite/
+**/venv_tflite/**
 **/venv_tflite/**
 .env/
 
@@ -44,6 +46,7 @@ venv/
 
 # pred and other folders
 **/pred_images/**
+Classifier_CMSISNN/
 **/Classifier_CMSISNN/**
 
 # stedgeai outputs

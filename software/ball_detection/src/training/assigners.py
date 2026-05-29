@@ -392,6 +392,299 @@ class SimOTALiteAssigner:
         output_shapes: list[tuple[int, int]],
         device: torch.device,
     ) -> tuple[list[torch.Tensor], list[torch.Tensor], list[torch.Tensor], int, SimOTABatchStats]:
+        return self._assign_vectorized(
+            raw_outputs=raw_outputs,
+            targets=targets,
+            output_shapes=output_shapes,
+            device=device,
+        )
+
+    def _assign_vectorized(
+        self,
+        *,
+        raw_outputs: Sequence[torch.Tensor],
+        targets: List[dict],
+        output_shapes: list[tuple[int, int]],
+        device: torch.device,
+    ) -> tuple[list[torch.Tensor], list[torch.Tensor], list[torch.Tensor], int, SimOTABatchStats]:
+        batch_size = len(targets)
+        if len(raw_outputs) != len(self.strides):
+            raise ValueError(f"Expected {len(self.strides)} raw output heads, got {len(raw_outputs)}")
+        if raw_outputs[0].shape[0] != batch_size:
+            raise ValueError(f"raw output batch size {raw_outputs[0].shape[0]} != target batch size {batch_size}")
+
+        obj_targets: list[torch.Tensor] = []
+        box_targets_abs: list[torch.Tensor] = []
+        pos_masks: list[torch.Tensor] = []
+        for (h, w) in output_shapes:
+            obj_targets.append(torch.zeros((batch_size, 1, h, w), dtype=torch.float32, device=device))
+            box_targets_abs.append(torch.zeros((batch_size, 4, h, w), dtype=torch.float32, device=device))
+            pos_masks.append(torch.zeros((batch_size, 1, h, w), dtype=torch.bool, device=device))
+
+        stats = SimOTABatchStats(images=batch_size, strides=self.strides)
+        input_h, input_w = self._resolve_input_size(output_shapes)
+        image_diag = sqrt(float(input_h * input_h + input_w * input_w))
+        grid = self._build_flat_grid(output_shapes, device=device)
+        G = int(grid.centers.shape[0])
+
+        with torch.no_grad():
+            decoded_boxes_flat, obj_logits_flat = self._flatten_decoded(raw_outputs)
+
+            # ---- Collect all valid GTs across the batch into flat tensors ----
+            gt_boxes_list: list[torch.Tensor] = []
+            gt_batch_idx_list: list[torch.Tensor] = []
+            gt_local_idx_list: list[torch.Tensor] = []
+            per_image_gt_count: list[int] = []
+
+            for b_idx, target in enumerate(targets):
+                boxes = target["boxes"].to(device=device, dtype=torch.float32)
+                if boxes.numel() == 0:
+                    per_image_gt_count.append(0)
+                    stats.empty_images += 1
+                    continue
+                valid = (boxes[:, 2] > boxes[:, 0]) & (boxes[:, 3] > boxes[:, 1])
+                boxes = boxes[valid]
+                if boxes.numel() == 0:
+                    per_image_gt_count.append(0)
+                    stats.empty_images += 1
+                    continue
+                n_i = int(boxes.shape[0])
+                gt_boxes_list.append(boxes)
+                gt_batch_idx_list.append(torch.full((n_i,), b_idx, dtype=torch.long, device=device))
+                gt_local_idx_list.append(torch.arange(n_i, dtype=torch.long, device=device))
+                per_image_gt_count.append(n_i)
+
+            if not gt_boxes_list:
+                stats.positives_total = 0
+                return obj_targets, box_targets_abs, pos_masks, 0, stats
+
+            gt_boxes_all = torch.cat(gt_boxes_list, dim=0)
+            gt_batch_idx = torch.cat(gt_batch_idx_list, dim=0)
+            gt_local_idx = torch.cat(gt_local_idx_list, dim=0)
+            N = int(gt_boxes_all.shape[0])
+            stats.gt_count = N
+            max_n_gt = max(per_image_gt_count)
+
+            # ---- Candidate mask (N, G) ----
+            centers = grid.centers
+            strides_g = grid.strides
+            radius_px = self.center_radius * strides_g
+
+            gt_x1 = gt_boxes_all[:, 0:1]
+            gt_y1 = gt_boxes_all[:, 1:2]
+            gt_x2 = gt_boxes_all[:, 2:3]
+            gt_y2 = gt_boxes_all[:, 3:4]
+            gt_cx = 0.5 * (gt_x1 + gt_x2)
+            gt_cy = 0.5 * (gt_y1 + gt_y2)
+
+            cx = centers[:, 0].unsqueeze(0)
+            cy = centers[:, 1].unsqueeze(0)
+            radius_g = radius_px.unsqueeze(0)
+
+            inside_box = (
+                (cx >= gt_x1) & (cx <= gt_x2) & (cy >= gt_y1) & (cy <= gt_y2)
+            )
+            inside_center = (
+                (cx >= gt_cx - radius_g) & (cx <= gt_cx + radius_g)
+                & (cy >= gt_cy - radius_g) & (cy <= gt_cy + radius_g)
+            )
+            candidate_mask = inside_box | inside_center
+
+            # ---- Fallback for GTs with no candidates: nearest cell on size-matched scale ----
+            num_candidates_per_gt = candidate_mask.sum(dim=1)
+            no_cand_mask = num_candidates_per_gt == 0
+            n_fallback = int(no_cand_mask.sum().item())
+            if n_fallback > 0:
+                stats.fallback_count += n_fallback
+                fb_gt_indices = torch.nonzero(no_cand_mask, as_tuple=False).flatten()
+                fb_boxes = gt_boxes_all[fb_gt_indices]
+                fb_bw = (fb_boxes[:, 2] - fb_boxes[:, 0]).clamp(min=0)
+                fb_bh = (fb_boxes[:, 3] - fb_boxes[:, 1]).clamp(min=0)
+                fb_size = torch.sqrt((fb_bw * fb_bh).clamp(min=1e-6))
+
+                strides_t = torch.tensor(
+                    [float(s) for s in self.strides], device=device, dtype=torch.float32
+                )
+                ratios = fb_size.unsqueeze(1) / strides_t.unsqueeze(0)
+                scale_diff = (ratios - self.assign_scale_target).abs()
+                fb_scale_idx = scale_diff.argmin(dim=1)
+
+                fb_cx = 0.5 * (fb_boxes[:, 0] + fb_boxes[:, 2])
+                fb_cy = 0.5 * (fb_boxes[:, 1] + fb_boxes[:, 3])
+                d2 = (
+                    (centers[:, 0].unsqueeze(0) - fb_cx.unsqueeze(1)) ** 2
+                    + (centers[:, 1].unsqueeze(0) - fb_cy.unsqueeze(1)) ** 2
+                )
+                scale_match = grid.scale_indices.unsqueeze(0) == fb_scale_idx.unsqueeze(1)
+                d2 = torch.where(scale_match, d2, torch.full_like(d2, float("inf")))
+                nearest_cell = d2.argmin(dim=1)
+
+                # Set the nearest cell as the sole candidate for each fallback GT.
+                candidate_mask[fb_gt_indices, nearest_cell] = True
+                num_candidates_per_gt = candidate_mask.sum(dim=1)
+
+            # ---- IoU and cost (N, G) ----
+            cand_boxes = decoded_boxes_flat[gt_batch_idx]  # (N, G, 4)
+            ious = self._pairwise_iou_NG(gt_boxes_all, cand_boxes).clamp(min=0.0, max=1.0)
+
+            if self.iou_cost_type == "neg_log_iou":
+                iou_cost = -torch.log(ious.clamp(min=self.eps))
+            else:
+                iou_cost = 1.0 - ious
+
+            obj_logits_per_gt = obj_logits_flat[gt_batch_idx]  # (N, G)
+            obj_cost = F.binary_cross_entropy_with_logits(
+                obj_logits_per_gt,
+                torch.ones_like(obj_logits_per_gt),
+                reduction="none",
+            )
+
+            pred_centers = 0.5 * (cand_boxes[..., 0:2] + cand_boxes[..., 2:4])  # (N, G, 2)
+            gt_centers_2d = torch.cat([gt_cx, gt_cy], dim=1)  # (N, 2)
+            center_diff = pred_centers - gt_centers_2d.unsqueeze(1)
+            center_cost = torch.linalg.vector_norm(center_diff, dim=2) / max(image_diag, self.eps)
+
+            total_cost = (
+                self.iou_weight * iou_cost
+                + self.obj_weight * obj_cost
+                + self.center_weight * center_cost
+            )
+
+            finite_full = torch.isfinite(total_cost) & torch.isfinite(ious)
+            stats.nonfinite_cost_count = int(((~finite_full) & candidate_mask).sum().item())
+            total_cost = torch.nan_to_num(total_cost, nan=1.0e6, posinf=1.0e6, neginf=0.0)
+            ious = torch.nan_to_num(ious, nan=0.0, posinf=0.0, neginf=0.0).clamp(min=0.0, max=1.0)
+
+            BIG = 1.0e9
+            masked_cost = torch.where(candidate_mask, total_cost, torch.full_like(total_cost, BIG))
+            masked_iou = torch.where(candidate_mask, ious, torch.zeros_like(ious))
+
+            # ---- Dynamic K ----
+            topk = min(int(self.topk_iou), G)
+            top_iou_values = torch.topk(masked_iou, k=topk, dim=1, largest=True).values
+            dynamic_k_f = top_iou_values.sum(dim=1)
+            dynamic_k = dynamic_k_f.floor().long()  # matches int(float(sum)) for non-negative sums
+            dynamic_k = torch.clamp(dynamic_k, min=int(self.min_k), max=int(self.max_k))
+            dynamic_k = torch.minimum(dynamic_k, num_candidates_per_gt)
+
+            # ---- Per-GT top-k selection (chosen_mask in original cell-order) ----
+            sorted_idx = torch.argsort(masked_cost, dim=1, stable=True)
+            arange_g = torch.arange(G, device=device).unsqueeze(0)
+            chosen_in_sorted = arange_g < dynamic_k.unsqueeze(1)
+            chosen_mask = torch.zeros_like(masked_cost, dtype=torch.bool)
+            chosen_mask.scatter_(1, sorted_idx, chosen_in_sorted)
+            # Guard: never let a non-candidate be chosen even if dynamic_k somehow exceeded.
+            chosen_mask = chosen_mask & candidate_mask
+
+            # ---- Conflict resolution per (image, cell) via (B, max_n_gt, G) cost cube ----
+            cost_image = torch.full(
+                (batch_size, max_n_gt, G), BIG, device=device, dtype=torch.float32
+            )
+            chosen_cost = torch.where(
+                chosen_mask, masked_cost, torch.full_like(masked_cost, BIG)
+            )
+            cost_image[gt_batch_idx, gt_local_idx] = chosen_cost
+
+            # Tiebreaker: prefer lower gt_local_idx when costs are exactly equal.
+            tiebreak = (
+                torch.arange(max_n_gt, device=device, dtype=torch.float32) * 1.0e-9
+            ).view(1, max_n_gt, 1)
+            cost_image_tb = cost_image + tiebreak
+
+            winning_k = cost_image_tb.argmin(dim=1)  # (B, G)
+            winning_cost = cost_image_tb.gather(1, winning_k.unsqueeze(1)).squeeze(1)
+            positive_mask_BG = winning_cost < (BIG / 2)
+
+            # ---- conflict_count = total chosen entries - unique cell winners ----
+            total_chosen = int(chosen_mask.sum().item())
+            num_unique_winners = int(positive_mask_BG.sum().item())
+            stats.conflict_count = max(0, total_chosen - num_unique_winners)
+
+            # ---- Scatter winning boxes into per-scale output tensors ----
+            gt_boxes_image = torch.zeros(
+                (batch_size, max_n_gt, 4), device=device, dtype=torch.float32
+            )
+            gt_boxes_image[gt_batch_idx, gt_local_idx] = gt_boxes_all
+            winning_box = gt_boxes_image.gather(
+                1, winning_k.unsqueeze(-1).expand(-1, -1, 4)
+            )  # (B, G, 4)
+
+            for s_idx, (h, w) in enumerate(output_shapes):
+                scale_cells = torch.nonzero(
+                    grid.scale_indices == s_idx, as_tuple=False
+                ).flatten()
+                pos_mask_s = positive_mask_BG[:, scale_cells].view(batch_size, h, w)
+                box_s = winning_box[:, scale_cells, :].view(batch_size, h, w, 4)
+                box_s_chw = box_s.permute(0, 3, 1, 2).contiguous()
+
+                obj_targets[s_idx][:, 0, :, :] = pos_mask_s.to(torch.float32)
+                pos_masks[s_idx][:, 0, :, :] = pos_mask_s
+                pos_mask_expanded = pos_mask_s.unsqueeze(1).expand(-1, 4, -1, -1)
+                box_targets_abs[s_idx] = torch.where(
+                    pos_mask_expanded, box_s_chw, torch.zeros_like(box_s_chw)
+                )
+
+            num_pos = num_unique_winners
+            stats.positives_total = num_pos
+
+            # ---- Stats reconstruction (single sync per stat, off the hot path) ----
+            for s_idx, stride in enumerate(self.strides):
+                stats.positives_per_stride[int(stride)] = int(pos_masks[s_idx].sum().item())
+
+            pos_coords = torch.nonzero(positive_mask_BG, as_tuple=False)
+            if pos_coords.numel() > 0:
+                pos_b = pos_coords[:, 0]
+                pos_g = pos_coords[:, 1]
+                pos_k_local = winning_k[pos_b, pos_g]
+                gt_index_map = torch.full(
+                    (batch_size, max_n_gt), -1, dtype=torch.long, device=device
+                )
+                gt_index_map[gt_batch_idx, gt_local_idx] = torch.arange(
+                    N, device=device, dtype=torch.long
+                )
+                pos_n = gt_index_map[pos_b, pos_k_local]
+                pos_per_gt_counts = torch.bincount(pos_n, minlength=N)
+            else:
+                pos_per_gt_counts = torch.zeros(N, dtype=torch.long, device=device)
+
+            stats.positives_per_gt = pos_per_gt_counts.tolist()
+            stats.unmatched_gt_count = int(sum(1 for c in stats.positives_per_gt if c <= 0))
+            stats.candidate_counts = num_candidates_per_gt.tolist()
+            stats.dynamic_k_values = dynamic_k.tolist()
+
+            return obj_targets, box_targets_abs, pos_masks, num_pos, stats
+
+    @staticmethod
+    def _pairwise_iou_NG(boxes_n: torch.Tensor, boxes_ng: torch.Tensor) -> torch.Tensor:
+        """Per-row IoU between (N, 4) and (N, G, 4) → (N, G)."""
+        b1_x1 = boxes_n[:, 0:1]
+        b1_y1 = boxes_n[:, 1:2]
+        b1_x2 = boxes_n[:, 2:3]
+        b1_y2 = boxes_n[:, 3:4]
+
+        b2_x1 = boxes_ng[..., 0]
+        b2_y1 = boxes_ng[..., 1]
+        b2_x2 = boxes_ng[..., 2]
+        b2_y2 = boxes_ng[..., 3]
+
+        inter_w = (torch.minimum(b1_x2, b2_x2) - torch.maximum(b1_x1, b2_x1)).clamp(min=0)
+        inter_h = (torch.minimum(b1_y2, b2_y2) - torch.maximum(b1_y1, b2_y1)).clamp(min=0)
+        inter = inter_w * inter_h
+
+        area1 = ((b1_x2 - b1_x1) * (b1_y2 - b1_y1)).clamp(min=0)
+        area2 = ((b2_x2 - b2_x1) * (b2_y2 - b2_y1)).clamp(min=0)
+        union = area1 + area2 - inter
+        return inter / union.clamp(min=1e-6)
+
+    def _assign_legacy(
+        self,
+        *,
+        raw_outputs: Sequence[torch.Tensor],
+        targets: List[dict],
+        output_shapes: list[tuple[int, int]],
+        device: torch.device,
+    ) -> tuple[list[torch.Tensor], list[torch.Tensor], list[torch.Tensor], int, SimOTABatchStats]:
+        """Original per-GT-loop implementation. Kept for A/B equivalence testing."""
         batch_size = len(targets)
         if len(raw_outputs) != len(self.strides):
             raise ValueError(f"Expected {len(self.strides)} raw output heads, got {len(raw_outputs)}")

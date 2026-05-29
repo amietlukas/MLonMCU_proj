@@ -1,4 +1,4 @@
-"""Cross-check yolo_postproc.c against software/ball_detector_n6/yolo_decode.py.
+"""Cross-check Core/Src/yolo_postproc.c against firmware/Host/yolo_decode.py.
 
 Builds yolo_postproc.c into a shared library, calls it from Python via
 ctypes on a fixed RNG-seeded fake-output tensor, runs the same input
@@ -19,17 +19,18 @@ from pathlib import Path
 
 import numpy as np
 
-HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[2]
-sys.path.insert(0, str(REPO / "software/ball_detector_n6"))
+HERE = Path(__file__).resolve().parent          # firmware/BallDetector_N6/tests
+REPO = HERE.parents[2]                           # repo root
+# Reference Python decoder now lives next to the host script.
+sys.path.insert(0, str(REPO / "firmware/Host"))
 import yolo_decode  # noqa: E402
 
 LIB = Path("/tmp/libyolo_postproc.so")
 # Match the table baked into yolo_postproc.c.
 HEAD_QPARAMS = [
-    (0.234361604, 149,  8, 60, 80),  # p8
-    (0.235901356, 124, 16, 30, 40),  # p16
-    (0.220821530, 155, 32, 15, 20),  # p32
+    (0.256579876, 41,  8, 36, 48),  # p8
+    (0.204285681, 0, 16, 18, 24),  # p16
+    (0.146335885, 0, 32,  9, 12),  # p32
 ]
 
 
@@ -42,7 +43,8 @@ class YoloBox(ctypes.Structure):
 def build_lib() -> ctypes.CDLL:
     subprocess.run(
         ["cc", "-O2", "-Wall", "-Wextra", "-shared", "-fPIC",
-         "-o", str(LIB), str(HERE / "yolo_postproc.c"), "-lm"],
+         "-I", str(HERE.parent / "Core" / "Inc"),   # yolo_postproc.h lives here now
+         "-o", str(LIB), str(HERE.parent / "Core" / "Src" / "yolo_postproc.c"), "-lm"],
         check=True,
     )
     lib = ctypes.CDLL(str(LIB))
@@ -120,6 +122,14 @@ def main() -> int:
             for b in bs:
                 print(f"  {label}: {b}")
         return 1
+
+    # Sort by a canonical key (score desc, then x1, y1) so a tie in objectness
+    # score between two boxes -- where both decoders are correct but pick a
+    # different order -- doesn't false-positive the comparison.
+    def _canonical(b):
+        return (-b[4], b[0], b[1], b[2], b[3])
+    c_boxes  = sorted(c_boxes,  key=_canonical)
+    py_boxes = sorted(py_boxes, key=_canonical)
 
     ok = True
     for i, (cb, pb) in enumerate(zip(c_boxes, py_boxes)):

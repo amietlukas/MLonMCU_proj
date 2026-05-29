@@ -5,7 +5,7 @@
 - Copies the chosen checkpoint to model/int8_ptq_qdq.onnx for stedgeai.
 
 Run from the repo root:
-    python software/ball_detector_n6/prepare_model.py
+    python firmware/BallDetector_N6/scripts/prepare_model.py
 """
 from __future__ import annotations
 
@@ -14,19 +14,21 @@ from pathlib import Path
 
 import onnx
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# __file__ = firmware/BallDetector_N6/scripts/prepare_model.py -> repo root is 3 up.
+REPO_ROOT = Path(__file__).resolve().parents[3]
 SRC_ONNX = REPO_ROOT / (
     "software/ball_detection/runs/"
-    "20260521-195948-simota_diou_v2_pruned_30/exports_int8acts/int8_320x256.onnx"
+    "20260527-153020-smallimgsize_v1_pruned_30/exports/int8_ptq_qdq.onnx"
 )
-DST_DIR = REPO_ROOT / "software/ball_detector_n6/model"
+DST_DIR = REPO_ROOT / "firmware/BallDetector_N6/model"
 DST_ONNX = DST_DIR / "int8_ptq_qdq.onnx"
 
-EXPECTED_INPUT_SHAPE = [1, 3, 256, 320]
+# 384x288 RGB input, 4:3 aspect (matches B-CAMS-IMX sensor native ratio).
+EXPECTED_INPUT_SHAPE = [1, 3, 288, 384]
 EXPECTED_OUTPUTS = {
-    "p8":  [1, 5, 32, 40],
-    "p16": [1, 5, 16, 20],
-    "p32": [1, 5,  8, 10],
+    "p8":  [1, 5, 36, 48],
+    "p16": [1, 5, 18, 24],
+    "p32": [1, 5,  9, 12],
 }
 
 

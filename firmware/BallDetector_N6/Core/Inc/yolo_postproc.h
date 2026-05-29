@@ -19,8 +19,8 @@
 extern "C" {
 #endif
 
-#define YOLO_INPUT_W   640
-#define YOLO_INPUT_H   480
+#define YOLO_INPUT_W   384
+#define YOLO_INPUT_H   288
 #define YOLO_NUM_HEADS   3
 #define YOLO_MAX_DET     8  /* caller can cap below this */
 

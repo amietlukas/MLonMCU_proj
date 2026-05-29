@@ -1,26 +1,32 @@
 #!/usr/bin/env bash
-# One-shot: prepare model -> stedgeai -> make -> flash app + weights.
+# One-shot: prepare model -> stedgeai generate -> headless build -> sign+flash.
+# Each step is also runnable on its own; see the individual scripts.
 
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO="$(cd "$HERE/../../.." && pwd)"
+PROJ="$(cd "$HERE/.." && pwd)"
+REPO="$(cd "$PROJ/../.." && pwd)"
 
-echo "==> [1/4] prepare model (ONNX sanity-check + copy)"
-( cd "$REPO" && source software/venv/bin/activate \
-  && python software/ball_detector_n6/prepare_model.py )
+echo "==> [1/4] prepare model (ONNX sanity-check + copy into model/)"
+if [[ -f "$REPO/software/venv/bin/activate" ]]; then
+  # shellcheck disable=SC1091
+  ( cd "$REPO" && source software/venv/bin/activate && python "$HERE/prepare_model.py" )
+else
+  ( cd "$REPO" && python "$HERE/prepare_model.py" )
+fi
 
 echo
-echo "==> [2/4] stedgeai generate -> ST app Model/"
+echo "==> [2/4] stedgeai generate -> X-CUBE-AI/App/"
 "$HERE/stedgeai_compile.sh"
 
 echo
-echo "==> [3/4] make all sign"
-"$HERE/build_n6.sh"
+echo "==> [3/4] headless CubeIDE build"
+"$HERE/build.sh"
 
 echo
-echo "==> [4/4] flash app + weights"
-"$HERE/flash_n6_signed.sh"
+echo "==> [4/4] sign + flash app + weights"
+"$HERE/flash.sh"
 
 echo
-echo "done — connect over USB (UVC video device) to see the live feed."
+echo "done — run: python $REPO/firmware/Host/host_balldetector_n6.py --port /dev/ttyACM0 cam"
