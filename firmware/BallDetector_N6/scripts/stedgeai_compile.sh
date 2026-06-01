@@ -16,12 +16,15 @@ set -euo pipefail
 # --- adjust me ----------------------------------------------------------------
 XAI_ROOT="${XAI_ROOT:-$HOME/STM32Cube/Repository/Packs/STMicroelectronics/X-CUBE-AI/10.2.0}"
 STEDGEAI="${STEDGEAI:-$XAI_ROOT/Utilities/linux/stedgeai}"
-# Neural-ART profile JSON + profile name. The pack ships a working JSON with
-# named profiles; n6-allmems-O3 -> stm32n6.mpool (on-chip-only, no hyperRAM),
-# which is what the Nucleo-N657X0-Q actually has. If CubeMX generated its own
-# user_neuralart.json in the project, point NEURAL_ART_JSON at that instead.
-NEURAL_ART_JSON="${NEURAL_ART_JSON:-$XAI_ROOT/scripts/N6_scripts/user_neuralart.json}"
-NEURAL_ART_PROFILE="${NEURAL_ART_PROFILE:-n6-allmems-O3}"
+# Neural-ART profile JSON + profile name.
+#   n6-noextmem-fsbl (DEFAULT) -> model/stm32n6__noextmem_fsbl.mpool: internal
+#     AXISRAM only (NO XSPI2 in the NPU path), with AXISRAM2 capped to 512K so the
+#     NPU stays below 0x34180000 and never collides with the FSBL code/data
+#     (ROM 0x34180400, RAM 0x341C0000). Weights land as 3 raw blobs in AXISRAM3/4/5.
+#   n6-allmems-O3 (legacy) -> pack json, weights in XSPI2 @0x71000000.
+# Override either via the env vars to switch back.
+NEURAL_ART_JSON="${NEURAL_ART_JSON:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/model/user_neuralart_fsbl.json}"
+NEURAL_ART_PROFILE="${NEURAL_ART_PROFILE:-n6-noextmem-fsbl}"
 # ------------------------------------------------------------------------------
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -65,7 +68,9 @@ NET_NAME="${NET_NAME:-network_prunedint8}"
 
 echo
 echo "==> generated in $OUT_DIR:"
-ls -1 "$OUT_DIR/$NET_NAME.c" "$OUT_DIR/$NET_NAME.h" "$OUT_DIR/${NET_NAME}_atonbuf.xSPI2.raw" 2>/dev/null | sed 's/^/  /'
+ls -1 "$OUT_DIR/$NET_NAME.c" "$OUT_DIR/$NET_NAME.h" "$OUT_DIR/${NET_NAME}_atonbuf."*.raw 2>/dev/null | sed 's/^/  /'
 echo
-echo "weights blob -> flash with scripts/flash_weights.sh (programs ${NET_NAME}_atonbuf.xSPI2.raw at 0x71000000)"
-echo "NOTE: CubeMX already generates these at project-gen time; only re-run this after a model change."
+echo "weight blobs -> flash with scripts/flash_weights.sh:"
+echo "  internal profile (n6-noextmem-fsbl): 3 blobs AXISRAM3/4/5 -> XSPI2 staging, copied to AXISRAM at boot."
+echo "  legacy profile   (n6-allmems-O3):    1 blob  xSPI2        -> XSPI2 @0x71000000, NPU reads it directly."
+echo "NOTE: stedgeai_compile.sh is authoritative — CubeMX's NPU profile is overwritten by this. Re-run after any model or profile change."

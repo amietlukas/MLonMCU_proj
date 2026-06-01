@@ -20,12 +20,28 @@
 #include "main.h"             /* HAL, huart */
 #include "app_x-cube-ai.h"    /* ll_aton_runtime.h, npu_cache.h */
 #include "network_prunedint8.h"
+#include "ll_aton.h"          /* ATON_STRENG_* accessors for the stall watchdog */
 #include "stm32n6xx_nucleo_xspi.h"  /* BSP OctoFlash */
 #include "npu_cache.h"              /* CACHEAXI clean/invalidate for NPU I/O */
 #include "stm32n6xx_hal_rif.h"      /* RISAF/RIMC: grant the NPU master memory access */
 
 #include <string.h>
 #include <stdio.h>            /* snprintf for debug logs */
+
+/* Keep our manual RISAF base-region opening (1) or rely on RIMC+RISC alone (0,
+ * matching ST's x-cube-n6-ai reference, which never reconfigures RISAF). Gated
+ * ON by default because our RAM-boot path skips the signed bootROM that would
+ * otherwise set the RISAF defaults; set to 0 to test ST's minimal recipe. */
+#ifndef BALLD_CONFIG_RISAF
+#define BALLD_CONFIG_RISAF 1
+#endif
+
+/* Secure the NPU peripheral as a RISC slave (1) or leave it at reset default
+ * (0). ST's reference secures it; set to 0 to A/B-test whether securing the NPU
+ * is what makes the streaming engine stall in LL_Streng_Wait. */
+#ifndef BALLD_CONFIG_SECURE_NPU
+#define BALLD_CONFIG_SECURE_NPU 0   /* A/B: NPU slave left at reset default (was 1) */
+#endif
 
 /* This TU owns its own (static) network instance + interface, both pointing at
  * the generated network's global functions. app_x-cube-ai.c declares its own
@@ -75,6 +91,43 @@ void balld_fault_report(uint32_t *frame)
     for (;;) { __NOP(); }
 }
 
+/* ---- NPU streaming-engine stall guard (SysTick-driven) -------------------
+ * LL_ATON's own watchdog (checkWatchdog) is compiled out (NDEBUG), so a stuck
+ * streaming engine spins forever in LL_Streng_Wait() with no escape — the
+ * observed hang. We piggy-back on the 1 kHz HAL SysTick instead: while an
+ * inference is in flight (s_infer_active), count ms; if it runs well past the
+ * ~105 ms norm, dump which streaming engine is still RUNNING and the address it
+ * is stuck transferring, then halt. A stuck addr in XSPI2 (0x70/0x71xxxxxx) =>
+ * NPU-master weight read blocked; in AXISRAM (0x34xxxxxx) => an activation/IO
+ * buffer the NPU can't reach. Overriding the __weak HAL_IncTick keeps normal
+ * HAL timekeeping (uwTick) intact. */
+extern __IO uint32_t uwTick;            /* HAL tick counter */
+static volatile uint8_t  s_infer_active;
+static volatile uint32_t s_infer_ms;
+#define BALLD_STALL_MS 1500u
+
+void HAL_IncTick(void)
+{
+    uwTick += (uint32_t)uwTickFreq;     /* preserve HAL_Delay/HAL_GetTick */
+    if (!s_infer_active) { return; }
+    if (++s_infer_ms < BALLD_STALL_MS) { return; }
+
+    s_infer_active = 0;                 /* one-shot */
+    proto_send_log("STALL: NPU epoch over budget — streaming engines RUNNING:");
+    char d[96];
+    for (int i = 0; i < ATON_STRENG_NUM; ++i) {
+        uint32_t ctrl = ATON_STRENG_CTRL_GET(i);
+        if (ctrl & (1U << ATON_STRENG_CTRL_RUNNING_LSB)) {
+            snprintf(d, sizeof d, "  streng[%d] ctrl=%08lX addr=%08lX",
+                     i, (unsigned long)ctrl,
+                     (unsigned long)ATON_STRENG_ADDR_GET(i));
+            proto_send_log(d);
+        }
+    }
+    proto_send_log("STALL: halting");
+    for (;;) { __NOP(); }
+}
+
 /* ---- N6 Resource Isolation Framework: grant the NPU master memory access ---
  * THE root-cause fix. After reset the RISAF allows only secure/privileged/CID=1
  * transactions; the CPU matches that, but the Neural-ART NPU is a separate bus
@@ -89,6 +142,29 @@ void balld_fault_report(uint32_t *frame)
  * Order matters: the CACHEAXI must be fully ENABLED before its RISAF regions
  * (8/15) are configured, otherwise that config faults (which it did when we
  * opened them with the cache only clocked). */
+/* ---- AXISRAM power-up (THE streng-stall fix) ----------------------------
+ * MX_X_CUBE_AI_Init() clears RAMCFG_SRAMx_AXI->CR.SRAMSD to bring AXISRAM2..6
+ * out of shutdown, but it never enables the RAMCFG peripheral clock first — so
+ * those APB writes hit a clock-gated peripheral and are SILENTLY DROPPED. Banks
+ * that default to shutdown (AXISRAM2 @0x34100000) then stay powered down, and
+ * the NPU stalls forever in LL_Streng_Wait when a streaming engine reads such a
+ * bank (no AXI response). The CPU-written input sits in AXISRAM3 (@0x342E0000),
+ * which is on by default — masking the dead AXISRAM2. Enable the RAMCFG clock,
+ * then redo the un-shutdown so it actually takes effect (mirrors ST's
+ * NPURam_enable()). */
+static void balld_enable_axisram(void)
+{
+    __HAL_RCC_RAMCFG_CLK_ENABLE();
+    RAMCFG_SRAM2_AXI->CR &= ~RAMCFG_CR_SRAMSD;
+    RAMCFG_SRAM3_AXI->CR &= ~RAMCFG_CR_SRAMSD;
+    RAMCFG_SRAM4_AXI->CR &= ~RAMCFG_CR_SRAMSD;
+    RAMCFG_SRAM5_AXI->CR &= ~RAMCFG_CR_SRAMSD;
+    RAMCFG_SRAM6_AXI->CR &= ~RAMCFG_CR_SRAMSD;
+    __DSB();
+    __ISB();
+    proto_send_log("axisram: ramcfg clk on, sram2-6 un-shutdown");
+}
+
 static uint32_t risaf_max_addr(RISAF_TypeDef *risaf)
 {
     if      ((risaf == RISAF2_S)  || (risaf == RISAF2_NS))  return RISAF2_LIMIT_ADDRESS_SPACE_SIZE;
@@ -140,17 +216,28 @@ static void balld_security_config(void)
     m.MasterCID = RIF_CID_1;
     m.SecPriv   = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
     HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_NPU, &m);
-    /* Do NOT secure the NPU peripheral (RISC): the LL_ATON runtime accesses the
-     * NPU registers via the NON-SECURE alias (ATON_BASE=NPU_BASE_NS, since
-     * CPU_IN_SECURE_STATE is undefined). Securing the peripheral makes every
-     * NPU register access from the runtime fault (NS-alias access to a secure
-     * slave). The open RISAF base regions already grant the NPU master's memory
-     * accesses to all CIDs, so the peripheral can stay non-secure. */
-    /* HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_NPU,
-                                          RIF_ATTRIBUTE_PRIV | RIF_ATTRIBUTE_SEC); */
-    proto_send_log("sec: rimc ok");
+    /* Secure the NPU peripheral as a RISC slave — matching ST's validated
+     * x-cube-n6-ai reference Security_Config(). This build DEFINES
+     * CPU_IN_SECURE_STATE (see FSBL/.cproject), so the LL_ATON runtime accesses
+     * the NPU registers through the SECURE alias (ATON_BASE=NPU_BASE_S). A secure
+     * CPU touching a secure slave is legal, so securing it is consistent — and
+     * stricter than leaving the slave at its reset default. (Prior code left
+     * this out on the FALSE premise that CPU_IN_SECURE_STATE was undefined / the
+     * NS alias was in use.) */
+#if BALLD_CONFIG_SECURE_NPU
+    HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_NPU,
+                                          RIF_ATTRIBUTE_PRIV | RIF_ATTRIBUTE_SEC);
+    proto_send_log("sec: rimc+risc ok");
+#else
+    proto_send_log("sec: rimc ok (NPU slave left at reset default)");
+#endif
 
-    /* --- RISAF_Config: open the base regions (cache now enabled) ------------- */
+#if BALLD_CONFIG_RISAF
+    /* --- RISAF_Config: open the base regions (cache now enabled) -------------
+     * ST's reference does NOT touch RISAF at all — RIMC (master) + RISC (slave)
+     * suffice in both flash- and dev/RAM-boot. We keep this gated-ON because our
+     * RAM-boot path skips the signed bootROM that would set RISAF defaults; set
+     * BALLD_CONFIG_RISAF=0 to test whether RIMC+RISC alone is enough. */
     __HAL_RCC_RISAF_CLK_ENABLE();
     set_risaf_default(RISAF2_S);   /* SRAM1_AXI            */
     proto_send_log("sec: risaf2 ok");
@@ -168,6 +255,75 @@ static void balld_security_config(void)
     proto_send_log("sec: risaf15 ok");
     set_risaf_default(RISAF12_S);  /* OCTOSPI2 0x70000000 <- weights     */
     proto_send_log("sec: risaf12 ok");
+#else
+    proto_send_log("sec: risaf skipped (RIMC+RISC only, ST-style)");
+#endif
+}
+
+/* ---- IAC: trap RIF illegal accesses -------------------------------------
+ * Mirrors ST's IAC_Config() + IAC_IRQHandler. With this armed, any transaction
+ * the RIF filters out (e.g. the NPU master/slave being blocked — the suspected
+ * root cause) raises an interrupt and halts in a known handler with a log,
+ * instead of silently producing constant/garbage NPU output. The RIFSC
+ * peripheral banks map to ISR[0..4]; the NPU sits in bank 3, bit 10. */
+void IAC_IRQHandler(void)
+{
+    char d[96];
+    for (int i = 0; i < 5; ++i) {
+        uint32_t isr = IAC->ISR[i];
+        if (isr) {
+            snprintf(d, sizeof d,
+                     "IAC ILLEGAL ACCESS: ISR[%d]=%08lX (NPU=ISR[3].bit10)",
+                     i, (unsigned long)isr);
+            proto_send_log(d);
+            IAC->ICR[i] = isr;   /* acknowledge */
+        }
+    }
+    for (;;) { __NOP(); }
+}
+
+static void balld_iac_config(void)
+{
+    __HAL_RCC_IAC_CLK_ENABLE();
+    __HAL_RCC_IAC_FORCE_RESET();
+    __HAL_RCC_IAC_RELEASE_RESET();
+    for (int i = 0; i < 5; ++i) {
+        IAC->ICR[i] = 0xFFFFFFFFu;   /* clear stale latches            */
+        IAC->IER[i] = 0xFFFFFFFFu;   /* trap every peripheral's illegal access */
+    }
+    HAL_NVIC_SetPriority(IAC_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(IAC_IRQn);
+    proto_send_log("sec: iac trap armed");
+}
+
+/* ---- NPU interrupt vectoring fix ----------------------------------------
+ * The NPU has 5 IRQ lines: NPU0..NPU3 (53..56) + CACHEAXI (57). The LL_ATON
+ * runtime installs/handles only line 53 (ATON_STD_IRQ_LINE=0). If the NPU
+ * raises completion/cache on another line that is non-secure-targeted, it
+ * dispatches through the empty non-secure vector table (VTOR_NS=0) -> PC=0, the
+ * crash we see mid-epoch. Force all five lines to SECURE so they use our
+ * populated secure VTOR, and give 54..57 (which the runtime leaves unhandled) a
+ * reporting handler so an unexpected line announces itself instead of crashing. */
+static void npu_unexpected_irq(int irqn)
+{
+    char d[72];
+    snprintf(d, sizeof d, "UNEXPECTED NPU IRQ %d fired (runtime handles only 53)", irqn);
+    proto_send_log(d);
+    NVIC_DisableIRQ((IRQn_Type)irqn);
+    for (;;) { __NOP(); }
+}
+void NPU1_IRQHandler(void)     { npu_unexpected_irq(NPU1_IRQn); }
+void NPU2_IRQHandler(void)     { npu_unexpected_irq(NPU2_IRQn); }
+void NPU3_IRQHandler(void)     { npu_unexpected_irq(NPU3_IRQn); }
+void CACHEAXI_IRQHandler(void) { npu_unexpected_irq(CACHEAXI_IRQn); }
+
+static void npu_irq_secure_target(void)
+{
+    /* IRQ 53..57 -> bits 21..25 of NVIC ITNS[1] (n - 32). Clear = secure. */
+    NVIC->ITNS[1] &= ~(0x1Fu << 21);
+    __DSB();
+    __ISB();
+    proto_send_log("sec: npu irqs forced secure (53-57)");
 }
 
 /* ---- xSPI2 OctoFlash: memory-mapped read via ST's Nucleo BSP -------------
@@ -191,6 +347,24 @@ static HAL_StatusTypeDef octoflash_mmap_init(int32_t *init_rc, int32_t *mmap_rc)
         return HAL_ERROR;
     }
     return HAL_OK;
+}
+
+/* ---- weights: XSPI2 staging -> internal AXISRAM (noextmem-fsbl profile) ----
+ * The internal-only network (model/stm32n6__noextmem_fsbl.mpool) hardcodes its
+ * weights in AXISRAM3/4/5 (0x34200000/0x34270000/0x342E0000), so the NPU master
+ * reads ONLY on-chip RAM — XSPI2 is out of the inference path. flash_weights.sh
+ * stages the three 448 KB blobs in XSPI2 at 0x71000000/0x71070000/0x710E0000;
+ * we copy them into AXISRAM here, once, after the OctoFlash is memory-mapped.
+ * AXISRAM3/4/5 are already un-shutdown (balld_enable_axisram); D-cache is off so
+ * these CPU writes land straight in SRAM (a DSB orders them before inference). */
+#define WEIGHT_BANK_BYTES 0x70000u   /* 448 KB per AXISRAM bank == blob size */
+static void copy_weights_to_axisram(void)
+{
+    memcpy((void *)0x34200000u, (const void *)0x71000000u, WEIGHT_BANK_BYTES);
+    memcpy((void *)0x34270000u, (const void *)0x71070000u, WEIGHT_BANK_BYTES);
+    memcpy((void *)0x342E0000u, (const void *)0x710E0000u, WEIGHT_BANK_BYTES);
+    __DSB();
+    proto_send_log("weights: copied 3x448K XSPI2 staging -> AXISRAM3/4/5");
 }
 
 /* ---- microsecond timer (DWT cycle counter) ------------------------------- */
@@ -219,14 +393,6 @@ static int run_inference(void)
      * side, so flushing the M55 D-cache is sufficient for coherency (this is
      * what ST's N6 getting-started does: SCB_CleanInvalidateDCache_by_Addr). */
     SCB_CleanInvalidateDCache_by_Addr((void *)s_in, (int32_t)MODEL_INPUT_BYTES);
-
-    /* DIAG: stamp the OUTPUT buffers with a CPU-written sentinel (0xAB) before
-     * the NPU runs. If the NPU writes CPU-visible output, the post-inference
-     * "out sums" will NOT match the all-0xAB pattern (p8=0x168CC0, p16=0x5A2D0,
-     * p32=0x00168F4). If they DO match 0xAB, the NPU never wrote here -> the NPU
-     * and CPU don't share the activation SRAM (root cause). */
-    for (int i = 0; i < YOLO_NUM_HEADS; ++i)
-        memset((void *)s_out[i], 0xAB, OUT_SZ[i]);
 
     LL_ATON_RT_RetValues_t r;
     LL_ATON_RT_Init_Network(&NN_Instance_network_prunedint8);
@@ -263,12 +429,15 @@ static int run_inference(void)
         proto_send_log(d);
     }
 
+    s_infer_ms = 0;
+    s_infer_active = 1;   /* arm the SysTick stall guard for this inference */
     do {
         r = LL_ATON_RT_RunEpochBlock(&NN_Instance_network_prunedint8);
         if (r == LL_ATON_RT_WFE) {
             LL_ATON_OSAL_WFE();
         }
     } while (r != LL_ATON_RT_DONE);
+    s_infer_active = 0;   /* completed within budget */
     LL_ATON_RT_DeInit_Network(&NN_Instance_network_prunedint8);
 
     /* Make the NPU's freshly written outputs visible to the CPU decoder. */
@@ -318,6 +487,22 @@ static int decode(yolo_box_t *boxes)
 static void send_xspi_status(void)
 {
     char d[96];
+    /* Build tag — printed on every HELLO so we can confirm at a glance that the
+     * binary actually running is THIS build (CubeIDE can silently launch a stale
+     * .elf past its phantom-error prompt). Bump the date/suffix on each change. */
+    proto_send_log("BUILD=2026-06-01T noextmem-fsbl conf045");
+    /* Readback RAMCFG to confirm AXISRAM2/3 are actually out of shutdown
+     * (SRAMSD bit clear). If sram2 still shows SRAMSD set, the un-shutdown did
+     * not take -> the NPU will stall reading AXISRAM2 @0x34100000. */
+    {
+        char r[88];
+        snprintf(r, sizeof r,
+                 "RAMCFG.CR sram2=%08lX sram3=%08lX (SRAMSD mask=%08lX; 0=on)",
+                 (unsigned long)RAMCFG_SRAM2_AXI->CR,
+                 (unsigned long)RAMCFG_SRAM3_AXI->CR,
+                 (unsigned long)RAMCFG_CR_SRAMSD);
+        proto_send_log(r);
+    }
     if (s_weights_mapped) {
         snprintf(d, sizeof d, "xSPI2 OctoFlash memory-map OK init=%ld mmap=%ld",
                  (long)s_xspi_init_rc, (long)s_xspi_mmap_rc);
@@ -327,20 +512,22 @@ static void send_xspi_status(void)
     }
     proto_send_log(d);
 
-    /* DIAG: read the weights back through the memory-mapped flash exactly where
-     * the NPU expects them (network_prunedint8.c: every Conv2D_*_weights
-     * .addr_base = 0x71000000). Compare to the host's blob: first16 should be
-     * f90100d2eac9dd0b... and sum of first 64KB should be 0x0080FCFC. If these
-     * don't match, the NPU is reading garbage weights -> input-independent
-     * (constant) output, which is exactly what we observe. */
-    {
-        const volatile uint8_t *w = (const volatile uint8_t *)0x71000000UL;
-        uint32_t s = 0;
-        for (uint32_t k = 0; k < 65536u; ++k) s += w[k];
+    /* DIAG: confirm the boot copy worked — sum the first 64KB of the XSPI2
+     * staging (0x71000000) and the AXISRAM copy (0x34200000, where the NPU
+     * actually reads weights). They MUST match; a mismatch means the copy/flash
+     * is wrong and the NPU will see garbage weights. */
+    if (s_weights_mapped) {
+        const volatile uint8_t *stg = (const volatile uint8_t *)0x71000000UL; /* XSPI2 staging  */
+        const volatile uint8_t *axi = (const volatile uint8_t *)0x34200000UL; /* AXISRAM3 (NPU) */
+        uint32_t ss = 0, sa = 0;
+        for (uint32_t k = 0; k < 65536u; ++k) { ss += stg[k]; sa += axi[k]; }
         snprintf(d, sizeof d,
-                 "WEIGHTS @0x71000000: b0=%02X%02X%02X%02X%02X%02X%02X%02X sum64k=0x%08lX",
-                 w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], (unsigned long)s);
+                 "WEIGHTS staging@71000000 sum64k=0x%08lX  npu@34200000 sum64k=0x%08lX %s",
+                 (unsigned long)ss, (unsigned long)sa, (ss == sa) ? "(copy OK)" : "(MISMATCH!)");
         proto_send_log(d);
+    } else {
+        /* xSPI2 not mapped -> 0x71000000 would BusFault. Weights are NOT in AXISRAM. */
+        proto_send_log("WEIGHTS NOT LOADED: xSPI2 mmap failed -> power-cycle board, re-flash weights, retry");
     }
 }
 
@@ -348,6 +535,11 @@ void balldetector_init(void)
 {
     dwt_init();
     proto_init(&huart1);
+
+    /* Bring AXISRAM2..6 properly out of shutdown — the generated RAMCFG writes
+     * in MX_X_CUBE_AI_Init ran with the RAMCFG clock gated and were dropped.
+     * Must happen before the first inference; doing it first thing is safe. */
+    balld_enable_axisram();
 
     /* Route Bus/Hard/NMI faults to SECURE state and enable the configurable
      * fault handlers, so any fault during NPU register/DMA access is delivered
@@ -378,15 +570,16 @@ void balldetector_init(void)
     HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8);
     HAL_UARTEx_EnableFifoMode(&huart1);
 
-    /* Map the OctoFlash so the NPU can read its weights at 0x71000000. Must
-     * happen before any inference. Log (don't hard-fault) so a failure is
-     * visible on the VCP instead of a silent lockup. */
+    /* Map the OctoFlash to read the staged weight blobs, then copy them into
+     * AXISRAM (the NPU reads weights from on-chip RAM, not XSPI2). Log (don't
+     * hard-fault) so a failure is visible on the VCP instead of a silent lockup. */
     s_xspi_init_rc = 0;
     s_xspi_mmap_rc = 0;
     if (octoflash_mmap_init(&s_xspi_init_rc, &s_xspi_mmap_rc) != HAL_OK) {
         s_weights_mapped = 0;
     } else {
         s_weights_mapped = 1;
+        copy_weights_to_axisram();   /* XSPI2 staging -> AXISRAM3/4/5 for the NPU */
     }
 
     /* Resolve the NPU I/O buffer addresses from the network interface. */
@@ -399,7 +592,17 @@ void balldetector_init(void)
         s_out[i] = (const uint8_t *)LL_Buffer_addr_start(&out_info[i]);
     }
 
+    /* Arm the IAC last — after the peripheral bring-up accesses (XSPI2 BSP,
+     * UART) are done — so it traps only the NPU pipeline's accesses during
+     * inference. If it fires immediately, the logged ISR bitmap names the
+     * offending peripheral bank. */
+    balld_iac_config();
+
     LL_ATON_RT_RuntimeInit();
+    /* RuntimeInit installs the NPU line-53 handler; now force all NPU/cache IRQ
+     * lines secure so a completion IRQ on any line can't dispatch to VTOR_NS=0
+     * (the PC=0 crash). Must run after RuntimeInit. */
+    npu_irq_secure_target();
     proto_send_log("BallDetector_N6 ready");
 }
 
@@ -469,24 +672,9 @@ void balldetector_run(void)
                      (unsigned long)(uintptr_t)s_in);
             proto_send_log(dbg);
 
-            /* ==== TEMP DIAGNOSTIC (remove after) ===========================
-             * Overwrite the received image with a uniform value that changes
-             * every inference (0x00 black -> 0x80 gray -> 0xFF white). If the
-             * NPU truly recomputes on its input, "out sums" MUST change between
-             * runs. If they stay identical across all-black vs all-white, the
-             * NPU is NOT recomputing (runtime/buffer-binding bug, not cache).
-             * The IMG_BEGIN already invalidated CACHEAXI over this region; these
-             * CPU writes land in RAM (D-cache off) and run_inference cleans the
-             * D-cache before the NPU reads. */
-            {
-                static const uint8_t fills[3] = { 0x00, 0x80, 0xFF };
-                static uint8_t fi = 0;
-                uint8_t fv = fills[fi];
-                fi = (uint8_t)((fi + 1) % 3);
-                memset(s_in, fv, MODEL_INPUT_BYTES);
-                snprintf(dbg, sizeof dbg, "DIAG: input overwritten with 0x%02X", fv);
-                proto_send_log(dbg);
-            }
+            /* (removed) input-overwrite DIAG — confirmed the NPU computes on its
+             * input (out sums varied with 0x00/0x80/0xFF). We now infer on the
+             * real uploaded image. */
 
             uint32_t t0 = DWT->CYCCNT;
             if (!run_inference()) {

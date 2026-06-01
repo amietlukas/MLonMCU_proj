@@ -29,7 +29,8 @@
 /* ==================================================================
  * Detection / post-processing (see Core/Src/yolo_postproc.c).
  * ================================================================== */
-#define DET_CONF_THRESH    0.50f   /* objectness threshold (post-sigmoid) */
+#define DET_CONF_THRESH    0.45f   /* objectness threshold (post-sigmoid); real balls
+                                    * score >=0.57, low-conf false positives <0.40 — tune as needed */
 #define DET_NMS_IOU        0.25f   /* NMS IoU threshold                   */
 #define DET_MAX_BOXES      YOLO_MAX_DET   /* cap reported boxes (<= 8)    */
 
