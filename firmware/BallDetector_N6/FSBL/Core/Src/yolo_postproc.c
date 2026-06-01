@@ -86,31 +86,36 @@ int yolo_postprocess(
         const int   zp    = cfg->zero_point;
         const float stride = (float)cfg->stride;
 
-        /* Quantized objectness threshold: u8 >= u8_thr iff tobj_float >= logit_thr.
-         * tobj_float = (u8 - zp) * scale  =>  u8 = zp + logit_thr / scale  */
-        const float u8_thr_f = (float)zp + logit_thr / scale;
-        int u8_thr;
-        if      (u8_thr_f <= 0.0f)    u8_thr = 0;
-        else if (u8_thr_f >= 255.0f)  u8_thr = 256;   /* never matches */
-        else                          u8_thr = (int)ceilf(u8_thr_f);
+        /* The NPU outputs are SIGNED int8 (QLinear int8). They MUST be read as
+         * int8_t: reading as uint8 turns a negative logit (e.g. -2 = 0xFE) into
+         * +254, which dequantizes to a huge value and saturates sigmoid to 1.0.
+         * That was the "8 boxes @ score=1.000 on every frame" bug — worst on the
+         * zero_point=0 heads (p16/p32), where most objectness logits are negative. */
+        /* Objectness threshold (signed): q >= q_thr iff tobj_float >= logit_thr,
+         * tobj_float = (q - zp) * scale  =>  q = zp + logit_thr / scale. */
+        const float q_thr_f = (float)zp + logit_thr / scale;
+        int q_thr;
+        if      (q_thr_f <= -128.0f)  q_thr = -128;
+        else if (q_thr_f >=  127.0f)  q_thr =  128;   /* never matches */
+        else                          q_thr = (int)ceilf(q_thr_f);
 
-        const uint8_t *p_tobj = buf + 4 * HW;
-        const uint8_t *p_tx   = buf + 0 * HW;
-        const uint8_t *p_ty   = buf + 1 * HW;
-        const uint8_t *p_tw   = buf + 2 * HW;
-        const uint8_t *p_th   = buf + 3 * HW;
+        const int8_t *p_tobj = (const int8_t *)buf + 4 * HW;
+        const int8_t *p_tx   = (const int8_t *)buf + 0 * HW;
+        const int8_t *p_ty   = (const int8_t *)buf + 1 * HW;
+        const int8_t *p_tw   = (const int8_t *)buf + 2 * HW;
+        const int8_t *p_th   = (const int8_t *)buf + 3 * HW;
 
         for (int y = 0; y < H; ++y) {
             for (int x = 0; x < W; ++x) {
                 const int idx = y * W + x;
-                const int u8 = p_tobj[idx];
-                if (u8 < u8_thr) continue;
+                const int q = p_tobj[idx];          /* signed int8 objectness */
+                if (q < q_thr) continue;
 
                 const float tx = ((float)p_tx[idx] - zp) * scale;
                 const float ty = ((float)p_ty[idx] - zp) * scale;
                 const float tw = ((float)p_tw[idx] - zp) * scale;
                 const float th = ((float)p_th[idx] - zp) * scale;
-                const float to = ((float)u8       - zp) * scale;
+                const float to = ((float)q        - zp) * scale;
 
                 const float cx = (sigmoidf(tx) + (float)x) * stride;
                 const float cy = (sigmoidf(ty) + (float)y) * stride;

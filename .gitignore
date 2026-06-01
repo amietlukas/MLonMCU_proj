@@ -48,6 +48,7 @@ venv_tflite/
 **/pred_images/**
 Classifier_CMSISNN/
 **/Classifier_CMSISNN/**
+**/n6_viz/**
 
 # stedgeai outputs
 **/st_ai_output/**

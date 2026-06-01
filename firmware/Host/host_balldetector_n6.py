@@ -23,6 +23,8 @@ try:
 except ImportError:
     cv2 = None
 
+import viz_common  # GT lookup + render (same dir)
+
 MAGIC = b"\xAA\x55\xA5\x5A"
 
 T_HELLO     = 0x01
@@ -60,7 +62,7 @@ def send_frame(ser: serial.Serial, ftype: int, payload: bytes = b"") -> None:
     ser.write(MAGIC + body + struct.pack("<H", crc))
 
 
-def read_frame(ser: serial.Serial, timeout_s: float = 5.0) -> tuple[int, bytes]:
+def read_frame(ser: serial.Serial, timeout_s: float = 120.0) -> tuple[int, bytes]:
     deadline = time.monotonic() + timeout_s
     window = b""
     while time.monotonic() < deadline:
@@ -91,17 +93,19 @@ def read_frame(ser: serial.Serial, timeout_s: float = 5.0) -> tuple[int, bytes]:
 
 
 def load_image(path: Path, layout: str = "chw") -> bytes:
-    """RGB888 at model resolution, packed as the generated int8 input tensor.
+    """RGB888 at model resolution, as the generated network's uint8 input tensor.
 
-    The compiled N6 graph advertises DataType_INT8 with scale=1/255 and
-    zero-point -128. In memory that is the same byte pattern as uint8 RGB minus
-    128, viewed as int8. The model input is NCHW, so 'chw' is planar.
+    The network was generated with `--input-data-type uint8`, so the NPU input
+    buffer expects RAW uint8 pixels (0..255) and applies the QLinear(1/255,-128)
+    quantization internally. Do NOT pre-subtract 128 — that double-converts and
+    the NPU sees garbage (the long-standing wrong-detections bug). The model is
+    NCHW, so 'chw' is planar (the correct layout); 'hwc' is only for A/B testing.
     """
     img = Image.open(path).convert("RGB").resize((MODEL_W, MODEL_H), Image.BILINEAR)
-    arr = np.array(img, dtype=np.int16) - 128       # HWC, int8 quantized
+    arr = np.asarray(img, dtype=np.uint8)           # HWC, raw 0..255
     if layout == "chw":
         arr = np.transpose(arr, (2, 0, 1))          # -> CHW planar
-    return np.ascontiguousarray(arr, dtype=np.int8).tobytes()
+    return np.ascontiguousarray(arr, dtype=np.uint8).tobytes()
 
 
 def hello(ser: serial.Serial) -> dict:
@@ -197,6 +201,11 @@ def mode_img(args: argparse.Namespace) -> int:
             print(f"{p.name:40s}  {ms:7.1f} ms  {len(r['boxes'])} det")
             for x1, y1, x2, y2, s in r["boxes"]:
                 print(f"    score={s:.3f}  [{x1:.1f},{y1:.1f},{x2:.1f},{y2:.1f}]")
+            if args.viz_dir:
+                out = viz_common.render_detections(
+                    p, r["boxes"], Path(args.viz_dir) / f"{p.stem}_mcu.png",
+                    tag=f"MCU {args.layout}")
+                print(f"    -> {out}")
 
     # Timing summary over the set (on-board NPU inference only, not UART/transfer).
     if times_ms:
@@ -282,6 +291,9 @@ def parse_args() -> argparse.Namespace:
     pi.add_argument("--layout", choices=["chw", "hwc"], default="chw",
                     help="pixel layout sent to the NPU input buffer: chw=planar "
                          "(matches the NCHW model, default), hwc=interleaved (A/B test)")
+    pi.add_argument("--viz-dir", default=str(Path(__file__).resolve().parent / "n6_viz"),
+                    help="folder to save annotated <name>_mcu.png (GT green, pred red) "
+                         "after each inference; set '' to disable")
 
     pc = sub.add_parser("cam", help="live camera view")
     pc.add_argument("--period-ms", type=int, default=0,
