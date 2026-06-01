@@ -43,8 +43,8 @@ class YoloBox(ctypes.Structure):
 def build_lib() -> ctypes.CDLL:
     subprocess.run(
         ["cc", "-O2", "-Wall", "-Wextra", "-shared", "-fPIC",
-         "-I", str(HERE.parent / "Core" / "Inc"),   # yolo_postproc.h lives here now
-         "-o", str(LIB), str(HERE.parent / "Core" / "Src" / "yolo_postproc.c"), "-lm"],
+         "-I", str(HERE.parent / "FSBL" / "Core" / "Inc"),   # yolo_postproc.h (CubeMX FSBL tree)
+         "-o", str(LIB), str(HERE.parent / "FSBL" / "Core" / "Src" / "yolo_postproc.c"), "-lm"],
         check=True,
     )
     lib = ctypes.CDLL(str(LIB))

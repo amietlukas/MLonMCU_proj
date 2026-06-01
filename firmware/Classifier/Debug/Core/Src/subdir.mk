@@ -14,7 +14,7 @@ C_SRCS += \
 ../Core/Src/stm32u5xx_it.c \
 ../Core/Src/sysmem.c \
 ../Core/Src/system_stm32u5xx.c \
-../Core/Src/usart.c
+../Core/Src/usart.c 
 
 OBJS += \
 ./Core/Src/classifier_app.o \
@@ -26,7 +26,7 @@ OBJS += \
 ./Core/Src/stm32u5xx_it.o \
 ./Core/Src/sysmem.o \
 ./Core/Src/system_stm32u5xx.o \
-./Core/Src/usart.o
+./Core/Src/usart.o 
 
 C_DEPS += \
 ./Core/Src/classifier_app.d \
@@ -38,7 +38,7 @@ C_DEPS += \
 ./Core/Src/stm32u5xx_it.d \
 ./Core/Src/sysmem.d \
 ./Core/Src/system_stm32u5xx.d \
-./Core/Src/usart.d
+./Core/Src/usart.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -46,8 +46,8 @@ input:                        # image resolution
 model:
   name: ball_styolo_nano
   num_classes: 1            # ball
-  strides: [8, 16, 32]
-  width_mult: 0.75
+  strides: [8, 16] # [8, 16, 32]
+  width_mult: 1.0
   neck_out_ch: 96
 
 train:

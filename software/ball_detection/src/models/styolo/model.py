@@ -20,15 +20,24 @@ class BallSTYOLONano(nn.Module):
             raise ValueError("model.neck_out_ch must be > 0")
 
         self.strides = tuple(int(s) for s in cfg["model"].get("strides", [8, 16, 32]))
-        if self.strides != (8, 16, 32):
-            raise ValueError("Current BallSTYOLONano implementation expects strides [8,16,32]")
+        
+        valid_strides = (8, 16, 32)
+        if not set(self.strides).issubset(valid_strides):
+            raise ValueError(f"strides {self.strides} must be a subset of {valid_strides}")
+
+        self.stride_indices = [valid_strides.index(s) for s in self.strides]
 
         self.backbone = STYOLONanoBackbone(in_channels=in_ch, width_mult=width_mult)
-        self.neck = STYOLONeck(in_channels=self.backbone.out_channels, out_ch=neck_out_ch)
-        self.head = STYOLOHead(feat_ch=neck_out_ch)
+        
+        neck_in_channels = tuple(self.backbone.out_channels[i] for i in self.stride_indices)
+        self.neck = STYOLONeck(in_channels=neck_in_channels, out_ch=neck_out_ch)
+        self.head = STYOLOHead(feat_ch=neck_out_ch, num_heads=len(self.strides))
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, ...]:
         feats = self.backbone(x)
+        # Select only the features corresponding to requested strides
+        feats = tuple(feats[i] for i in self.stride_indices)
+        
         fused = self.neck(feats)
         out = self.head(fused)
         return out

@@ -90,9 +90,18 @@ def read_frame(ser: serial.Serial, timeout_s: float = 5.0) -> tuple[int, bytes]:
     return ftype, payload
 
 
-def load_image_rgb888_hwc(path: Path) -> bytes:
+def load_image(path: Path, layout: str = "chw") -> bytes:
+    """RGB888 at model resolution, packed as the generated int8 input tensor.
+
+    The compiled N6 graph advertises DataType_INT8 with scale=1/255 and
+    zero-point -128. In memory that is the same byte pattern as uint8 RGB minus
+    128, viewed as int8. The model input is NCHW, so 'chw' is planar.
+    """
     img = Image.open(path).convert("RGB").resize((MODEL_W, MODEL_H), Image.BILINEAR)
-    return np.array(img, dtype=np.uint8).tobytes()  # HWC packed
+    arr = np.array(img, dtype=np.int16) - 128       # HWC, int8 quantized
+    if layout == "chw":
+        arr = np.transpose(arr, (2, 0, 1))          # -> CHW planar
+    return np.ascontiguousarray(arr, dtype=np.int8).tobytes()
 
 
 def hello(ser: serial.Serial) -> dict:
@@ -106,11 +115,15 @@ def hello(ser: serial.Serial) -> dict:
             print(f"[fw] {payload.decode(errors='ignore').rstrip()}")
 
 
-def push_image(ser: serial.Serial, img_bytes: bytes) -> dict:
-    send_frame(ser, T_IMG_BEGIN, struct.pack("<HHBB", MODEL_W, MODEL_H, MODEL_C, 1))
+def push_image(ser: serial.Serial, img_bytes: bytes, chunk_delay: float = 0.0,
+               fmt: int = 0) -> dict:
+    # fmt: 0 = planar CHW (matches the NCHW model), 1 = interleaved HWC
+    send_frame(ser, T_IMG_BEGIN, struct.pack("<HHBB", MODEL_W, MODEL_H, MODEL_C, fmt))
     for i in range(0, len(img_bytes), CHUNK):
         chunk = img_bytes[i:i + CHUNK]
         send_frame(ser, T_IMG_CHUNK, struct.pack("<H", i // CHUNK) + chunk)
+        if chunk_delay:
+            time.sleep(chunk_delay)   # pace the upload if the board drops bytes (no flow ctrl)
     send_frame(ser, T_IMG_END)
 
     while True:
@@ -129,24 +142,77 @@ def push_image(ser: serial.Serial, img_bytes: bytes) -> dict:
             return {"inference_us": inf_us, "boxes": boxes}
 
 
+def _resolve_list_entry(line: str, root: Path) -> Path:
+    """Resolve a BALL-split path (e.g. 'spl/foo/bar.png' or 'our/Kueche/x.jpg')
+    against the dataset root. The split files use 'spl/' and 'our/' prefixes
+    that map to the SPLDataset/ and OurDataset/ source dirs."""
+    mapped = line
+    if line.startswith("spl/"):
+        mapped = "SPLDataset/" + line[len("spl/"):]
+    elif line.startswith("our/"):
+        mapped = "OurDataset/" + line[len("our/"):]
+    return root / mapped
+
+
+def _gather_paths(args: argparse.Namespace) -> list[Path]:
+    exts = (".jpg", ".jpeg", ".png", ".bmp")
+    if args.image_list:
+        root = Path(args.image_root)
+        paths = []
+        for line in Path(args.image_list).read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            p = _resolve_list_entry(line, root)
+            if p.exists():
+                paths.append(p)
+            else:
+                print(f"  skip (not found): {p}", file=sys.stderr)
+    else:
+        paths = sorted(p for p in Path(args.images).iterdir()
+                       if p.suffix.lower() in exts)
+    if args.limit:
+        paths = paths[:args.limit]
+    return paths
+
+
 def mode_img(args: argparse.Namespace) -> int:
-    image_dir = Path(args.images)
-    paths = sorted(p for p in image_dir.iterdir()
-                   if p.suffix.lower() in (".jpg", ".jpeg", ".png", ".bmp"))
+    paths = _gather_paths(args)
     if not paths:
-        print(f"no images in {image_dir}", file=sys.stderr)
+        print("no images to process (check --images/--image-list)", file=sys.stderr)
         return 2
 
+    times_ms: list[float] = []
+    n_det_total = 0
     with serial.Serial(args.port, args.baud, timeout=1) as ser:
         info = hello(ser)
         print(f"connected, fw=0x{info['fw_ver']:04x}, model {info['w']}x{info['h']}x{info['c']}")
         for p in paths:
-            buf = load_image_rgb888_hwc(p)
-            r = push_image(ser, buf)
-            print(f"{p.name:40s}  {r['inference_us']/1000:7.1f} ms  "
-                  f"{len(r['boxes'])} det")
+            buf = load_image(p, args.layout)
+            r = push_image(ser, buf, chunk_delay=args.chunk_delay,
+                           fmt=(0 if args.layout == "chw" else 1))
+            ms = r["inference_us"] / 1000.0
+            times_ms.append(ms)
+            n_det_total += len(r["boxes"])
+            print(f"{p.name:40s}  {ms:7.1f} ms  {len(r['boxes'])} det")
             for x1, y1, x2, y2, s in r["boxes"]:
                 print(f"    score={s:.3f}  [{x1:.1f},{y1:.1f},{x2:.1f},{y2:.1f}]")
+
+    # Timing summary over the set (on-board NPU inference only, not UART/transfer).
+    if times_ms:
+        t = sorted(times_ms)
+        n = len(t)
+        mean = sum(t) / n
+        median = t[n // 2] if n % 2 else (t[n // 2 - 1] + t[n // 2]) / 2
+        print("\n--- inference timing over {} images ---".format(n))
+        print(f"  mean {mean:.2f} ms   median {median:.2f} ms   "
+              f"min {t[0]:.2f} ms   max {t[-1]:.2f} ms")
+        if mean > 0:
+            print(f"  throughput ~{1000.0 / mean:.1f} inf/s (NPU only)   "
+                  f"{n_det_total} detections total")
+        else:
+            print(f"  throughput unavailable (no completed NPU inference)   "
+                  f"{n_det_total} detections total")
     return 0
 
 
@@ -202,7 +268,20 @@ def parse_args() -> argparse.Namespace:
     sub = p.add_subparsers(dest="mode", required=True)
 
     pi = sub.add_parser("img", help="feed images from disk")
-    pi.add_argument("--images", required=True, help="folder of .jpg/.png images")
+    src = pi.add_mutually_exclusive_group(required=True)
+    src.add_argument("--images", help="folder of .jpg/.png images")
+    src.add_argument("--image-list", help="text file of image paths, one per line "
+                     "(e.g. software/ball_detection/splits/val.txt)")
+    pi.add_argument("--image-root", default="datasets/BALL",
+                    help="root the --image-list paths resolve against (spl/->SPLDataset, our/->OurDataset)")
+    pi.add_argument("--limit", type=int, default=0,
+                    help="process at most N images (0 = all); handy for a quick timing run")
+    pi.add_argument("--chunk-delay", type=float, default=0.0,
+                    help="seconds to sleep between IMG_CHUNKs; try 0.002 if the board "
+                         "drops bytes on the upload (UART has no flow control)")
+    pi.add_argument("--layout", choices=["chw", "hwc"], default="chw",
+                    help="pixel layout sent to the NPU input buffer: chw=planar "
+                         "(matches the NCHW model, default), hwc=interleaved (A/B test)")
 
     pc = sub.add_parser("cam", help="live camera view")
     pc.add_argument("--period-ms", type=int, default=0,

@@ -28,7 +28,9 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJ="$(cd "$HERE/.." && pwd)"
 
 MODEL_ONNX="$PROJ/model/int8_ptq_qdq.onnx"
-OUT_DIR="$PROJ/X-CUBE-AI/App"
+# The buildable project is the FSBL sub-project; its X-CUBE-AI/App is what the
+# build compiles. (Top-level X-CUBE-AI/App is NOT in the build.)
+OUT_DIR="$PROJ/FSBL/X-CUBE-AI/App"
 
 if [[ ! -x "$STEDGEAI" ]]; then
   echo "stedgeai not found/executable: $STEDGEAI" >&2; exit 1
@@ -47,9 +49,13 @@ echo "==> stedgeai generate  (profile: $NEURAL_ART_PROFILE)"
 echo "    model : $MODEL_ONNX"
 echo "    out   : $OUT_DIR"
 # uint8 input (DCMIPP delivers RGB888), int8 outputs (the three YOLO heads).
+# --name MUST match the CubeMX network name so the emitted network_prunedint8.*
+# overwrite the project's (CubeMX uses the .ioc network name "network_prunedint8").
 # --c-api st-ai is harmless here; the N6 path emits LL_ATON regardless.
+NET_NAME="${NET_NAME:-network_prunedint8}"
 "$STEDGEAI" generate \
   --model "$MODEL_ONNX" \
+  --name "$NET_NAME" \
   --target stm32n6 \
   --st-neural-art "$NEURAL_ART_PROFILE@$NEURAL_ART_JSON" \
   --c-api st-ai \
@@ -59,6 +65,7 @@ echo "    out   : $OUT_DIR"
 
 echo
 echo "==> generated in $OUT_DIR:"
-ls -1 "$OUT_DIR"/network.c "$OUT_DIR"/network.h "$OUT_DIR"/network_atonbuf.xSPI2.raw 2>/dev/null | sed 's/^/  /'
+ls -1 "$OUT_DIR/$NET_NAME.c" "$OUT_DIR/$NET_NAME.h" "$OUT_DIR/${NET_NAME}_atonbuf.xSPI2.raw" 2>/dev/null | sed 's/^/  /'
 echo
-echo "weights blob -> flash.sh programs network_atonbuf.xSPI2.raw at 0x70380000"
+echo "weights blob -> flash with scripts/flash_weights.sh (programs ${NET_NAME}_atonbuf.xSPI2.raw at 0x71000000)"
+echo "NOTE: CubeMX already generates these at project-gen time; only re-run this after a model change."

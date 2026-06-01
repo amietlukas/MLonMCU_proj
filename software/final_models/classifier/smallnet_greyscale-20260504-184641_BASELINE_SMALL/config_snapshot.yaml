@@ -1,0 +1,62 @@
+seed: 42
+data:
+  dataset_root: /mnt/core/MLonMCU_proj/datasets/HAGRID/hagrid_full_qqvga_resize
+  input_size:
+  - 120
+  - 160
+  num_classes: 6
+preprocess:
+  type: raw
+  fill: 0
+  normalize:
+    mean:
+    - 0.5427
+    std:
+    - 0.2425
+  augmentation:
+    horizontal_flip: 0.0
+    rotation_degrees: 15
+    translate:
+    - 0.1
+    - 0.1
+    scale:
+    - 0.85
+    - 1.15
+    color_jitter:
+      brightness: 0.3
+      contrast: 0.3
+      saturation: 0.2
+      hue: 0.05
+    erasing_prob: 0.0
+train:
+  batch_size: 128
+  num_workers: 8
+  shuffle: true
+  max_train_batches: null
+  max_val_batches: null
+  epochs: 150
+model:
+  type: baseline_cnn
+  in_channels: 1
+  num_classes: 6
+  channels:
+  - 32
+  - 64
+  - 128
+  blocks_per_stage: 1
+  kernel_size: 3
+  dropout_rate: 0.05
+debug:
+  verbose: false
+  plot_images: false
+  n_plot_per_class: 5
+LR_scheduler:
+  type: CosineAnnealingLR
+  lr: 3e-3
+  eta_min: 1e-5
+optimizer:
+  weight_decay: 1e-4
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 1e-4

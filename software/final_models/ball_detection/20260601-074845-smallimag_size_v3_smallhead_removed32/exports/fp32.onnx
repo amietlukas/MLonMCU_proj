@@ -1,0 +1,2550 @@
+
+pytorch2.10.0+cu128:ˆû
+ƒ
+input
+backbone.stem.conv.weight
+backbone.stem.conv.weight_biasgetitemnode_Conv_397"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†Jﬂ
+	namespace—: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stem: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stem.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ±
+pkg.torch.onnx.class_hierarchyé['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J»
+pkg.torch.onnx.fx_node≠%_native_batch_norm_legit_no_training : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d, %p_backbone_stem_bn_weight, %p_backbone_stem_bn_bias, %b_backbone_stem_bn_running_mean, %b_backbone_stem_bn_running_var, 0.1, 1e-05), kwargs = {})J{
+pkg.torch.onnx.name_scopes]['', 'backbone', 'backbone.stem', 'backbone.stem.bn', '_native_batch_norm_legit_no_training']JÕ
+pkg.torch.onnx.stack_traceÆFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 34, in forward
+    x = self.stem(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+ó
+getitemrelu	node_relu"ReluJö
+	namespaceå: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stem: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stem.act: torch.nn.modules.activation.ReLU/relu: aten.relu.defaultJã
+pkg.torch.onnx.class_hierarchyË['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']JÑ
+pkg.torch.onnx.fx_nodej%relu : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem,), kwargs = {})J\
+pkg.torch.onnx.name_scopes>['', 'backbone', 'backbone.stem', 'backbone.stem.act', 'relu']J‰
+pkg.torch.onnx.stack_trace≈File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 34, in forward
+    x = self.stem(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+‹
+relu
+#backbone.stage2.block.0.conv.weight
+(backbone.stage2.block.0.conv.weight_bias	getitem_3node_Conv_399"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†Jˆ
+	namespaceË: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage2.block.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_1: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJê
+pkg.torch.onnx.class_hierarchyÌ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']JÙ
+pkg.torch.onnx.fx_nodeŸ%_native_batch_norm_legit_no_training_1 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_1, %p_backbone_stage2_block_0_bn_weight, %p_backbone_stage2_block_0_bn_bias, %b_backbone_stage2_block_0_bn_running_mean, %b_backbone_stage2_block_0_bn_running_var, 0.1, 1e-05), kwargs = {})Jæ
+pkg.torch.onnx.name_scopesü['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.0', 'backbone.stage2.block.0.bn', '_native_batch_norm_legit_no_training_1']JÍ
+pkg.torch.onnx.stack_traceÀFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+¯
+	getitem_3relu_1node_relu_1"ReluJ±
+	namespace£: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage2.block.0.act: torch.nn.modules.activation.ReLU/relu_1: aten.relu.defaultJÍ
+pkg.torch.onnx.class_hierarchy«['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jà
+pkg.torch.onnx.fx_noden%relu_1 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_3,), kwargs = {})Jü
+pkg.torch.onnx.name_scopesÄ['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.0', 'backbone.stage2.block.0.act', 'relu_1']JÅ
+pkg.torch.onnx.stack_trace‚File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+ﬁ
+relu_1
+)backbone.stage2.block.1.conv1.conv.weight
+.backbone.stage2.block.1.conv1.conv.weight_bias	getitem_6node_Conv_401"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J÷
+	namespace»: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage2.block.1.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage2.block.1.conv1.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_2: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jå
+pkg.torch.onnx.fx_nodeÒ%_native_batch_norm_legit_no_training_2 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_2, %p_backbone_stage2_block_1_conv1_bn_weight, %p_backbone_stage2_block_1_conv1_bn_bias, %b_backbone_stage2_block_1_conv1_bn_running_mean, %b_backbone_stage2_block_1_conv1_bn_running_var, 0.1, 1e-05), kwargs = {})JÂ
+pkg.torch.onnx.name_scopes∆['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.1', 'backbone.stage2.block.1.conv1', 'backbone.stage2.block.1.conv1.bn', '_native_batch_norm_legit_no_training_2']JÅ
+pkg.torch.onnx.stack_trace‚File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+‘
+	getitem_6relu_2node_relu_2"ReluJë
+	namespaceÉ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage2.block.1.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage2.block.1.conv1.act: torch.nn.modules.activation.ReLU/relu_2: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jà
+pkg.torch.onnx.fx_noden%relu_2 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_6,), kwargs = {})J∆
+pkg.torch.onnx.name_scopesß['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.1', 'backbone.stage2.block.1.conv1', 'backbone.stage2.block.1.conv1.act', 'relu_2']Jò
+pkg.torch.onnx.stack_trace˘File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+ﬁ
+relu_2
+)backbone.stage2.block.1.conv2.conv.weight
+.backbone.stage2.block.1.conv2.conv.weight_bias	getitem_9node_Conv_403"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J÷
+	namespace»: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage2.block.1.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage2.block.1.conv2.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_3: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jå
+pkg.torch.onnx.fx_nodeÒ%_native_batch_norm_legit_no_training_3 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_3, %p_backbone_stage2_block_1_conv2_bn_weight, %p_backbone_stage2_block_1_conv2_bn_bias, %b_backbone_stage2_block_1_conv2_bn_running_mean, %b_backbone_stage2_block_1_conv2_bn_running_var, 0.1, 1e-05), kwargs = {})JÂ
+pkg.torch.onnx.name_scopes∆['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.1', 'backbone.stage2.block.1.conv2', 'backbone.stage2.block.1.conv2.bn', '_native_batch_norm_legit_no_training_3']JÅ
+pkg.torch.onnx.stack_trace‚File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+‘
+	getitem_9relu_3node_relu_3"ReluJë
+	namespaceÉ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage2.block.1.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage2.block.1.conv2.act: torch.nn.modules.activation.ReLU/relu_3: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jà
+pkg.torch.onnx.fx_noden%relu_3 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_9,), kwargs = {})J∆
+pkg.torch.onnx.name_scopesß['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.1', 'backbone.stage2.block.1.conv2', 'backbone.stage2.block.1.conv2.act', 'relu_3']Jò
+pkg.torch.onnx.stack_trace˘File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+æ
+relu_3
+&backbone.stage2.block.1.conv3.0.weight
++backbone.stage2.block.1.conv3.0.weight_bias
+getitem_12node_Conv_405"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J»
+	namespace∫: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage2.block.1.conv3: torch.nn.modules.container.Sequential/backbone.stage2.block.1.conv3.1: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_4: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ¡
+pkg.torch.onnx.class_hierarchyû['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.container.Sequential', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jà
+pkg.torch.onnx.fx_nodeÌ%_native_batch_norm_legit_no_training_4 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_4, %p_backbone_stage2_block_1_conv3_1_weight, %p_backbone_stage2_block_1_conv3_1_bias, %b_backbone_stage2_block_1_conv3_1_running_mean, %b_backbone_stage2_block_1_conv3_1_running_var, 0.1, 1e-05), kwargs = {})J‰
+pkg.torch.onnx.name_scopes≈['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.1', 'backbone.stage2.block.1.conv3', 'backbone.stage2.block.1.conv3.1', '_native_batch_norm_legit_no_training_4']JÜ
+pkg.torch.onnx.stack_traceÁFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+¬
+relu_1
+
+getitem_12addnode_add"AddJˆ
+	namespaceË: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/add: aten.add.TensorJÃ
+pkg.torch.onnx.class_hierarchy©['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'aten.add.Tensor']Jå
+pkg.torch.onnx.fx_noder%add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%relu_1, %getitem_12), kwargs = {})J|
+pkg.torch.onnx.name_scopes^['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.1', 'add']J¬
+pkg.torch.onnx.stack_trace£File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+Ï
+addrelu_4node_relu_4"ReluJπ
+	namespace´: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage2: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage2.block: torch.nn.modules.container.Sequential/backbone.stage2.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage2.block.1.act: torch.nn.modules.activation.ReLU/relu_4: aten.relu.defaultJÚ
+pkg.torch.onnx.class_hierarchyœ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']JÇ
+pkg.torch.onnx.fx_nodeh%relu_4 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%add,), kwargs = {})Jü
+pkg.torch.onnx.name_scopesÄ['', 'backbone', 'backbone.stage2', 'backbone.stage2.block', 'backbone.stage2.block.1', 'backbone.stage2.block.1.act', 'relu_4']JÒ
+pkg.torch.onnx.stack_trace“File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 35, in forward
+    x = self.stage2(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Ï
+relu_4
+#backbone.stage3.block.0.conv.weight
+(backbone.stage3.block.0.conv.weight_bias
+getitem_15node_Conv_407"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†Jˆ
+	namespaceË: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_5: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJê
+pkg.torch.onnx.class_hierarchyÌ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']JÙ
+pkg.torch.onnx.fx_nodeŸ%_native_batch_norm_legit_no_training_5 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_5, %p_backbone_stage3_block_0_bn_weight, %p_backbone_stage3_block_0_bn_bias, %b_backbone_stage3_block_0_bn_running_mean, %b_backbone_stage3_block_0_bn_running_var, 0.1, 1e-05), kwargs = {})Jæ
+pkg.torch.onnx.name_scopesü['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.0', 'backbone.stage3.block.0.bn', '_native_batch_norm_legit_no_training_5']J˜
+pkg.torch.onnx.stack_traceÿFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+á
+
+getitem_15relu_5node_relu_5"ReluJ±
+	namespace£: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.0.act: torch.nn.modules.activation.ReLU/relu_5: aten.relu.defaultJÍ
+pkg.torch.onnx.class_hierarchy«['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jâ
+pkg.torch.onnx.fx_nodeo%relu_5 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_15,), kwargs = {})Jü
+pkg.torch.onnx.name_scopesÄ['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.0', 'backbone.stage3.block.0.act', 'relu_5']Jé
+pkg.torch.onnx.stack_traceÔFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Ï
+relu_5
+)backbone.stage3.block.1.conv1.conv.weight
+.backbone.stage3.block.1.conv1.conv.weight_bias
+getitem_18node_Conv_409"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J÷
+	namespace»: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.1.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.1.conv1.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_6: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jå
+pkg.torch.onnx.fx_nodeÒ%_native_batch_norm_legit_no_training_6 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_6, %p_backbone_stage3_block_1_conv1_bn_weight, %p_backbone_stage3_block_1_conv1_bn_bias, %b_backbone_stage3_block_1_conv1_bn_running_mean, %b_backbone_stage3_block_1_conv1_bn_running_var, 0.1, 1e-05), kwargs = {})JÂ
+pkg.torch.onnx.name_scopes∆['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.1', 'backbone.stage3.block.1.conv1', 'backbone.stage3.block.1.conv1.bn', '_native_batch_norm_legit_no_training_6']Jé
+pkg.torch.onnx.stack_traceÔFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+„
+
+getitem_18relu_6node_relu_6"ReluJë
+	namespaceÉ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.1.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.1.conv1.act: torch.nn.modules.activation.ReLU/relu_6: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jâ
+pkg.torch.onnx.fx_nodeo%relu_6 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_18,), kwargs = {})J∆
+pkg.torch.onnx.name_scopesß['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.1', 'backbone.stage3.block.1.conv1', 'backbone.stage3.block.1.conv1.act', 'relu_6']J•
+pkg.torch.onnx.stack_traceÜFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Ï
+relu_6
+)backbone.stage3.block.1.conv2.conv.weight
+.backbone.stage3.block.1.conv2.conv.weight_bias
+getitem_21node_Conv_411"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J÷
+	namespace»: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.1.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.1.conv2.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_7: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jå
+pkg.torch.onnx.fx_nodeÒ%_native_batch_norm_legit_no_training_7 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_7, %p_backbone_stage3_block_1_conv2_bn_weight, %p_backbone_stage3_block_1_conv2_bn_bias, %b_backbone_stage3_block_1_conv2_bn_running_mean, %b_backbone_stage3_block_1_conv2_bn_running_var, 0.1, 1e-05), kwargs = {})JÂ
+pkg.torch.onnx.name_scopes∆['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.1', 'backbone.stage3.block.1.conv2', 'backbone.stage3.block.1.conv2.bn', '_native_batch_norm_legit_no_training_7']Jé
+pkg.torch.onnx.stack_traceÔFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+„
+
+getitem_21relu_7node_relu_7"ReluJë
+	namespaceÉ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.1.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.1.conv2.act: torch.nn.modules.activation.ReLU/relu_7: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jâ
+pkg.torch.onnx.fx_nodeo%relu_7 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_21,), kwargs = {})J∆
+pkg.torch.onnx.name_scopesß['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.1', 'backbone.stage3.block.1.conv2', 'backbone.stage3.block.1.conv2.act', 'relu_7']J•
+pkg.torch.onnx.stack_traceÜFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+À
+relu_7
+&backbone.stage3.block.1.conv3.0.weight
++backbone.stage3.block.1.conv3.0.weight_bias
+getitem_24node_Conv_413"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J»
+	namespace∫: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.1.conv3: torch.nn.modules.container.Sequential/backbone.stage3.block.1.conv3.1: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_8: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ¡
+pkg.torch.onnx.class_hierarchyû['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.container.Sequential', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jà
+pkg.torch.onnx.fx_nodeÌ%_native_batch_norm_legit_no_training_8 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_8, %p_backbone_stage3_block_1_conv3_1_weight, %p_backbone_stage3_block_1_conv3_1_bias, %b_backbone_stage3_block_1_conv3_1_running_mean, %b_backbone_stage3_block_1_conv3_1_running_var, 0.1, 1e-05), kwargs = {})J‰
+pkg.torch.onnx.name_scopes≈['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.1', 'backbone.stage3.block.1.conv3', 'backbone.stage3.block.1.conv3.1', '_native_batch_norm_legit_no_training_8']Jì
+pkg.torch.onnx.stack_traceÙFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+Ÿ
+relu_5
+
+getitem_24add_1
+node_add_1"AddJ¯
+	namespaceÍ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/add_1: aten.add.TensorJÃ
+pkg.torch.onnx.class_hierarchy©['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'aten.add.Tensor']Jé
+pkg.torch.onnx.fx_nodet%add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%relu_5, %getitem_24), kwargs = {})J~
+pkg.torch.onnx.name_scopes`['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.1', 'add_1']Jœ
+pkg.torch.onnx.stack_trace∞File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+˝
+add_1relu_8node_relu_8"ReluJπ
+	namespace´: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.1.act: torch.nn.modules.activation.ReLU/relu_8: aten.relu.defaultJÚ
+pkg.torch.onnx.class_hierarchyœ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']JÑ
+pkg.torch.onnx.fx_nodej%relu_8 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%add_1,), kwargs = {})Jü
+pkg.torch.onnx.name_scopesÄ['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.1', 'backbone.stage3.block.1.act', 'relu_8']J˛
+pkg.torch.onnx.stack_traceﬂFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Ï
+relu_8
+)backbone.stage3.block.2.conv1.conv.weight
+.backbone.stage3.block.2.conv1.conv.weight_bias
+getitem_27node_Conv_415"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J÷
+	namespace»: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.2.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.2.conv1.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_9: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jå
+pkg.torch.onnx.fx_nodeÒ%_native_batch_norm_legit_no_training_9 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_9, %p_backbone_stage3_block_2_conv1_bn_weight, %p_backbone_stage3_block_2_conv1_bn_bias, %b_backbone_stage3_block_2_conv1_bn_running_mean, %b_backbone_stage3_block_2_conv1_bn_running_var, 0.1, 1e-05), kwargs = {})JÂ
+pkg.torch.onnx.name_scopes∆['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.2', 'backbone.stage3.block.2.conv1', 'backbone.stage3.block.2.conv1.bn', '_native_batch_norm_legit_no_training_9']Jé
+pkg.torch.onnx.stack_traceÔFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+„
+
+getitem_27relu_9node_relu_9"ReluJë
+	namespaceÉ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.2.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.2.conv1.act: torch.nn.modules.activation.ReLU/relu_9: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jâ
+pkg.torch.onnx.fx_nodeo%relu_9 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_27,), kwargs = {})J∆
+pkg.torch.onnx.name_scopesß['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.2', 'backbone.stage3.block.2.conv1', 'backbone.stage3.block.2.conv1.act', 'relu_9']J•
+pkg.torch.onnx.stack_traceÜFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+
+relu_9
+)backbone.stage3.block.2.conv2.conv.weight
+.backbone.stage3.block.2.conv2.conv.weight_bias
+getitem_30node_Conv_417"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J◊
+	namespace…: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.2.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.2.conv2.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_10: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jé
+pkg.torch.onnx.fx_nodeÛ%_native_batch_norm_legit_no_training_10 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_10, %p_backbone_stage3_block_2_conv2_bn_weight, %p_backbone_stage3_block_2_conv2_bn_bias, %b_backbone_stage3_block_2_conv2_bn_running_mean, %b_backbone_stage3_block_2_conv2_bn_running_var, 0.1, 1e-05), kwargs = {})JÊ
+pkg.torch.onnx.name_scopes«['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.2', 'backbone.stage3.block.2.conv2', 'backbone.stage3.block.2.conv2.bn', '_native_batch_norm_legit_no_training_10']Jé
+pkg.torch.onnx.stack_traceÔFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+Ë
+
+getitem_30relu_10node_relu_10"ReluJí
+	namespaceÑ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.2.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage3.block.2.conv2.act: torch.nn.modules.activation.ReLU/relu_10: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_10 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_30,), kwargs = {})J«
+pkg.torch.onnx.name_scopes®['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.2', 'backbone.stage3.block.2.conv2', 'backbone.stage3.block.2.conv2.act', 'relu_10']J•
+pkg.torch.onnx.stack_traceÜFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+–
+relu_10
+&backbone.stage3.block.2.conv3.0.weight
++backbone.stage3.block.2.conv3.0.weight_bias
+getitem_33node_Conv_419"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J…
+	namespaceª: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.2.conv3: torch.nn.modules.container.Sequential/backbone.stage3.block.2.conv3.1: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_11: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ¡
+pkg.torch.onnx.class_hierarchyû['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.container.Sequential', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jä
+pkg.torch.onnx.fx_nodeÔ%_native_batch_norm_legit_no_training_11 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_11, %p_backbone_stage3_block_2_conv3_1_weight, %p_backbone_stage3_block_2_conv3_1_bias, %b_backbone_stage3_block_2_conv3_1_running_mean, %b_backbone_stage3_block_2_conv3_1_running_var, 0.1, 1e-05), kwargs = {})JÂ
+pkg.torch.onnx.name_scopes∆['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.2', 'backbone.stage3.block.2.conv3', 'backbone.stage3.block.2.conv3.1', '_native_batch_norm_legit_no_training_11']Jì
+pkg.torch.onnx.stack_traceÙFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+Ÿ
+relu_8
+
+getitem_33add_2
+node_add_2"AddJ¯
+	namespaceÍ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/add_2: aten.add.TensorJÃ
+pkg.torch.onnx.class_hierarchy©['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'aten.add.Tensor']Jé
+pkg.torch.onnx.fx_nodet%add_2 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%relu_8, %getitem_33), kwargs = {})J~
+pkg.torch.onnx.name_scopes`['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.2', 'add_2']Jœ
+pkg.torch.onnx.stack_trace∞File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+Ç
+add_2relu_11node_relu_11"ReluJ∫
+	namespace¨: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage3: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage3.block: torch.nn.modules.container.Sequential/backbone.stage3.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage3.block.2.act: torch.nn.modules.activation.ReLU/relu_11: aten.relu.defaultJÚ
+pkg.torch.onnx.class_hierarchyœ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']JÖ
+pkg.torch.onnx.fx_nodek%relu_11 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%add_2,), kwargs = {})J†
+pkg.torch.onnx.name_scopesÅ['', 'backbone', 'backbone.stage3', 'backbone.stage3.block', 'backbone.stage3.block.2', 'backbone.stage3.block.2.act', 'relu_11']J˛
+pkg.torch.onnx.stack_traceﬂFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 36, in forward
+    c3 = self.stage3(x)  # stride 8
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Û
+relu_11
+#backbone.stage4.block.0.conv.weight
+(backbone.stage4.block.0.conv.weight_bias
+getitem_36node_Conv_421"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J˜
+	namespaceÈ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_12: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJê
+pkg.torch.onnx.class_hierarchyÌ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jˆ
+pkg.torch.onnx.fx_node€%_native_batch_norm_legit_no_training_12 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_12, %p_backbone_stage4_block_0_bn_weight, %p_backbone_stage4_block_0_bn_bias, %b_backbone_stage4_block_0_bn_running_mean, %b_backbone_stage4_block_0_bn_running_var, 0.1, 1e-05), kwargs = {})Jø
+pkg.torch.onnx.name_scopes†['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.0', 'backbone.stage4.block.0.bn', '_native_batch_norm_legit_no_training_12']J˘
+pkg.torch.onnx.stack_trace⁄File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+é
+
+getitem_36relu_12node_relu_12"ReluJ≤
+	namespace§: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.0.act: torch.nn.modules.activation.ReLU/relu_12: aten.relu.defaultJÍ
+pkg.torch.onnx.class_hierarchy«['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_12 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_36,), kwargs = {})J†
+pkg.torch.onnx.name_scopesÅ['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.0', 'backbone.stage4.block.0.act', 'relu_12']Jê
+pkg.torch.onnx.stack_traceÒFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Û
+relu_12
+)backbone.stage4.block.1.conv1.conv.weight
+.backbone.stage4.block.1.conv1.conv.weight_bias
+getitem_39node_Conv_423"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J◊
+	namespace…: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.1.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.1.conv1.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_13: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jé
+pkg.torch.onnx.fx_nodeÛ%_native_batch_norm_legit_no_training_13 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_13, %p_backbone_stage4_block_1_conv1_bn_weight, %p_backbone_stage4_block_1_conv1_bn_bias, %b_backbone_stage4_block_1_conv1_bn_running_mean, %b_backbone_stage4_block_1_conv1_bn_running_var, 0.1, 1e-05), kwargs = {})JÊ
+pkg.torch.onnx.name_scopes«['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.1', 'backbone.stage4.block.1.conv1', 'backbone.stage4.block.1.conv1.bn', '_native_batch_norm_legit_no_training_13']Jê
+pkg.torch.onnx.stack_traceÒFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+Í
+
+getitem_39relu_13node_relu_13"ReluJí
+	namespaceÑ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.1.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.1.conv1.act: torch.nn.modules.activation.ReLU/relu_13: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_13 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_39,), kwargs = {})J«
+pkg.torch.onnx.name_scopes®['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.1', 'backbone.stage4.block.1.conv1', 'backbone.stage4.block.1.conv1.act', 'relu_13']Jß
+pkg.torch.onnx.stack_traceàFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Û
+relu_13
+)backbone.stage4.block.1.conv2.conv.weight
+.backbone.stage4.block.1.conv2.conv.weight_bias
+getitem_42node_Conv_425"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J◊
+	namespace…: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.1.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.1.conv2.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_14: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jé
+pkg.torch.onnx.fx_nodeÛ%_native_batch_norm_legit_no_training_14 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_14, %p_backbone_stage4_block_1_conv2_bn_weight, %p_backbone_stage4_block_1_conv2_bn_bias, %b_backbone_stage4_block_1_conv2_bn_running_mean, %b_backbone_stage4_block_1_conv2_bn_running_var, 0.1, 1e-05), kwargs = {})JÊ
+pkg.torch.onnx.name_scopes«['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.1', 'backbone.stage4.block.1.conv2', 'backbone.stage4.block.1.conv2.bn', '_native_batch_norm_legit_no_training_14']Jê
+pkg.torch.onnx.stack_traceÒFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+Í
+
+getitem_42relu_14node_relu_14"ReluJí
+	namespaceÑ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.1.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.1.conv2.act: torch.nn.modules.activation.ReLU/relu_14: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_14 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_42,), kwargs = {})J«
+pkg.torch.onnx.name_scopes®['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.1', 'backbone.stage4.block.1.conv2', 'backbone.stage4.block.1.conv2.act', 'relu_14']Jß
+pkg.torch.onnx.stack_traceàFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+“
+relu_14
+&backbone.stage4.block.1.conv3.0.weight
++backbone.stage4.block.1.conv3.0.weight_bias
+getitem_45node_Conv_427"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J…
+	namespaceª: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.1.conv3: torch.nn.modules.container.Sequential/backbone.stage4.block.1.conv3.1: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_15: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ¡
+pkg.torch.onnx.class_hierarchyû['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.container.Sequential', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jä
+pkg.torch.onnx.fx_nodeÔ%_native_batch_norm_legit_no_training_15 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_15, %p_backbone_stage4_block_1_conv3_1_weight, %p_backbone_stage4_block_1_conv3_1_bias, %b_backbone_stage4_block_1_conv3_1_running_mean, %b_backbone_stage4_block_1_conv3_1_running_var, 0.1, 1e-05), kwargs = {})JÂ
+pkg.torch.onnx.name_scopes∆['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.1', 'backbone.stage4.block.1.conv3', 'backbone.stage4.block.1.conv3.1', '_native_batch_norm_legit_no_training_15']Jï
+pkg.torch.onnx.stack_traceˆFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+›
+relu_12
+
+getitem_45add_3
+node_add_3"AddJ¯
+	namespaceÍ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/add_3: aten.add.TensorJÃ
+pkg.torch.onnx.class_hierarchy©['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'aten.add.Tensor']Jè
+pkg.torch.onnx.fx_nodeu%add_3 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%relu_12, %getitem_45), kwargs = {})J~
+pkg.torch.onnx.name_scopes`['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.1', 'add_3']J—
+pkg.torch.onnx.stack_trace≤File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+Ñ
+add_3relu_15node_relu_15"ReluJ∫
+	namespace¨: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.1: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.1.act: torch.nn.modules.activation.ReLU/relu_15: aten.relu.defaultJÚ
+pkg.torch.onnx.class_hierarchyœ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']JÖ
+pkg.torch.onnx.fx_nodek%relu_15 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%add_3,), kwargs = {})J†
+pkg.torch.onnx.name_scopesÅ['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.1', 'backbone.stage4.block.1.act', 'relu_15']JÄ
+pkg.torch.onnx.stack_trace·File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Û
+relu_15
+)backbone.stage4.block.2.conv1.conv.weight
+.backbone.stage4.block.2.conv1.conv.weight_bias
+getitem_48node_Conv_429"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J◊
+	namespace…: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.2.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.2.conv1.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_16: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jé
+pkg.torch.onnx.fx_nodeÛ%_native_batch_norm_legit_no_training_16 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_16, %p_backbone_stage4_block_2_conv1_bn_weight, %p_backbone_stage4_block_2_conv1_bn_bias, %b_backbone_stage4_block_2_conv1_bn_running_mean, %b_backbone_stage4_block_2_conv1_bn_running_var, 0.1, 1e-05), kwargs = {})JÊ
+pkg.torch.onnx.name_scopes«['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.2', 'backbone.stage4.block.2.conv1', 'backbone.stage4.block.2.conv1.bn', '_native_batch_norm_legit_no_training_16']Jê
+pkg.torch.onnx.stack_traceÒFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+Í
+
+getitem_48relu_16node_relu_16"ReluJí
+	namespaceÑ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.2.conv1: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.2.conv1.act: torch.nn.modules.activation.ReLU/relu_16: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_16 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_48,), kwargs = {})J«
+pkg.torch.onnx.name_scopes®['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.2', 'backbone.stage4.block.2.conv1', 'backbone.stage4.block.2.conv1.act', 'relu_16']Jß
+pkg.torch.onnx.stack_traceàFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Û
+relu_16
+)backbone.stage4.block.2.conv2.conv.weight
+.backbone.stage4.block.2.conv2.conv.weight_bias
+getitem_51node_Conv_431"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J◊
+	namespace…: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.2.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.2.conv2.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_17: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jé
+pkg.torch.onnx.fx_nodeÛ%_native_batch_norm_legit_no_training_17 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_17, %p_backbone_stage4_block_2_conv2_bn_weight, %p_backbone_stage4_block_2_conv2_bn_bias, %b_backbone_stage4_block_2_conv2_bn_running_mean, %b_backbone_stage4_block_2_conv2_bn_running_var, 0.1, 1e-05), kwargs = {})JÊ
+pkg.torch.onnx.name_scopes«['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.2', 'backbone.stage4.block.2.conv2', 'backbone.stage4.block.2.conv2.bn', '_native_batch_norm_legit_no_training_17']Jê
+pkg.torch.onnx.stack_traceÒFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+Í
+
+getitem_51relu_17node_relu_17"ReluJí
+	namespaceÑ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.2.conv2: ball_detection.src.models.styolo.blocks.ConvBNReLU/backbone.stage4.block.2.conv2.act: torch.nn.modules.activation.ReLU/relu_17: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_17 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_51,), kwargs = {})J«
+pkg.torch.onnx.name_scopes®['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.2', 'backbone.stage4.block.2.conv2', 'backbone.stage4.block.2.conv2.act', 'relu_17']Jß
+pkg.torch.onnx.stack_traceàFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+“
+relu_17
+&backbone.stage4.block.2.conv3.0.weight
++backbone.stage4.block.2.conv3.0.weight_bias
+getitem_54node_Conv_433"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J…
+	namespaceª: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.2.conv3: torch.nn.modules.container.Sequential/backbone.stage4.block.2.conv3.1: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_18: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ¡
+pkg.torch.onnx.class_hierarchyû['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.container.Sequential', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']Jä
+pkg.torch.onnx.fx_nodeÔ%_native_batch_norm_legit_no_training_18 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_18, %p_backbone_stage4_block_2_conv3_1_weight, %p_backbone_stage4_block_2_conv3_1_bias, %b_backbone_stage4_block_2_conv3_1_running_mean, %b_backbone_stage4_block_2_conv3_1_running_var, 0.1, 1e-05), kwargs = {})JÂ
+pkg.torch.onnx.name_scopes∆['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.2', 'backbone.stage4.block.2.conv3', 'backbone.stage4.block.2.conv3.1', '_native_batch_norm_legit_no_training_18']Jï
+pkg.torch.onnx.stack_traceˆFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 33, in forward
+    y = self.conv3(self.conv2(self.conv1(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+›
+relu_15
+
+getitem_54add_4
+node_add_4"AddJ¯
+	namespaceÍ: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/add_4: aten.add.TensorJÃ
+pkg.torch.onnx.class_hierarchy©['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'aten.add.Tensor']Jè
+pkg.torch.onnx.fx_nodeu%add_4 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%relu_15, %getitem_54), kwargs = {})J~
+pkg.torch.onnx.name_scopes`['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.2', 'add_4']J—
+pkg.torch.onnx.stack_trace≤File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+Ñ
+add_4relu_18node_relu_18"ReluJ∫
+	namespace¨: ball_detection.src.models.styolo.model.BallSTYOLONano/backbone: ball_detection.src.models.styolo.backbone.STYOLONanoBackbone/backbone.stage4: ball_detection.src.models.styolo.blocks.StageBlock/backbone.stage4.block: torch.nn.modules.container.Sequential/backbone.stage4.block.2: ball_detection.src.models.styolo.blocks.ResidualBottleneck/backbone.stage4.block.2.act: torch.nn.modules.activation.ReLU/relu_18: aten.relu.defaultJÚ
+pkg.torch.onnx.class_hierarchyœ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.backbone.STYOLONanoBackbone', 'ball_detection.src.models.styolo.blocks.StageBlock', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ResidualBottleneck', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']JÖ
+pkg.torch.onnx.fx_nodek%relu_18 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%add_4,), kwargs = {})J†
+pkg.torch.onnx.name_scopesÅ['', 'backbone', 'backbone.stage4', 'backbone.stage4.block', 'backbone.stage4.block.2', 'backbone.stage4.block.2.act', 'relu_18']JÄ
+pkg.torch.onnx.stack_trace·File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 37, in forward
+    feats = self.backbone(x)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/backbone.py", line 37, in forward
+    c4 = self.stage4(c3)  # stride 16
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 46, in forward
+    return self.block(x)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 34, in forward
+    return self.act(x + y)
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+∫
+relu_11
+neck.lat.0.conv.weight
+neck.lat.0.conv.weight_bias
+getitem_78node_Conv_435"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†JÃ
+	namespaceæ: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.lat.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.lat.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_26: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ•
+pkg.torch.onnx.class_hierarchyÇ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J¬
+pkg.torch.onnx.fx_nodeß%_native_batch_norm_legit_no_training_26 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_26, %p_neck_lat_0_bn_weight, %p_neck_lat_0_bn_bias, %b_neck_lat_0_bn_running_mean, %b_neck_lat_0_bn_running_var, 0.1, 1e-05), kwargs = {})Jt
+pkg.torch.onnx.name_scopesV['', 'neck', 'neck.lat.0', 'neck.lat.0.bn', '_native_batch_norm_legit_no_training_26']J
+pkg.torch.onnx.stack_trace—File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 49, in forward
+    lat_feats = [lat(f) for lat, f in zip(self.lat, feats)]
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+£
+
+getitem_78relu_26node_relu_26"ReluJá
+	namespace˘: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.lat.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.lat.0.act: torch.nn.modules.activation.ReLU/relu_26: aten.relu.defaultJˇ
+pkg.torch.onnx.class_hierarchy‹['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_26 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_78,), kwargs = {})JU
+pkg.torch.onnx.name_scopes7['', 'neck', 'neck.lat.0', 'neck.lat.0.act', 'relu_26']Já
+pkg.torch.onnx.stack_traceËFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 49, in forward
+    lat_feats = [lat(f) for lat, f in zip(self.lat, feats)]
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+∫
+relu_18
+neck.lat.1.conv.weight
+neck.lat.1.conv.weight_bias
+getitem_81node_Conv_437"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†JÃ
+	namespaceæ: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.lat.1: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.lat.1.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_27: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ•
+pkg.torch.onnx.class_hierarchyÇ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J¬
+pkg.torch.onnx.fx_nodeß%_native_batch_norm_legit_no_training_27 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_27, %p_neck_lat_1_bn_weight, %p_neck_lat_1_bn_bias, %b_neck_lat_1_bn_running_mean, %b_neck_lat_1_bn_running_var, 0.1, 1e-05), kwargs = {})Jt
+pkg.torch.onnx.name_scopesV['', 'neck', 'neck.lat.1', 'neck.lat.1.bn', '_native_batch_norm_legit_no_training_27']J
+pkg.torch.onnx.stack_trace—File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 49, in forward
+    lat_feats = [lat(f) for lat, f in zip(self.lat, feats)]
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+£
+
+getitem_81relu_27node_relu_27"ReluJá
+	namespace˘: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.lat.1: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.lat.1.act: torch.nn.modules.activation.ReLU/relu_27: aten.relu.defaultJˇ
+pkg.torch.onnx.class_hierarchy‹['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_27 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_81,), kwargs = {})JU
+pkg.torch.onnx.name_scopes7['', 'neck', 'neck.lat.1', 'neck.lat.1.act', 'relu_27']Já
+pkg.torch.onnx.stack_traceËFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 49, in forward
+    lat_feats = [lat(f) for lat, f in zip(self.lat, feats)]
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+±
+relu_27
+ 
+val_234upsample_nearest2dnode_upsample_nearest2d"Resize*&
+keep_aspect_ratio_policy"stretch†*
+	antialias †*
+extrapolation_value    †*
+exclude_outside †*
+nearest_mode"floor†*/
+coordinate_transformation_mode"
+asymmetric†*
+cubic_coeff_a  @ø†*
+mode"nearest†J⁄
+	namespaceÃ: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.up: torch.nn.modules.upsampling.Upsample/upsample_nearest2d: aten.upsample_nearest2d.vecJ◊
+pkg.torch.onnx.class_hierarchy¥['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'torch.nn.modules.upsampling.Upsample', 'aten.upsample_nearest2d.vec']JÆ
+pkg.torch.onnx.fx_nodeì%upsample_nearest2d : [num_users=1] = call_function[target=torch.ops.aten.upsample_nearest2d.vec](args = (%relu_27, None, [2.0, 2.0]), kwargs = {})JK
+pkg.torch.onnx.name_scopes-['', 'neck', 'neck.up', 'upsample_nearest2d']J«
+pkg.torch.onnx.stack_trace®File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 54, in forward
+    up_feat = self.up(fpn_feats[-1])
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/upsampling.py", line 174, in forward
+    return F.interpolate(
+°
+upsample_nearest2d
+relu_26catnode_cat"Concat*
+axis†Jí
+	namespaceÑ: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/cat: aten.cat.defaultJ§
+pkg.torch.onnx.class_hierarchyÅ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'aten.cat.default']Jú
+pkg.torch.onnx.fx_nodeÅ%cat : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%upsample_nearest2d, %relu_26], 1), kwargs = {})J1
+pkg.torch.onnx.name_scopes['', 'neck', 'cat']Jœ
+pkg.torch.onnx.stack_trace∞File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 55, in forward
+    fused = self.fuse_up[i](torch.cat([up_feat, lat_feats[i]], dim=1))
+È
+cat
+neck.fuse_up.0.conv.weight
+neck.fuse_up.0.conv.weight_bias
+getitem_84node_Conv_439"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J‘
+	namespace∆: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.fuse_up.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.fuse_up.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_28: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ•
+pkg.torch.onnx.class_hierarchyÇ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J“
+pkg.torch.onnx.fx_node∑%_native_batch_norm_legit_no_training_28 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_28, %p_neck_fuse_up_0_bn_weight, %p_neck_fuse_up_0_bn_bias, %b_neck_fuse_up_0_bn_running_mean, %b_neck_fuse_up_0_bn_running_var, 0.1, 1e-05), kwargs = {})J|
+pkg.torch.onnx.name_scopes^['', 'neck', 'neck.fuse_up.0', 'neck.fuse_up.0.bn', '_native_batch_norm_legit_no_training_28']J˚
+pkg.torch.onnx.stack_trace‹File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 55, in forward
+    fused = self.fuse_up[i](torch.cat([up_feat, lat_feats[i]], dim=1))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+æ
+
+getitem_84relu_28node_relu_28"ReluJè
+	namespaceÅ: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.fuse_up.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.fuse_up.0.act: torch.nn.modules.activation.ReLU/relu_28: aten.relu.defaultJˇ
+pkg.torch.onnx.class_hierarchy‹['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_28 : [num_users=2] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_84,), kwargs = {})J]
+pkg.torch.onnx.name_scopes?['', 'neck', 'neck.fuse_up.0', 'neck.fuse_up.0.act', 'relu_28']Jí
+pkg.torch.onnx.stack_traceÛFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 55, in forward
+    fused = self.fuse_up[i](torch.cat([up_feat, lat_feats[i]], dim=1))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+¥
+relu_28
+neck.down.0.conv.weight
+neck.down.0.conv.weight_bias
+getitem_87node_Conv_441"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†JŒ
+	namespace¿: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.down.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.down.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_29: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ•
+pkg.torch.onnx.class_hierarchyÇ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J∆
+pkg.torch.onnx.fx_node´%_native_batch_norm_legit_no_training_29 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_29, %p_neck_down_0_bn_weight, %p_neck_down_0_bn_bias, %b_neck_down_0_bn_running_mean, %b_neck_down_0_bn_running_var, 0.1, 1e-05), kwargs = {})Jv
+pkg.torch.onnx.name_scopesX['', 'neck', 'neck.down.0', 'neck.down.0.bn', '_native_batch_norm_legit_no_training_29']J‡
+pkg.torch.onnx.stack_trace¡File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 64, in forward
+    down_feat = self.down[i](pan_feats[-1])
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+ó
+
+getitem_87relu_29node_relu_29"ReluJâ
+	namespace˚: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.down.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.down.0.act: torch.nn.modules.activation.ReLU/relu_29: aten.relu.defaultJˇ
+pkg.torch.onnx.class_hierarchy‹['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_29 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_87,), kwargs = {})JW
+pkg.torch.onnx.name_scopes9['', 'neck', 'neck.down.0', 'neck.down.0.act', 'relu_29']J˜
+pkg.torch.onnx.stack_traceÿFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 64, in forward
+    down_feat = self.down[i](pan_feats[-1])
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+ú
+relu_29
+relu_27cat_1
+node_cat_1"Concat*
+axis†Jî
+	namespaceÜ: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/cat_1: aten.cat.defaultJ§
+pkg.torch.onnx.class_hierarchyÅ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'aten.cat.default']Jí
+pkg.torch.onnx.fx_nodex%cat_1 : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%relu_29, %relu_27], 1), kwargs = {})J3
+pkg.torch.onnx.name_scopes['', 'neck', 'cat_1']J◊
+pkg.torch.onnx.stack_trace∏File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 65, in forward
+    fused = self.fuse_down[i](torch.cat([down_feat, fpn_feats[i + 1]], dim=1))
+à
+cat_1
+neck.fuse_down.0.conv.weight
+!neck.fuse_down.0.conv.weight_bias
+getitem_90node_Conv_443"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†Jÿ
+	namespace : ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.fuse_down.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.fuse_down.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_30: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJ•
+pkg.torch.onnx.class_hierarchyÇ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J⁄
+pkg.torch.onnx.fx_nodeø%_native_batch_norm_legit_no_training_30 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_30, %p_neck_fuse_down_0_bn_weight, %p_neck_fuse_down_0_bn_bias, %b_neck_fuse_down_0_bn_running_mean, %b_neck_fuse_down_0_bn_running_var, 0.1, 1e-05), kwargs = {})JÄ
+pkg.torch.onnx.name_scopesb['', 'neck', 'neck.fuse_down.0', 'neck.fuse_down.0.bn', '_native_batch_norm_legit_no_training_30']JÉ
+pkg.torch.onnx.stack_trace‰File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 65, in forward
+    fused = self.fuse_down[i](torch.cat([down_feat, fpn_feats[i + 1]], dim=1))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+Œ
+
+getitem_90relu_30node_relu_30"ReluJì
+	namespaceÖ: ball_detection.src.models.styolo.model.BallSTYOLONano/neck: ball_detection.src.models.styolo.neck.STYOLONeck/neck.fuse_down.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/neck.fuse_down.0.act: torch.nn.modules.activation.ReLU/relu_30: aten.relu.defaultJˇ
+pkg.torch.onnx.class_hierarchy‹['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.neck.STYOLONeck', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_30 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_90,), kwargs = {})Ja
+pkg.torch.onnx.name_scopesC['', 'neck', 'neck.fuse_down.0', 'neck.fuse_down.0.act', 'relu_30']Jö
+pkg.torch.onnx.stack_trace˚File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 41, in forward
+    fused = self.neck(feats)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/neck.py", line 65, in forward
+    fused = self.fuse_down[i](torch.cat([down_feat, fpn_feats[i + 1]], dim=1))
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+É
+relu_28
+head.stems.0.0.conv.weight
+head.stems.0.0.conv.weight_bias
+getitem_93node_Conv_445"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†Jà
+	namespace˙: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.stems.0: torch.nn.modules.container.Sequential/head.stems.0.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/head.stems.0.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_31: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J“
+pkg.torch.onnx.fx_node∑%_native_batch_norm_legit_no_training_31 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_31, %p_head_stems_0_0_bn_weight, %p_head_stems_0_0_bn_bias, %b_head_stems_0_0_bn_running_mean, %b_head_stems_0_0_bn_running_var, 0.1, 1e-05), kwargs = {})Jå
+pkg.torch.onnx.name_scopesn['', 'head', 'head.stems.0', 'head.stems.0.0', 'head.stems.0.0.bn', '_native_batch_norm_legit_no_training_31']J£
+pkg.torch.onnx.stack_traceÑFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+”
+
+getitem_93relu_31node_relu_31"ReluJ√
+	namespaceµ: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.stems.0: torch.nn.modules.container.Sequential/head.stems.0.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/head.stems.0.0.act: torch.nn.modules.activation.ReLU/relu_31: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_31 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_93,), kwargs = {})Jm
+pkg.torch.onnx.name_scopesO['', 'head', 'head.stems.0', 'head.stems.0.0', 'head.stems.0.0.act', 'relu_31']J∫
+pkg.torch.onnx.stack_traceõFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+É
+relu_31
+head.stems.0.1.conv.weight
+head.stems.0.1.conv.weight_bias
+getitem_96node_Conv_447"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†Jà
+	namespace˙: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.stems.0: torch.nn.modules.container.Sequential/head.stems.0.1: ball_detection.src.models.styolo.blocks.ConvBNReLU/head.stems.0.1.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_32: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J“
+pkg.torch.onnx.fx_node∑%_native_batch_norm_legit_no_training_32 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_32, %p_head_stems_0_1_bn_weight, %p_head_stems_0_1_bn_bias, %b_head_stems_0_1_bn_running_mean, %b_head_stems_0_1_bn_running_var, 0.1, 1e-05), kwargs = {})Jå
+pkg.torch.onnx.name_scopesn['', 'head', 'head.stems.0', 'head.stems.0.1', 'head.stems.0.1.bn', '_native_batch_norm_legit_no_training_32']J£
+pkg.torch.onnx.stack_traceÑFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+”
+
+getitem_96relu_32node_relu_32"ReluJ√
+	namespaceµ: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.stems.0: torch.nn.modules.container.Sequential/head.stems.0.1: ball_detection.src.models.styolo.blocks.ConvBNReLU/head.stems.0.1.act: torch.nn.modules.activation.ReLU/relu_32: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_32 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_96,), kwargs = {})Jm
+pkg.torch.onnx.name_scopesO['', 'head', 'head.stems.0', 'head.stems.0.1', 'head.stems.0.1.act', 'relu_32']J∫
+pkg.torch.onnx.stack_traceõFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Ÿ
+
+relu_32
+head.preds.0.weight
+head.preds.0.biasp8node_conv2d_33"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J∆
+	namespace∏: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.preds.0: torch.nn.modules.conv.Conv2d/conv2d_33: aten.conv2d.defaultJ«
+pkg.torch.onnx.class_hierarchy§['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']Jπ
+pkg.torch.onnx.fx_nodeû%conv2d_33 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_32, %p_head_preds_0_weight, %p_head_preds_0_bias), kwargs = {})JG
+pkg.torch.onnx.name_scopes)['', 'head', 'head.preds.0', 'conv2d_33']Jï
+pkg.torch.onnx.stack_traceˆFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/conv.py", line 553, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+É
+relu_30
+head.stems.1.0.conv.weight
+head.stems.1.0.conv.weight_bias
+getitem_99node_Conv_449"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†Jà
+	namespace˙: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.stems.1: torch.nn.modules.container.Sequential/head.stems.1.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/head.stems.1.0.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_33: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J“
+pkg.torch.onnx.fx_node∑%_native_batch_norm_legit_no_training_33 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_34, %p_head_stems_1_0_bn_weight, %p_head_stems_1_0_bn_bias, %b_head_stems_1_0_bn_running_mean, %b_head_stems_1_0_bn_running_var, 0.1, 1e-05), kwargs = {})Jå
+pkg.torch.onnx.name_scopesn['', 'head', 'head.stems.1', 'head.stems.1.0', 'head.stems.1.0.bn', '_native_batch_norm_legit_no_training_33']J£
+pkg.torch.onnx.stack_traceÑFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+”
+
+getitem_99relu_33node_relu_33"ReluJ√
+	namespaceµ: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.stems.1: torch.nn.modules.container.Sequential/head.stems.1.0: ball_detection.src.models.styolo.blocks.ConvBNReLU/head.stems.1.0.act: torch.nn.modules.activation.ReLU/relu_33: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jä
+pkg.torch.onnx.fx_nodep%relu_33 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_99,), kwargs = {})Jm
+pkg.torch.onnx.name_scopesO['', 'head', 'head.stems.1', 'head.stems.1.0', 'head.stems.1.0.act', 'relu_33']J∫
+pkg.torch.onnx.stack_traceõFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+Ñ
+relu_33
+head.stems.1.1.conv.weight
+head.stems.1.1.conv.weight_biasgetitem_102node_Conv_451"Conv*
+group†*
+pads@@@@†*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†Jà
+	namespace˙: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.stems.1: torch.nn.modules.container.Sequential/head.stems.1.1: ball_detection.src.models.styolo.blocks.ConvBNReLU/head.stems.1.1.bn: torch.nn.modules.batchnorm.BatchNorm2d/_native_batch_norm_legit_no_training_34: aten._native_batch_norm_legit_no_training.defaultJV
+!pkg.onnxscript.rewriter.rule_name1FuseBatchNormIntoConv, RemoveOptionalBiasFromConvJŒ
+pkg.torch.onnx.class_hierarchy´['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.batchnorm.BatchNorm2d', 'aten._native_batch_norm_legit_no_training.default']J“
+pkg.torch.onnx.fx_node∑%_native_batch_norm_legit_no_training_34 : [num_users=1] = call_function[target=torch.ops.aten._native_batch_norm_legit_no_training.default](args = (%conv2d_35, %p_head_stems_1_1_bn_weight, %p_head_stems_1_1_bn_bias, %b_head_stems_1_1_bn_running_mean, %b_head_stems_1_1_bn_running_var, 0.1, 1e-05), kwargs = {})Jå
+pkg.torch.onnx.name_scopesn['', 'head', 'head.stems.1', 'head.stems.1.1', 'head.stems.1.1.bn', '_native_batch_norm_legit_no_training_34']J£
+pkg.torch.onnx.stack_traceÑFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 194, in forward
+    return F.batch_norm(
+’
+getitem_102relu_34node_relu_34"ReluJ√
+	namespaceµ: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.stems.1: torch.nn.modules.container.Sequential/head.stems.1.1: ball_detection.src.models.styolo.blocks.ConvBNReLU/head.stems.1.1.act: torch.nn.modules.activation.ReLU/relu_34: aten.relu.defaultJ®
+pkg.torch.onnx.class_hierarchyÖ['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.container.Sequential', 'ball_detection.src.models.styolo.blocks.ConvBNReLU', 'torch.nn.modules.activation.ReLU', 'aten.relu.default']Jã
+pkg.torch.onnx.fx_nodeq%relu_34 : [num_users=1] = call_function[target=torch.ops.aten.relu.default](args = (%getitem_102,), kwargs = {})Jm
+pkg.torch.onnx.name_scopesO['', 'head', 'head.stems.1', 'head.stems.1.1', 'head.stems.1.1.act', 'relu_34']J∫
+pkg.torch.onnx.stack_traceõFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 253, in forward
+    input = module(input)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/blocks.py", line 17, in forward
+    return self.act(self.bn(self.conv(x)))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/activation.py", line 143, in forward
+    return F.relu(input, inplace=self.inplace)
+⁄
+
+relu_34
+head.preds.1.weight
+head.preds.1.biasp16node_conv2d_36"Conv*
+group†*
+pads@ @ @ @ †*
+auto_pad"NOTSET†*
+strides@@†*
+	dilations@@†J∆
+	namespace∏: ball_detection.src.models.styolo.model.BallSTYOLONano/head: ball_detection.src.models.styolo.head.STYOLOHead/head.preds.1: torch.nn.modules.conv.Conv2d/conv2d_36: aten.conv2d.defaultJ«
+pkg.torch.onnx.class_hierarchy§['ball_detection.src.models.styolo.model.BallSTYOLONano', 'ball_detection.src.models.styolo.head.STYOLOHead', 'torch.nn.modules.conv.Conv2d', 'aten.conv2d.default']Jπ
+pkg.torch.onnx.fx_nodeû%conv2d_36 : [num_users=1] = call_function[target=torch.ops.aten.conv2d.default](args = (%relu_34, %p_head_preds_1_weight, %p_head_preds_1_bias), kwargs = {})JG
+pkg.torch.onnx.name_scopes)['', 'head', 'head.preds.1', 'conv2d_36']Jï
+pkg.torch.onnx.stack_traceˆFile "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/model.py", line 42, in forward
+    out = self.head(fused)
+  File "/mnt/core/MLonMCU_proj/software/ball_detection/src/models/styolo/head.py", line 31, in forward
+    return tuple(pred(stem(f)) for f, stem, pred in zip(feats, self.stems, self.preds))
+  File "/mnt/core/MLonMCU_proj/software/venv/lib/python3.11/site-packages/torch/nn/modules/conv.py", line 553, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+main_graph*c Bbackbone.stem.conv.weightj
+locationfp32.onnx.dataj
+offset8832j
+length3456p*]`Bhead.preds.0.weightj
+locationfp32.onnx.dataj
+offset4992j
+length1920p*-Bhead.preds.0.biasJÜÿ”=ë<x^>«üªíæ*]`Bhead.preds.1.weightj
+locationfp32.onnx.dataj
+offset6912j
+length1920p*-Bhead.preds.1.biasJë™î=«öΩ#“Ú<O[>=Yƒœæ*p0 B#backbone.stage2.block.0.conv.weightj
+locationfp32.onnx.dataj
+offset353536j
+length55296p*t0B)backbone.stage2.block.1.conv1.conv.weightj
+locationfp32.onnx.dataj
+offset12288j
+length4608p*uB)backbone.stage2.block.1.conv2.conv.weightj
+locationfp32.onnx.dataj
+offset54272j
+length20736p*q0B&backbone.stage2.block.1.conv3.0.weightj
+locationfp32.onnx.dataj
+offset16896j
+length4608p*q@0B#backbone.stage3.block.0.conv.weightj
+locationfp32.onnx.dataj
+offset408832j
+length110592p*t @B)backbone.stage3.block.1.conv1.conv.weightj
+locationfp32.onnx.dataj
+offset21504j
+length8192p*v  B)backbone.stage3.block.1.conv2.conv.weightj
+locationfp32.onnx.dataj
+offset230656j
+length36864p*q@ B&backbone.stage3.block.1.conv3.0.weightj
+locationfp32.onnx.dataj
+offset29696j
+length8192p*t @B)backbone.stage3.block.2.conv1.conv.weightj
+locationfp32.onnx.dataj
+offset37888j
+length8192p*v  B)backbone.stage3.block.2.conv2.conv.weightj
+locationfp32.onnx.dataj
+offset267520j
+length36864p*q@ B&backbone.stage3.block.2.conv3.0.weightj
+locationfp32.onnx.dataj
+offset46080j
+length8192p*rÄ@B#backbone.stage4.block.0.conv.weightj
+locationfp32.onnx.dataj
+offset814336j
+length294912p*v@ÄB)backbone.stage4.block.1.conv1.conv.weightj
+locationfp32.onnx.dataj
+offset99584j
+length32768p*w@@B)backbone.stage4.block.1.conv2.conv.weightj
+locationfp32.onnx.dataj
+offset519424j
+length147456p*tÄ@B&backbone.stage4.block.1.conv3.0.weightj
+locationfp32.onnx.dataj
+offset132352j
+length32768p*w@ÄB)backbone.stage4.block.2.conv1.conv.weightj
+locationfp32.onnx.dataj
+offset165120j
+length32768p*w@@B)backbone.stage4.block.2.conv2.conv.weightj
+locationfp32.onnx.dataj
+offset666880j
+length147456p*tÄ@B&backbone.stage4.block.2.conv3.0.weightj
+locationfp32.onnx.dataj
+offset197888j
+length32768p*b`@Bneck.lat.0.conv.weightj
+locationfp32.onnx.dataj
+offset75008j
+length24576p*d`ÄBneck.lat.1.conv.weightj
+locationfp32.onnx.dataj
+offset304384j
+length49152p*j`¿Bneck.fuse_up.0.conv.weightj
+locationfp32.onnx.dataj
+offset2768128j
+length663552p*f``Bneck.down.0.conv.weightj
+locationfp32.onnx.dataj
+offset1109248j
+length331776p*l`¿Bneck.fuse_down.0.conv.weightj
+locationfp32.onnx.dataj
+offset3431680j
+length663552p*i``Bhead.stems.0.0.conv.weightj
+locationfp32.onnx.dataj
+offset1441024j
+length331776p*i``Bhead.stems.0.1.conv.weightj
+locationfp32.onnx.dataj
+offset1772800j
+length331776p*i``Bhead.stems.1.0.conv.weightj
+locationfp32.onnx.dataj
+offset2104576j
+length331776p*i``Bhead.stems.1.1.conv.weightj
+locationfp32.onnx.dataj
+offset2436352j
+length331776p*ß Bbackbone.stem.conv.weight_biasJÄŸ¬øpK¥øãè≤?k˝?ÅY“?¿œBª‰±πæn
+/?Øí?∂&zøW<„?É€cøÅêﬁ?‰â∏?¥?Íë,?~˙>∂Ÿ>kå?'S»ø˘[BøΩõ∆?HÓ>êŸ‚?:h“>0™¿´ÕÆ?*fµøÏæ?ˇsÀ>ìø˙^∆>*Ò0B(backbone.stage2.block.0.conv.weight_biasJ¿hfx?k#òæï˚•?®é1=ºÒ>é—œ>ØÜ<ê:ç<?íó>"Á+?Í´ì?‡cLæ≤˜A?†}<æ≥YÖ?˜?^≥æ}ı™=U<-ø≈=ﬁæØÈæàèæ>ƒΩÉø$ﬁ ?óC™?ﬂ>Ô>˛?+X≥>ã©r?9ù?)Ω©ø#ÃÅæã,o?6∞?ï¶çæg?∂≠Í>„:∞>Rf!?Cﬁ‰>tÔ>:…?å◊Œ=/Zº?˝,æŸ‘øR%>
+n7?*ñB.backbone.stage2.block.1.conv1.conv.weight_biasJ`Àø>Ôï>ò8≥?f˘æöŸΩœqô?cææØ2?0<,?∑ö>d`?t#ú>6]æ¯∂Õ>x«∏æ◊Äb>ˆ≈ë>KûE?äzlæ◊≥ ?2"ä?¥?ÖF?™ÄP?*ñB.backbone.stage2.block.1.conv2.conv.weight_biasJ`Ø˜æ„"Ñ>£È>πä>◊êD?˜ √>=î?õéÔ?C8?ü™>˝ƒ∞>∏8≥?úœ"?Z¡»?õcÌ>à#ŸΩ§y}?<PÑøóªøæ…Ω6 q>;à1øz©È=5ﬁ>*Ù0B+backbone.stage2.block.1.conv3.0.weight_biasJ¿àw©øÅÓÇ>“‘ﬁær¯ﬂΩÇ4>E§ùæ6ví>N†?ØÄ^?"¢ÿ?b\Éø¸ƒ”>â∫Ωº3)x?ï⁄≈æB:>Á#x>S5d?V°0?J6Eøƒç?¸ÊøÕëæÏ—=æ·ß??~gxø«Ë…?VK•øû…å>
+ø¶∫æ∆9ﬂ=©ÓøÔ\}=πE?ñÎ?®ÒMøÖ>"ÌZ? ì,ø˘®˙æ»xæÑ™øúO¯>‡p0?‹Ó>|&N?jØΩ*±@B(backbone.stage3.block.0.conv.weight_biasJÄ≥ÛÇæbæ¸sá?|⁄4>Öw‰æñZ=Iê™æP≥Œº‡¬?Áák?(©Ïæ‡û©æñêW>v ≠>P=6?≠GL?(Íû?˘Û>«Æø{õÏæbw?,vü>µ¥Õ?N?&ÖQ?6‘?»G?0ÿ4>n˘Z?+ÏI?ÓEæéäº>CD;æD–æ>±ÄæÙøéæ˙ÕòørVÅ?ê„>ã>øÄf»;:4>˛Rø#u æ¿$ÒæÄ>ü∂ó?Cÿ‚Ω≤+ø¥∆?hïB>Ö√∏?ÀÒ«ædd?åO @Ç{öæ©_™>¥›?/ƒÇ?ÿT?»µ<H9*?jha>˙o>*∑ B.backbone.stage3.block.1.conv1.conv.weight_biasJÄ,ÿ‡>¨·>Ö:O>–ö%æL•>ÒY?Å¥>}a ?∆•>+¡eæI£π?∆6z>Å˝∂æÑ,Ì>≥vJ?lüH?UèÎæa$÷Ω˙÷j>4$>>.Õß?Èaó?”Õ5?¥·æL4øô!(øgh>æRÉæΩø(ã*ø$ 4ø:ﬂå>*∑ B.backbone.stage3.block.1.conv2.conv.weight_biasJÄ7]Y?\ßõ?{T∂>7‹–ºK0"?‘ˆ>‹v?>¸±πødï?<˜3>e≠•>*q<t(?ÿ z?Rˆèæ$üÊ>%åu? Ωæ>âΩˇº
+ø°≠É?¡NÄ>¶Ωu˙Œ>-8>Wt´øótÉ?.}?b
+©?„˝ãø∏Åí>.·2?*¥@B+backbone.stage3.block.1.conv3.0.weight_biasJÄX‘]?ôó=¨7r>É øßÇ,?úæIÙ[?X]N?y®¿>:îøæ ä>8r6Ω∞	f?«äqøz˙J?:}>>ü‡>˙?Â{øæ'V?ÚøËÏÆºve[øÆ¿Ω>ãzx?!˚l?fçø≠Z?Ó°'>¶»mæ¡⁄‰>À|?x ´>CË>æÚ≠?€óÅ?îõØ>Q/?Y ¬æ ´X?#b?≈ÆÒΩãBîæi¸è>èπr?˛¬?∞µΩ#òΩ?u†ø 3‰ªLløzñÄøbëÖ?À!?¢?™Kzæx`ÆøY•µæk”øà)f?,ƒ‚>w˚?bƒ"?.·äæ*∑ B.backbone.stage3.block.2.conv1.conv.weight_biasJÄîﬂûºâ§?4?˛0Øæ/jZææLÀ=äﬂµæ F?ù¢>é”æ9V?ü >A˛>∞ùøÔ∏?jÙ≤=àá˝ΩUr¡=7»?¥{?7⁄/?|	¿=Áb(ægï	æ§ø[{W>*ë†>Â"æìAë?z:]ør~®?Pæ*∑ B.backbone.stage3.block.2.conv2.conv.weight_biasJÄcS>:W°Ωπû?Â∑æØtäæ•ﬁ>Ç"=ÊQã?≤;ﬁ<øzL?ä?Y\æh2˙ªÆÓQ>6¸Kø¬ã?Â>ìiO?ZÙ\?eΩU>Dÿ@?@ÕÕ>?:F®?Í>å?QÈ@?Ê»ü?≤>»h±>ìΩh©j>8îÇ?*¥@B+backbone.stage3.block.2.conv3.0.weight_biasJÄtò?ë¿A?ÿ‹_>…Ó•>ÔØ#?FÍ∆=7(Œ>mÔ?
+ˆ¢ø yæLU≈?ÀÚÜæÎWøt∆-=m∑ΩﬂÅÓ>Ø
+”æG0?bËÈ>Ü«_æœﬁ	øuÌ4?)ëæPÖ∞æ≤ó™>ŒÃ’Ωà$k?E™? hÒ=&†jΩ)∑6>Äèê?«ß"øÑYö>ZﬁiøT®Ú>ä|øiÍYø#?6…ΩÄbXΩ∫j“>ÿ;?DkîΩTœf>Du’>j	∞æP_˙>‰ßHøÆuÛæîΩ˙æPæΩ=•t÷>…3?Óo?XﬂæàÁ‡æı«?Ï!)øPäÂæßëpæÂ"∏æmùÄ>}¸ø*lÄB(backbone.stage4.block.0.conv.weight_biasj
+locationfp32.onnx.dataj
+offset3456j
+length512p*∑@B.backbone.stage4.block.1.conv1.conv.weight_biasJÄA›#?Ûm!?⁄à=TÉ>Èm`Ω8ú˝>s˘w?Ñs(?Q0˜>Ö?l«æd§?îf£=3^{Ωdòü?UZ`?ƒÕ?)€Z?XKæKlødu*øÔπ>-Üÿ>ˇ(ﬂ?a˛Àæw˝?Z%>Œ3ò?ù»>‰Âå>·)â?6n©Ω˚®ö?i@ê>q™?ÁN
+ø®xΩæÈ™?@æN>ØO?æ˜û>©6?2”B?;4?≥˚æih>ò·ê>‡P>%59>Af?¶—ñ?˜M?‹@ª[?GÄã?W$Iø«h‰º§˝B?F	?Dù∏æÂ®Ê?Œö∂>√”'øDÕë?*∑@B.backbone.stage4.block.1.conv2.conv.weight_biasJÄ‰]«>ÈCß>ªMÅø<Äò?f!Â>ÕÃp?‘Æ)ºH™Ò>÷±(>˝ Çæçm7ø[dNø<¯>Ï^)?®Ÿ?e+æë£b>ÑI≤æ[ÓÇøª]>"¶%?—LÜøø@‹qπ?ÿÍø«^ø•8æÔE\øPÒ®?m.øŒë ?mÜü?N?Œ¯>ñF ?õâá?ù≈wøÿ„ü?.Êû?Pzî?Ï>Xƒí=›ÜÇ?òI	øéﬂ	?!(ûæh€ú?˙¯úæ-UΩ>qÜ\?ùhAø·£∑>G¥æ*`ÑæVÙºæ5b.?	öè>&aõø&[Éø`öJøƒ:=æ∫36?±ÿP?`?*oÄB+backbone.stage4.block.1.conv3.0.weight_biasj
+locationfp32.onnx.dataj
+offset3968j
+length512p*∑@B.backbone.stage4.block.2.conv1.conv.weight_biasJÄ÷q=Cä⁄?∫]ôæi >Ú›S>–ˆ>õ≥Ω?O#∞?ºKïæ$¢§º⁄1]?á>ŒÀãø≤ÜÁ?πËü?*¿z?1Âøÿ©?Â.Ω?
+Ù	? g	æﬁˇî?9?Rπ>s®ö>ËÊS?ÍmEø¥17ø≠=>9Á?˝![?Õı(?PÃß?ÙÖ•?{iø>d>=Öîúæ®y≥?‚∂¬æRû @vƒà?r∂æ†ôS>‡Ä}ª#ù›>Ì›U?T0ò?ÿsÅ?(◊â? Ωèøäjæpä«>m/'ø9°£æ˜Bøxï¬=Ñë>?®@ç?‡?Á?âdv>Nö5?ﬁ∞ÛælçD?PªF?*∑@B.backbone.stage4.block.2.conv2.conv.weight_biasJÄE©€>Ω◊>üî@?K¯LæI’øã•Ö>˘¨S=¿ä•º–∑Øø‘#ó?_$f>í°?* +?‡|Ñ?¢ÆÊ>Ò6@XBã?˚¬v?∂ó{>®{g?‹>¯fVº±}ªæË'æP†˙=ö©?:±‘>") >é∞Ÿ?(:˜æ¯-›ºøWÅ>ÈÅr>»¥øÈπ≠?i'S?bW+?ö‰>Y8˘?˝ﬂá>’â“?m#@∏% ΩmdB>ÏËé?3˛´ø“°â>Ô<W?uBŒ?[4?Dy?yR”øﬂq >©/
+æ‰áâ?m¥‡æÄ˝‹?Mu\ø∆~ø@∂ñ?rbz?2Ì ?ËÕ9?¯Îí>*oÄB+backbone.stage4.block.2.conv3.0.weight_biasj
+locationfp32.onnx.dataj
+offset4480j
+length512p*[`Bneck.lat.0.conv.weight_biasj
+locationfp32.onnx.dataj
+offset0j
+length384p*]`Bneck.lat.1.conv.weight_biasj
+locationfp32.onnx.dataj
+offset384j
+length384p*a`Bneck.fuse_up.0.conv.weight_biasj
+locationfp32.onnx.dataj
+offset768j
+length384p*_`Bneck.down.0.conv.weight_biasj
+locationfp32.onnx.dataj
+offset1152j
+length384p*d`B!neck.fuse_down.0.conv.weight_biasj
+locationfp32.onnx.dataj
+offset1536j
+length384p*b`Bhead.stems.0.0.conv.weight_biasj
+locationfp32.onnx.dataj
+offset1920j
+length384p*b`Bhead.stems.0.1.conv.weight_biasj
+locationfp32.onnx.dataj
+offset2304j
+length384p*b`Bhead.stems.1.0.conv.weight_biasj
+locationfp32.onnx.dataj
+offset2688j
+length384p*b`Bhead.stems.1.1.conv.weight_biasj
+locationfp32.onnx.dataj
+offset3072j
+length384p*Bval_234J  Ä?  Ä?   @   @Z«
+input
+
+
+
+†
+Ä"=
+/pkg.torch.export.graph_signature.InputSpec.kind
+USER_INPUT"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"&
+!pkg.torch.onnx.original_node_namexbç
+p8
+
+
+
+$
+0"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT".
+!pkg.torch.onnx.original_node_name	conv2d_33bé
+p16
+
+
+
+
+"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT".
+!pkg.torch.onnx.original_node_name	conv2d_36j3
+backbone.stem.conv.weight
+
+ 
+
+
+jÊ
+head.preds.0.weight
+
+
+`
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone":
+!pkg.torch.onnx.original_node_namep_head_preds_0_weightj÷
+head.preds.0.bias
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
+!pkg.torch.onnx.original_node_namep_head_preds_0_biasjÊ
+head.preds.1.weight
+
+
+`
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone":
+!pkg.torch.onnx.original_node_namep_head_preds_1_weightj÷
+head.preds.1.bias
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"8
+!pkg.torch.onnx.original_node_namep_head_preds_1_biasj=
+#backbone.stage2.block.0.conv.weight
+
+0
+ 
+
+jC
+)backbone.stage2.block.1.conv1.conv.weight
+
+
+0
+
+jC
+)backbone.stage2.block.1.conv2.conv.weight
+
+
+
+
+j@
+&backbone.stage2.block.1.conv3.0.weight
+
+0
+
+
+j=
+#backbone.stage3.block.0.conv.weight
+
+@
+0
+
+jC
+)backbone.stage3.block.1.conv1.conv.weight
+
+ 
+@
+
+jC
+)backbone.stage3.block.1.conv2.conv.weight
+
+ 
+ 
+
+j@
+&backbone.stage3.block.1.conv3.0.weight
+
+@
+ 
+
+jC
+)backbone.stage3.block.2.conv1.conv.weight
+
+ 
+@
+
+jC
+)backbone.stage3.block.2.conv2.conv.weight
+
+ 
+ 
+
+j@
+&backbone.stage3.block.2.conv3.0.weight
+
+@
+ 
+
+j>
+#backbone.stage4.block.0.conv.weight
+
+Ä
+@
+
+jD
+)backbone.stage4.block.1.conv1.conv.weight
+
+@
+Ä
+
+jC
+)backbone.stage4.block.1.conv2.conv.weight
+
+@
+@
+
+jA
+&backbone.stage4.block.1.conv3.0.weight
+
+Ä
+@
+
+jD
+)backbone.stage4.block.2.conv1.conv.weight
+
+@
+Ä
+
+jC
+)backbone.stage4.block.2.conv2.conv.weight
+
+@
+@
+
+jA
+&backbone.stage4.block.2.conv3.0.weight
+
+Ä
+@
+
+j0
+neck.lat.0.conv.weight
+
+`
+@
+
+j1
+neck.lat.1.conv.weight
+
+`
+Ä
+
+j5
+neck.fuse_up.0.conv.weight
+
+`
+¿
+
+j1
+neck.down.0.conv.weight
+
+`
+`
+
+j7
+neck.fuse_down.0.conv.weight
+
+`
+¿
+
+j4
+head.stems.0.0.conv.weight
+
+`
+`
+
+j4
+head.stems.0.1.conv.weight
+
+`
+`
+
+j4
+head.stems.1.0.conv.weight
+
+`
+`
+
+j4
+head.stems.1.1.conv.weight
+
+`
+`
+
+j,
+backbone.stem.conv.weight_bias
+
+
+ j6
+(backbone.stage2.block.0.conv.weight_bias
+
+
+0j<
+.backbone.stage2.block.1.conv1.conv.weight_bias
+
+
+j<
+.backbone.stage2.block.1.conv2.conv.weight_bias
+
+
+j9
++backbone.stage2.block.1.conv3.0.weight_bias
+
+
+0j6
+(backbone.stage3.block.0.conv.weight_bias
+
+
+@j<
+.backbone.stage3.block.1.conv1.conv.weight_bias
+
+
+ j<
+.backbone.stage3.block.1.conv2.conv.weight_bias
+
+
+ j9
++backbone.stage3.block.1.conv3.0.weight_bias
+
+
+@j<
+.backbone.stage3.block.2.conv1.conv.weight_bias
+
+
+ j<
+.backbone.stage3.block.2.conv2.conv.weight_bias
+
+
+ j9
++backbone.stage3.block.2.conv3.0.weight_bias
+
+
+@j7
+(backbone.stage4.block.0.conv.weight_bias
+	
+Äj<
+.backbone.stage4.block.1.conv1.conv.weight_bias
+
+
+@j<
+.backbone.stage4.block.1.conv2.conv.weight_bias
+
+
+@j:
++backbone.stage4.block.1.conv3.0.weight_bias
+	
+Äj<
+.backbone.stage4.block.2.conv1.conv.weight_bias
+
+
+@j<
+.backbone.stage4.block.2.conv2.conv.weight_bias
+
+
+@j:
++backbone.stage4.block.2.conv3.0.weight_bias
+	
+Äj)
+neck.lat.0.conv.weight_bias
+
+
+`j)
+neck.lat.1.conv.weight_bias
+
+
+`j-
+neck.fuse_up.0.conv.weight_bias
+
+
+`j*
+neck.down.0.conv.weight_bias
+
+
+`j/
+!neck.fuse_down.0.conv.weight_bias
+
+
+`j-
+head.stems.0.0.conv.weight_bias
+
+
+`j-
+head.stems.0.1.conv.weight_bias
+
+
+`j-
+head.stems.1.0.conv.weight_bias
+
+
+`j-
+head.stems.1.1.conv.weight_bias
+
+
+`j
+val_234
+
+
+j#
+getitem
+
+
+ 
+ê
+¿j 
+relu
+
+
+ 
+ê
+¿j#
+	getitem_3
+
+
+0
+H
+`j 
+relu_1
+
+
+0
+H
+`j#
+	getitem_6
+
+
+
+H
+`j 
+relu_2
+
+
+
+H
+`j#
+	getitem_9
+
+
+
+H
+`j 
+relu_3
+
+
+
+H
+`j$
+
+getitem_12
+
+
+0
+H
+`j
+add
+
+
+0
+H
+`j 
+relu_4
+
+
+0
+H
+`j$
+
+getitem_15
+
+
+@
+$
+0j 
+relu_5
+
+
+@
+$
+0j$
+
+getitem_18
+
+
+ 
+$
+0j 
+relu_6
+
+
+ 
+$
+0j$
+
+getitem_21
+
+
+ 
+$
+0j 
+relu_7
+
+
+ 
+$
+0j$
+
+getitem_24
+
+
+@
+$
+0j
+add_1
+
+
+@
+$
+0j 
+relu_8
+
+
+@
+$
+0j$
+
+getitem_27
+
+
+ 
+$
+0j 
+relu_9
+
+
+ 
+$
+0j$
+
+getitem_30
+
+
+ 
+$
+0j!
+relu_10
+
+
+ 
+$
+0j$
+
+getitem_33
+
+
+@
+$
+0j
+add_2
+
+
+@
+$
+0j!
+relu_11
+
+
+@
+$
+0j%
+
+getitem_36
+
+
+Ä
+
+j"
+relu_12
+
+
+Ä
+
+j$
+
+getitem_39
+
+
+@
+
+j!
+relu_13
+
+
+@
+
+j$
+
+getitem_42
+
+
+@
+
+j!
+relu_14
+
+
+@
+
+j%
+
+getitem_45
+
+
+Ä
+
+j 
+add_3
+
+
+Ä
+
+j"
+relu_15
+
+
+Ä
+
+j$
+
+getitem_48
+
+
+@
+
+j!
+relu_16
+
+
+@
+
+j$
+
+getitem_51
+
+
+@
+
+j!
+relu_17
+
+
+@
+
+j%
+
+getitem_54
+
+
+Ä
+
+j 
+add_4
+
+
+Ä
+
+j"
+relu_18
+
+
+Ä
+
+j$
+
+getitem_78
+
+
+`
+$
+0j!
+relu_26
+
+
+`
+$
+0j$
+
+getitem_81
+
+
+`
+
+j!
+relu_27
+
+
+`
+
+j,
+upsample_nearest2d
+
+
+`
+$
+0j
+cat
+
+
+¿
+$
+0j$
+
+getitem_84
+
+
+`
+$
+0j!
+relu_28
+
+
+`
+$
+0j$
+
+getitem_87
+
+
+`
+
+j!
+relu_29
+
+
+`
+
+j 
+cat_1
+
+
+¿
+
+j$
+
+getitem_90
+
+
+`
+
+j!
+relu_30
+
+
+`
+
+j$
+
+getitem_93
+
+
+`
+$
+0j!
+relu_31
+
+
+`
+$
+0j$
+
+getitem_96
+
+
+`
+$
+0j!
+relu_32
+
+
+`
+$
+0j$
+
+getitem_99
+
+
+`
+
+j!
+relu_33
+
+
+`
+
+j%
+getitem_102
+
+
+`
+
+j!
+relu_34
+
+
+`
+
+Ç¯Ø
+0pkg.torch.export.ExportedProgram.graph_signature¬Ø
+# inputs
+p_backbone_stem_conv_weight: PARAMETER target='backbone.stem.conv.weight'
+p_backbone_stem_bn_weight: PARAMETER target='backbone.stem.bn.weight'
+p_backbone_stem_bn_bias: PARAMETER target='backbone.stem.bn.bias'
+p_backbone_stage2_block_0_conv_weight: PARAMETER target='backbone.stage2.block.0.conv.weight'
+p_backbone_stage2_block_0_bn_weight: PARAMETER target='backbone.stage2.block.0.bn.weight'
+p_backbone_stage2_block_0_bn_bias: PARAMETER target='backbone.stage2.block.0.bn.bias'
+p_backbone_stage2_block_1_conv1_conv_weight: PARAMETER target='backbone.stage2.block.1.conv1.conv.weight'
+p_backbone_stage2_block_1_conv1_bn_weight: PARAMETER target='backbone.stage2.block.1.conv1.bn.weight'
+p_backbone_stage2_block_1_conv1_bn_bias: PARAMETER target='backbone.stage2.block.1.conv1.bn.bias'
+p_backbone_stage2_block_1_conv2_conv_weight: PARAMETER target='backbone.stage2.block.1.conv2.conv.weight'
+p_backbone_stage2_block_1_conv2_bn_weight: PARAMETER target='backbone.stage2.block.1.conv2.bn.weight'
+p_backbone_stage2_block_1_conv2_bn_bias: PARAMETER target='backbone.stage2.block.1.conv2.bn.bias'
+p_backbone_stage2_block_1_conv3_0_weight: PARAMETER target='backbone.stage2.block.1.conv3.0.weight'
+p_backbone_stage2_block_1_conv3_1_weight: PARAMETER target='backbone.stage2.block.1.conv3.1.weight'
+p_backbone_stage2_block_1_conv3_1_bias: PARAMETER target='backbone.stage2.block.1.conv3.1.bias'
+p_backbone_stage3_block_0_conv_weight: PARAMETER target='backbone.stage3.block.0.conv.weight'
+p_backbone_stage3_block_0_bn_weight: PARAMETER target='backbone.stage3.block.0.bn.weight'
+p_backbone_stage3_block_0_bn_bias: PARAMETER target='backbone.stage3.block.0.bn.bias'
+p_backbone_stage3_block_1_conv1_conv_weight: PARAMETER target='backbone.stage3.block.1.conv1.conv.weight'
+p_backbone_stage3_block_1_conv1_bn_weight: PARAMETER target='backbone.stage3.block.1.conv1.bn.weight'
+p_backbone_stage3_block_1_conv1_bn_bias: PARAMETER target='backbone.stage3.block.1.conv1.bn.bias'
+p_backbone_stage3_block_1_conv2_conv_weight: PARAMETER target='backbone.stage3.block.1.conv2.conv.weight'
+p_backbone_stage3_block_1_conv2_bn_weight: PARAMETER target='backbone.stage3.block.1.conv2.bn.weight'
+p_backbone_stage3_block_1_conv2_bn_bias: PARAMETER target='backbone.stage3.block.1.conv2.bn.bias'
+p_backbone_stage3_block_1_conv3_0_weight: PARAMETER target='backbone.stage3.block.1.conv3.0.weight'
+p_backbone_stage3_block_1_conv3_1_weight: PARAMETER target='backbone.stage3.block.1.conv3.1.weight'
+p_backbone_stage3_block_1_conv3_1_bias: PARAMETER target='backbone.stage3.block.1.conv3.1.bias'
+p_backbone_stage3_block_2_conv1_conv_weight: PARAMETER target='backbone.stage3.block.2.conv1.conv.weight'
+p_backbone_stage3_block_2_conv1_bn_weight: PARAMETER target='backbone.stage3.block.2.conv1.bn.weight'
+p_backbone_stage3_block_2_conv1_bn_bias: PARAMETER target='backbone.stage3.block.2.conv1.bn.bias'
+p_backbone_stage3_block_2_conv2_conv_weight: PARAMETER target='backbone.stage3.block.2.conv2.conv.weight'
+p_backbone_stage3_block_2_conv2_bn_weight: PARAMETER target='backbone.stage3.block.2.conv2.bn.weight'
+p_backbone_stage3_block_2_conv2_bn_bias: PARAMETER target='backbone.stage3.block.2.conv2.bn.bias'
+p_backbone_stage3_block_2_conv3_0_weight: PARAMETER target='backbone.stage3.block.2.conv3.0.weight'
+p_backbone_stage3_block_2_conv3_1_weight: PARAMETER target='backbone.stage3.block.2.conv3.1.weight'
+p_backbone_stage3_block_2_conv3_1_bias: PARAMETER target='backbone.stage3.block.2.conv3.1.bias'
+p_backbone_stage4_block_0_conv_weight: PARAMETER target='backbone.stage4.block.0.conv.weight'
+p_backbone_stage4_block_0_bn_weight: PARAMETER target='backbone.stage4.block.0.bn.weight'
+p_backbone_stage4_block_0_bn_bias: PARAMETER target='backbone.stage4.block.0.bn.bias'
+p_backbone_stage4_block_1_conv1_conv_weight: PARAMETER target='backbone.stage4.block.1.conv1.conv.weight'
+p_backbone_stage4_block_1_conv1_bn_weight: PARAMETER target='backbone.stage4.block.1.conv1.bn.weight'
+p_backbone_stage4_block_1_conv1_bn_bias: PARAMETER target='backbone.stage4.block.1.conv1.bn.bias'
+p_backbone_stage4_block_1_conv2_conv_weight: PARAMETER target='backbone.stage4.block.1.conv2.conv.weight'
+p_backbone_stage4_block_1_conv2_bn_weight: PARAMETER target='backbone.stage4.block.1.conv2.bn.weight'
+p_backbone_stage4_block_1_conv2_bn_bias: PARAMETER target='backbone.stage4.block.1.conv2.bn.bias'
+p_backbone_stage4_block_1_conv3_0_weight: PARAMETER target='backbone.stage4.block.1.conv3.0.weight'
+p_backbone_stage4_block_1_conv3_1_weight: PARAMETER target='backbone.stage4.block.1.conv3.1.weight'
+p_backbone_stage4_block_1_conv3_1_bias: PARAMETER target='backbone.stage4.block.1.conv3.1.bias'
+p_backbone_stage4_block_2_conv1_conv_weight: PARAMETER target='backbone.stage4.block.2.conv1.conv.weight'
+p_backbone_stage4_block_2_conv1_bn_weight: PARAMETER target='backbone.stage4.block.2.conv1.bn.weight'
+p_backbone_stage4_block_2_conv1_bn_bias: PARAMETER target='backbone.stage4.block.2.conv1.bn.bias'
+p_backbone_stage4_block_2_conv2_conv_weight: PARAMETER target='backbone.stage4.block.2.conv2.conv.weight'
+p_backbone_stage4_block_2_conv2_bn_weight: PARAMETER target='backbone.stage4.block.2.conv2.bn.weight'
+p_backbone_stage4_block_2_conv2_bn_bias: PARAMETER target='backbone.stage4.block.2.conv2.bn.bias'
+p_backbone_stage4_block_2_conv3_0_weight: PARAMETER target='backbone.stage4.block.2.conv3.0.weight'
+p_backbone_stage4_block_2_conv3_1_weight: PARAMETER target='backbone.stage4.block.2.conv3.1.weight'
+p_backbone_stage4_block_2_conv3_1_bias: PARAMETER target='backbone.stage4.block.2.conv3.1.bias'
+p_backbone_stage5_block_0_conv_weight: PARAMETER target='backbone.stage5.block.0.conv.weight'
+p_backbone_stage5_block_0_bn_weight: PARAMETER target='backbone.stage5.block.0.bn.weight'
+p_backbone_stage5_block_0_bn_bias: PARAMETER target='backbone.stage5.block.0.bn.bias'
+p_backbone_stage5_block_1_conv1_conv_weight: PARAMETER target='backbone.stage5.block.1.conv1.conv.weight'
+p_backbone_stage5_block_1_conv1_bn_weight: PARAMETER target='backbone.stage5.block.1.conv1.bn.weight'
+p_backbone_stage5_block_1_conv1_bn_bias: PARAMETER target='backbone.stage5.block.1.conv1.bn.bias'
+p_backbone_stage5_block_1_conv2_conv_weight: PARAMETER target='backbone.stage5.block.1.conv2.conv.weight'
+p_backbone_stage5_block_1_conv2_bn_weight: PARAMETER target='backbone.stage5.block.1.conv2.bn.weight'
+p_backbone_stage5_block_1_conv2_bn_bias: PARAMETER target='backbone.stage5.block.1.conv2.bn.bias'
+p_backbone_stage5_block_1_conv3_0_weight: PARAMETER target='backbone.stage5.block.1.conv3.0.weight'
+p_backbone_stage5_block_1_conv3_1_weight: PARAMETER target='backbone.stage5.block.1.conv3.1.weight'
+p_backbone_stage5_block_1_conv3_1_bias: PARAMETER target='backbone.stage5.block.1.conv3.1.bias'
+p_backbone_stage5_block_2_conv1_conv_weight: PARAMETER target='backbone.stage5.block.2.conv1.conv.weight'
+p_backbone_stage5_block_2_conv1_bn_weight: PARAMETER target='backbone.stage5.block.2.conv1.bn.weight'
+p_backbone_stage5_block_2_conv1_bn_bias: PARAMETER target='backbone.stage5.block.2.conv1.bn.bias'
+p_backbone_stage5_block_2_conv2_conv_weight: PARAMETER target='backbone.stage5.block.2.conv2.conv.weight'
+p_backbone_stage5_block_2_conv2_bn_weight: PARAMETER target='backbone.stage5.block.2.conv2.bn.weight'
+p_backbone_stage5_block_2_conv2_bn_bias: PARAMETER target='backbone.stage5.block.2.conv2.bn.bias'
+p_backbone_stage5_block_2_conv3_0_weight: PARAMETER target='backbone.stage5.block.2.conv3.0.weight'
+p_backbone_stage5_block_2_conv3_1_weight: PARAMETER target='backbone.stage5.block.2.conv3.1.weight'
+p_backbone_stage5_block_2_conv3_1_bias: PARAMETER target='backbone.stage5.block.2.conv3.1.bias'
+p_neck_lat_0_conv_weight: PARAMETER target='neck.lat.0.conv.weight'
+p_neck_lat_0_bn_weight: PARAMETER target='neck.lat.0.bn.weight'
+p_neck_lat_0_bn_bias: PARAMETER target='neck.lat.0.bn.bias'
+p_neck_lat_1_conv_weight: PARAMETER target='neck.lat.1.conv.weight'
+p_neck_lat_1_bn_weight: PARAMETER target='neck.lat.1.bn.weight'
+p_neck_lat_1_bn_bias: PARAMETER target='neck.lat.1.bn.bias'
+p_neck_fuse_up_0_conv_weight: PARAMETER target='neck.fuse_up.0.conv.weight'
+p_neck_fuse_up_0_bn_weight: PARAMETER target='neck.fuse_up.0.bn.weight'
+p_neck_fuse_up_0_bn_bias: PARAMETER target='neck.fuse_up.0.bn.bias'
+p_neck_down_0_conv_weight: PARAMETER target='neck.down.0.conv.weight'
+p_neck_down_0_bn_weight: PARAMETER target='neck.down.0.bn.weight'
+p_neck_down_0_bn_bias: PARAMETER target='neck.down.0.bn.bias'
+p_neck_fuse_down_0_conv_weight: PARAMETER target='neck.fuse_down.0.conv.weight'
+p_neck_fuse_down_0_bn_weight: PARAMETER target='neck.fuse_down.0.bn.weight'
+p_neck_fuse_down_0_bn_bias: PARAMETER target='neck.fuse_down.0.bn.bias'
+p_head_stems_0_0_conv_weight: PARAMETER target='head.stems.0.0.conv.weight'
+p_head_stems_0_0_bn_weight: PARAMETER target='head.stems.0.0.bn.weight'
+p_head_stems_0_0_bn_bias: PARAMETER target='head.stems.0.0.bn.bias'
+p_head_stems_0_1_conv_weight: PARAMETER target='head.stems.0.1.conv.weight'
+p_head_stems_0_1_bn_weight: PARAMETER target='head.stems.0.1.bn.weight'
+p_head_stems_0_1_bn_bias: PARAMETER target='head.stems.0.1.bn.bias'
+p_head_stems_1_0_conv_weight: PARAMETER target='head.stems.1.0.conv.weight'
+p_head_stems_1_0_bn_weight: PARAMETER target='head.stems.1.0.bn.weight'
+p_head_stems_1_0_bn_bias: PARAMETER target='head.stems.1.0.bn.bias'
+p_head_stems_1_1_conv_weight: PARAMETER target='head.stems.1.1.conv.weight'
+p_head_stems_1_1_bn_weight: PARAMETER target='head.stems.1.1.bn.weight'
+p_head_stems_1_1_bn_bias: PARAMETER target='head.stems.1.1.bn.bias'
+p_head_preds_0_weight: PARAMETER target='head.preds.0.weight'
+p_head_preds_0_bias: PARAMETER target='head.preds.0.bias'
+p_head_preds_1_weight: PARAMETER target='head.preds.1.weight'
+p_head_preds_1_bias: PARAMETER target='head.preds.1.bias'
+b_backbone_stem_bn_running_mean: BUFFER target='backbone.stem.bn.running_mean' persistent=True
+b_backbone_stem_bn_running_var: BUFFER target='backbone.stem.bn.running_var' persistent=True
+b_backbone_stem_bn_num_batches_tracked: BUFFER target='backbone.stem.bn.num_batches_tracked' persistent=True
+b_backbone_stage2_block_0_bn_running_mean: BUFFER target='backbone.stage2.block.0.bn.running_mean' persistent=True
+b_backbone_stage2_block_0_bn_running_var: BUFFER target='backbone.stage2.block.0.bn.running_var' persistent=True
+b_backbone_stage2_block_0_bn_num_batches_tracked: BUFFER target='backbone.stage2.block.0.bn.num_batches_tracked' persistent=True
+b_backbone_stage2_block_1_conv1_bn_running_mean: BUFFER target='backbone.stage2.block.1.conv1.bn.running_mean' persistent=True
+b_backbone_stage2_block_1_conv1_bn_running_var: BUFFER target='backbone.stage2.block.1.conv1.bn.running_var' persistent=True
+b_backbone_stage2_block_1_conv1_bn_num_batches_tracked: BUFFER target='backbone.stage2.block.1.conv1.bn.num_batches_tracked' persistent=True
+b_backbone_stage2_block_1_conv2_bn_running_mean: BUFFER target='backbone.stage2.block.1.conv2.bn.running_mean' persistent=True
+b_backbone_stage2_block_1_conv2_bn_running_var: BUFFER target='backbone.stage2.block.1.conv2.bn.running_var' persistent=True
+b_backbone_stage2_block_1_conv2_bn_num_batches_tracked: BUFFER target='backbone.stage2.block.1.conv2.bn.num_batches_tracked' persistent=True
+b_backbone_stage2_block_1_conv3_1_running_mean: BUFFER target='backbone.stage2.block.1.conv3.1.running_mean' persistent=True
+b_backbone_stage2_block_1_conv3_1_running_var: BUFFER target='backbone.stage2.block.1.conv3.1.running_var' persistent=True
+b_backbone_stage2_block_1_conv3_1_num_batches_tracked: BUFFER target='backbone.stage2.block.1.conv3.1.num_batches_tracked' persistent=True
+b_backbone_stage3_block_0_bn_running_mean: BUFFER target='backbone.stage3.block.0.bn.running_mean' persistent=True
+b_backbone_stage3_block_0_bn_running_var: BUFFER target='backbone.stage3.block.0.bn.running_var' persistent=True
+b_backbone_stage3_block_0_bn_num_batches_tracked: BUFFER target='backbone.stage3.block.0.bn.num_batches_tracked' persistent=True
+b_backbone_stage3_block_1_conv1_bn_running_mean: BUFFER target='backbone.stage3.block.1.conv1.bn.running_mean' persistent=True
+b_backbone_stage3_block_1_conv1_bn_running_var: BUFFER target='backbone.stage3.block.1.conv1.bn.running_var' persistent=True
+b_backbone_stage3_block_1_conv1_bn_num_batches_tracked: BUFFER target='backbone.stage3.block.1.conv1.bn.num_batches_tracked' persistent=True
+b_backbone_stage3_block_1_conv2_bn_running_mean: BUFFER target='backbone.stage3.block.1.conv2.bn.running_mean' persistent=True
+b_backbone_stage3_block_1_conv2_bn_running_var: BUFFER target='backbone.stage3.block.1.conv2.bn.running_var' persistent=True
+b_backbone_stage3_block_1_conv2_bn_num_batches_tracked: BUFFER target='backbone.stage3.block.1.conv2.bn.num_batches_tracked' persistent=True
+b_backbone_stage3_block_1_conv3_1_running_mean: BUFFER target='backbone.stage3.block.1.conv3.1.running_mean' persistent=True
+b_backbone_stage3_block_1_conv3_1_running_var: BUFFER target='backbone.stage3.block.1.conv3.1.running_var' persistent=True
+b_backbone_stage3_block_1_conv3_1_num_batches_tracked: BUFFER target='backbone.stage3.block.1.conv3.1.num_batches_tracked' persistent=True
+b_backbone_stage3_block_2_conv1_bn_running_mean: BUFFER target='backbone.stage3.block.2.conv1.bn.running_mean' persistent=True
+b_backbone_stage3_block_2_conv1_bn_running_var: BUFFER target='backbone.stage3.block.2.conv1.bn.running_var' persistent=True
+b_backbone_stage3_block_2_conv1_bn_num_batches_tracked: BUFFER target='backbone.stage3.block.2.conv1.bn.num_batches_tracked' persistent=True
+b_backbone_stage3_block_2_conv2_bn_running_mean: BUFFER target='backbone.stage3.block.2.conv2.bn.running_mean' persistent=True
+b_backbone_stage3_block_2_conv2_bn_running_var: BUFFER target='backbone.stage3.block.2.conv2.bn.running_var' persistent=True
+b_backbone_stage3_block_2_conv2_bn_num_batches_tracked: BUFFER target='backbone.stage3.block.2.conv2.bn.num_batches_tracked' persistent=True
+b_backbone_stage3_block_2_conv3_1_running_mean: BUFFER target='backbone.stage3.block.2.conv3.1.running_mean' persistent=True
+b_backbone_stage3_block_2_conv3_1_running_var: BUFFER target='backbone.stage3.block.2.conv3.1.running_var' persistent=True
+b_backbone_stage3_block_2_conv3_1_num_batches_tracked: BUFFER target='backbone.stage3.block.2.conv3.1.num_batches_tracked' persistent=True
+b_backbone_stage4_block_0_bn_running_mean: BUFFER target='backbone.stage4.block.0.bn.running_mean' persistent=True
+b_backbone_stage4_block_0_bn_running_var: BUFFER target='backbone.stage4.block.0.bn.running_var' persistent=True
+b_backbone_stage4_block_0_bn_num_batches_tracked: BUFFER target='backbone.stage4.block.0.bn.num_batches_tracked' persistent=True
+b_backbone_stage4_block_1_conv1_bn_running_mean: BUFFER target='backbone.stage4.block.1.conv1.bn.running_mean' persistent=True
+b_backbone_stage4_block_1_conv1_bn_running_var: BUFFER target='backbone.stage4.block.1.conv1.bn.running_var' persistent=True
+b_backbone_stage4_block_1_conv1_bn_num_batches_tracked: BUFFER target='backbone.stage4.block.1.conv1.bn.num_batches_tracked' persistent=True
+b_backbone_stage4_block_1_conv2_bn_running_mean: BUFFER target='backbone.stage4.block.1.conv2.bn.running_mean' persistent=True
+b_backbone_stage4_block_1_conv2_bn_running_var: BUFFER target='backbone.stage4.block.1.conv2.bn.running_var' persistent=True
+b_backbone_stage4_block_1_conv2_bn_num_batches_tracked: BUFFER target='backbone.stage4.block.1.conv2.bn.num_batches_tracked' persistent=True
+b_backbone_stage4_block_1_conv3_1_running_mean: BUFFER target='backbone.stage4.block.1.conv3.1.running_mean' persistent=True
+b_backbone_stage4_block_1_conv3_1_running_var: BUFFER target='backbone.stage4.block.1.conv3.1.running_var' persistent=True
+b_backbone_stage4_block_1_conv3_1_num_batches_tracked: BUFFER target='backbone.stage4.block.1.conv3.1.num_batches_tracked' persistent=True
+b_backbone_stage4_block_2_conv1_bn_running_mean: BUFFER target='backbone.stage4.block.2.conv1.bn.running_mean' persistent=True
+b_backbone_stage4_block_2_conv1_bn_running_var: BUFFER target='backbone.stage4.block.2.conv1.bn.running_var' persistent=True
+b_backbone_stage4_block_2_conv1_bn_num_batches_tracked: BUFFER target='backbone.stage4.block.2.conv1.bn.num_batches_tracked' persistent=True
+b_backbone_stage4_block_2_conv2_bn_running_mean: BUFFER target='backbone.stage4.block.2.conv2.bn.running_mean' persistent=True
+b_backbone_stage4_block_2_conv2_bn_running_var: BUFFER target='backbone.stage4.block.2.conv2.bn.running_var' persistent=True
+b_backbone_stage4_block_2_conv2_bn_num_batches_tracked: BUFFER target='backbone.stage4.block.2.conv2.bn.num_batches_tracked' persistent=True
+b_backbone_stage4_block_2_conv3_1_running_mean: BUFFER target='backbone.stage4.block.2.conv3.1.running_mean' persistent=True
+b_backbone_stage4_block_2_conv3_1_running_var: BUFFER target='backbone.stage4.block.2.conv3.1.running_var' persistent=True
+b_backbone_stage4_block_2_conv3_1_num_batches_tracked: BUFFER target='backbone.stage4.block.2.conv3.1.num_batches_tracked' persistent=True
+b_backbone_stage5_block_0_bn_running_mean: BUFFER target='backbone.stage5.block.0.bn.running_mean' persistent=True
+b_backbone_stage5_block_0_bn_running_var: BUFFER target='backbone.stage5.block.0.bn.running_var' persistent=True
+b_backbone_stage5_block_0_bn_num_batches_tracked: BUFFER target='backbone.stage5.block.0.bn.num_batches_tracked' persistent=True
+b_backbone_stage5_block_1_conv1_bn_running_mean: BUFFER target='backbone.stage5.block.1.conv1.bn.running_mean' persistent=True
+b_backbone_stage5_block_1_conv1_bn_running_var: BUFFER target='backbone.stage5.block.1.conv1.bn.running_var' persistent=True
+b_backbone_stage5_block_1_conv1_bn_num_batches_tracked: BUFFER target='backbone.stage5.block.1.conv1.bn.num_batches_tracked' persistent=True
+b_backbone_stage5_block_1_conv2_bn_running_mean: BUFFER target='backbone.stage5.block.1.conv2.bn.running_mean' persistent=True
+b_backbone_stage5_block_1_conv2_bn_running_var: BUFFER target='backbone.stage5.block.1.conv2.bn.running_var' persistent=True
+b_backbone_stage5_block_1_conv2_bn_num_batches_tracked: BUFFER target='backbone.stage5.block.1.conv2.bn.num_batches_tracked' persistent=True
+b_backbone_stage5_block_1_conv3_1_running_mean: BUFFER target='backbone.stage5.block.1.conv3.1.running_mean' persistent=True
+b_backbone_stage5_block_1_conv3_1_running_var: BUFFER target='backbone.stage5.block.1.conv3.1.running_var' persistent=True
+b_backbone_stage5_block_1_conv3_1_num_batches_tracked: BUFFER target='backbone.stage5.block.1.conv3.1.num_batches_tracked' persistent=True
+b_backbone_stage5_block_2_conv1_bn_running_mean: BUFFER target='backbone.stage5.block.2.conv1.bn.running_mean' persistent=True
+b_backbone_stage5_block_2_conv1_bn_running_var: BUFFER target='backbone.stage5.block.2.conv1.bn.running_var' persistent=True
+b_backbone_stage5_block_2_conv1_bn_num_batches_tracked: BUFFER target='backbone.stage5.block.2.conv1.bn.num_batches_tracked' persistent=True
+b_backbone_stage5_block_2_conv2_bn_running_mean: BUFFER target='backbone.stage5.block.2.conv2.bn.running_mean' persistent=True
+b_backbone_stage5_block_2_conv2_bn_running_var: BUFFER target='backbone.stage5.block.2.conv2.bn.running_var' persistent=True
+b_backbone_stage5_block_2_conv2_bn_num_batches_tracked: BUFFER target='backbone.stage5.block.2.conv2.bn.num_batches_tracked' persistent=True
+b_backbone_stage5_block_2_conv3_1_running_mean: BUFFER target='backbone.stage5.block.2.conv3.1.running_mean' persistent=True
+b_backbone_stage5_block_2_conv3_1_running_var: BUFFER target='backbone.stage5.block.2.conv3.1.running_var' persistent=True
+b_backbone_stage5_block_2_conv3_1_num_batches_tracked: BUFFER target='backbone.stage5.block.2.conv3.1.num_batches_tracked' persistent=True
+b_neck_lat_0_bn_running_mean: BUFFER target='neck.lat.0.bn.running_mean' persistent=True
+b_neck_lat_0_bn_running_var: BUFFER target='neck.lat.0.bn.running_var' persistent=True
+b_neck_lat_0_bn_num_batches_tracked: BUFFER target='neck.lat.0.bn.num_batches_tracked' persistent=True
+b_neck_lat_1_bn_running_mean: BUFFER target='neck.lat.1.bn.running_mean' persistent=True
+b_neck_lat_1_bn_running_var: BUFFER target='neck.lat.1.bn.running_var' persistent=True
+b_neck_lat_1_bn_num_batches_tracked: BUFFER target='neck.lat.1.bn.num_batches_tracked' persistent=True
+b_neck_fuse_up_0_bn_running_mean: BUFFER target='neck.fuse_up.0.bn.running_mean' persistent=True
+b_neck_fuse_up_0_bn_running_var: BUFFER target='neck.fuse_up.0.bn.running_var' persistent=True
+b_neck_fuse_up_0_bn_num_batches_tracked: BUFFER target='neck.fuse_up.0.bn.num_batches_tracked' persistent=True
+b_neck_down_0_bn_running_mean: BUFFER target='neck.down.0.bn.running_mean' persistent=True
+b_neck_down_0_bn_running_var: BUFFER target='neck.down.0.bn.running_var' persistent=True
+b_neck_down_0_bn_num_batches_tracked: BUFFER target='neck.down.0.bn.num_batches_tracked' persistent=True
+b_neck_fuse_down_0_bn_running_mean: BUFFER target='neck.fuse_down.0.bn.running_mean' persistent=True
+b_neck_fuse_down_0_bn_running_var: BUFFER target='neck.fuse_down.0.bn.running_var' persistent=True
+b_neck_fuse_down_0_bn_num_batches_tracked: BUFFER target='neck.fuse_down.0.bn.num_batches_tracked' persistent=True
+b_head_stems_0_0_bn_running_mean: BUFFER target='head.stems.0.0.bn.running_mean' persistent=True
+b_head_stems_0_0_bn_running_var: BUFFER target='head.stems.0.0.bn.running_var' persistent=True
+b_head_stems_0_0_bn_num_batches_tracked: BUFFER target='head.stems.0.0.bn.num_batches_tracked' persistent=True
+b_head_stems_0_1_bn_running_mean: BUFFER target='head.stems.0.1.bn.running_mean' persistent=True
+b_head_stems_0_1_bn_running_var: BUFFER target='head.stems.0.1.bn.running_var' persistent=True
+b_head_stems_0_1_bn_num_batches_tracked: BUFFER target='head.stems.0.1.bn.num_batches_tracked' persistent=True
+b_head_stems_1_0_bn_running_mean: BUFFER target='head.stems.1.0.bn.running_mean' persistent=True
+b_head_stems_1_0_bn_running_var: BUFFER target='head.stems.1.0.bn.running_var' persistent=True
+b_head_stems_1_0_bn_num_batches_tracked: BUFFER target='head.stems.1.0.bn.num_batches_tracked' persistent=True
+b_head_stems_1_1_bn_running_mean: BUFFER target='head.stems.1.1.bn.running_mean' persistent=True
+b_head_stems_1_1_bn_running_var: BUFFER target='head.stems.1.1.bn.running_var' persistent=True
+b_head_stems_1_1_bn_num_batches_tracked: BUFFER target='head.stems.1.1.bn.num_batches_tracked' persistent=True
+x: USER_INPUT
+
+# outputs
+conv2d_33: USER_OUTPUT
+conv2d_36: USER_OUTPUT
+Ç8
+2pkg.torch.export.ExportedProgram.range_constraints{}B
+ 

@@ -1,0 +1,7 @@
+GT \ Pred,palm,rock,pinkie,one,fist,others
+palm,162,0,0,0,0,1
+rock,0,177,1,1,0,1
+pinkie,0,1,150,1,0,8
+one,0,2,3,154,0,0
+fist,0,0,0,2,170,0
+others,0,3,1,4,0,158

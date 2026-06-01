@@ -4,12 +4,10 @@
 # be signed; the Neural-ART weight blob is programmed raw at its base address.
 #
 #   app (signed) -> 0x70000000
-#   weights blob -> 0x70380000   (network_atonbuf.xSPI2.raw from stedgeai)
+#   weights blob -> 0x71000000   (network_prunedint8_atonbuf.xSPI2.raw)
 #
-# NOTE: confirm 0x70380000 matches the weights base in the CubeMX-generated
-# linker script (Core/.../*.ld) and the address the app's LL_ATON runtime
-# expects. stedgeai's mdesc models xSPI2 at 0x71000000; the board flash map
-# uses 0x70xxxxxx — the linker script reconciles the two.
+# NOTE: this must match the absolute xSPI2 base emitted in
+# FSBL/X-CUBE-AI/App/network_prunedint8.c.
 
 set -euo pipefail
 
@@ -19,16 +17,19 @@ SIGNING_TOOL="${SIGNING_TOOL:-$CUBEPROG_BIN/STM32_SigningTool_CLI}"
 PROG_TOOL="${PROG_TOOL:-$CUBEPROG_BIN/STM32_Programmer_CLI}"
 EXT_LOADER="${EXT_LOADER:-$CUBEPROG_BIN/ExternalLoader/MX25UM51245G_STM32N6570-NUCLEO.stldr}"
 CONFIG="${CONFIG:-Debug}"
+PROJ_NAME="${PROJ_NAME:-BallDetector_N6_FSBL}"
 APP_ADDR="${APP_ADDR:-0x70000000}"
-WEIGHTS_ADDR="${WEIGHTS_ADDR:-0x70380000}"
+WEIGHTS_ADDR="${WEIGHTS_ADDR:-0x71000000}"
 # ------------------------------------------------------------------------------
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJ="$(cd "$HERE/.." && pwd)"
+FSBL="$PROJ/FSBL"
 
-APP_BIN="$PROJ/$CONFIG/BallDetector_N6.bin"
-APP_SIGNED="$PROJ/$CONFIG/BallDetector_N6-signed.bin"
-WEIGHTS_RAW="$PROJ/X-CUBE-AI/App/network_atonbuf.xSPI2.raw"
+APP_BIN="$FSBL/$CONFIG/$PROJ_NAME.bin"
+APP_SIGNED="$FSBL/$CONFIG/$PROJ_NAME-signed.bin"
+WEIGHTS_RAW="$PROJ/network_prunedint8_atonbuf.xSPI2.raw"
+WEIGHTS_BIN="${WEIGHTS_RAW%.raw}.bin"
 
 for f in "$SIGNING_TOOL" "$PROG_TOOL"; do
   [[ -x "$f" ]] || { echo "missing tool: $f" >&2; exit 1; }
@@ -36,6 +37,8 @@ done
 [[ -f "$EXT_LOADER" ]] || { echo "external loader missing: $EXT_LOADER" >&2; exit 1; }
 [[ -f "$APP_BIN"   ]] || { echo "app binary missing: $APP_BIN — run scripts/build.sh" >&2; exit 1; }
 [[ -f "$WEIGHTS_RAW" ]] || { echo "weights blob missing: $WEIGHTS_RAW — run scripts/stedgeai_compile.sh" >&2; exit 1; }
+cp -f "$WEIGHTS_RAW" "$WEIGHTS_BIN"
+rm -f "$APP_SIGNED"
 
 echo "==> sign app  ($APP_BIN -> $APP_SIGNED)"
 "$SIGNING_TOOL" -bin "$APP_BIN" -nk -t ssbl -hv 2.3 -o "$APP_SIGNED"
@@ -44,7 +47,7 @@ echo
 echo "==> flash app (signed) @ $APP_ADDR  +  weights @ $WEIGHTS_ADDR"
 "$PROG_TOOL" -c port=SWD mode=HOTPLUG -el "$EXT_LOADER" \
   -w "$APP_SIGNED"   "$APP_ADDR" \
-  -w "$WEIGHTS_RAW"  "$WEIGHTS_ADDR" \
+  -w "$WEIGHTS_BIN"  "$WEIGHTS_ADDR" \
   -hardRst
 
 echo
