@@ -534,29 +534,6 @@ def parse_args() -> argparse.Namespace:
     pi.add_argument("--layout", choices=["chw", "hwc"], default="chw",
                     help="pixel layout sent to the NPU input buffer: chw=planar "
                          "(matches the NCHW model, default), hwc=interleaved (A/B test)")
-    pi.add_argument("--viz-dir", default=str(Path(__file__).resolve().parent / "n6_viz"),
-                    help="folder to save annotated <name>_mcu.png (GT green, pred red) "
-                         "after each inference; set '' to disable")
-
-    pb = sub.add_parser("bench", help="run a val set, compute detection metrics + timing")
-    pb.add_argument("--image-list", required=True,
-                    help="text file of image paths (software/ball_detection/splits/val.txt)")
-    pb.add_argument("--image-root", default="datasets/BALL",
-                    help="root for spl/->SPLDataset, our/->OurDataset")
-    pb.add_argument("--limit", type=int, default=0, help="process at most N images (0=all)")
-    pb.add_argument("--chunk-delay", type=float, default=0.0,
-                    help="seconds between IMG_CHUNKs (try 0.002 if the board drops bytes)")
-    pb.add_argument("--conf", type=float, default=0.5,
-                    help="operating confidence for P/R/F1 (match training cfg.eval.conf_threshold; "
-                         "default 0.5). map50 always uses ALL boxes regardless.")
-    pb.add_argument("--iou", type=float, default=0.5,
-                    help="IoU threshold for TP matching (match training matching_iou_threshold=0.5)")
-    pb.add_argument("--model-name", required=True,
-                    help="row tag, e.g. widthmult075_int8")
-    pb.add_argument("--out-dir", required=True,
-                    help="folder for results_<tag>.csv (the model's final_models dir)")
-    pb.add_argument("--comparison-csv",
-                    default="software/final_models/ball_detection/model_comparison.csv")
 
     pc = sub.add_parser("cam", help="live camera view")
     pc.add_argument("--period-ms", type=int, default=0,
