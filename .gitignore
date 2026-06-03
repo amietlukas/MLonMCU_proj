@@ -49,7 +49,21 @@ venv_tflite/
 Classifier_CMSISNN/
 **/Classifier_CMSISNN/**
 **/n6_viz/**
+**/results/**
+STM32N6-GettingStarted-ImageClassification/
+STM32N6-GettingStarted-ObjectDetection/
 
 # stedgeai outputs
 **/st_ai_output/**
 **/st_ai_ws/**
+
+# Earlier N6 project copies (huge vendor-FW copies) — not committed
+firmware/BallDetector_N6_cam/
+firmware/BallDetector_N6_cam_build/
+
+# BallDetector_0D: commit our work only; ignore reproducible vendor FW + build artifacts
+firmware/BallDetector_0D/STM32Cube_FW_N6/
+firmware/BallDetector_0D/Middlewares/
+firmware/BallDetector_0D/Binary/
+firmware/BallDetector_0D/**/build/
+firmware/BallDetector_0D/Application/NUCLEO-N657X0-Q/STM32CubeIDE/UVCL/
