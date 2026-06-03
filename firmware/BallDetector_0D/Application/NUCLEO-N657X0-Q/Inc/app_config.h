@@ -26,6 +26,14 @@
 /*Defines: CMW_MIRRORFLIP_NONE; CMW_MIRRORFLIP_FLIP; CMW_MIRRORFLIP_MIRROR; CMW_MIRRORFLIP_FLIP_MIRROR;*/
 #define CAMERA_FLIP CMW_MIRRORFLIP_NONE
 
+/* The camera module is mounted rotated 90deg. Two modes to compare:
+ *   1 = capture the sensor's native 3:4 view (cropped, no stretch) and rotate
+ *       it 90deg CCW into the 4:3 NN input so detection sees an upright image.
+ *       The UVC display stays sideways; box overlay is mapped back (incl. crop).
+ *   0 = original: straight HWC->CHW transpose, no rotation (sideways to the NN).
+ * Flip this define and rebuild to A/B the two. */
+#define NN_ROTATE_90 (1)
+
 #define ASPECT_RATIO_CROP       (1) /* Crop both pipes to nn input aspect ratio; Original aspect ratio kept */
 #define ASPECT_RATIO_FIT        (2) /* Resize both pipe to NN input aspect ratio; Original aspect ratio not kept */
 #define ASPECT_RATIO_FULLSCREEN (3) /* Resize camera image to NN input size and display a maximized image. See Doc/Build-Options.md#aspect-ratio-mode */

@@ -134,9 +134,43 @@ static od_pp_outBuffer_t g_od_boxes[YOLO_MAX_DET];
 __attribute__ ((aligned (32)))
 static uint8_t nn_hwc[STAI_NETWORK_IN_1_SIZE_BYTES];
 
-/* Camera delivers HWC RGB888; balldet input is channel-first (CHW). Straight
- * per-pixel transpose, no rotation (a 90deg rotate needs 288x384 dims and a
- * stretch into the fixed 384x288 input distorts balls -> worse detection). */
+/* One-shot UART frame dump state. g_dump_req latches a request; the loop then
+ * streams the frame in small chunks across iterations (g_dumping/g_dump_off) so
+ * a single multi-second blocking transmit never monopolizes the system. */
+static volatile uint8_t g_dump_req = 0;
+static uint8_t  g_dumping  = 0;
+static uint32_t g_dump_off = 0;
+
+/* The camera module is mounted rotated 90deg CW, so we capture the frame in the
+ * sensor's native (un-stretched) 3:4 orientation -- CAP_W x CAP_H = 288 x 384 --
+ * and rotate it 90deg CCW into the model's 384 x 288 (4:3) input. Because the
+ * sensor is 4:3 and the model is 4:3, this is a pure rotation: no stretch, balls
+ * stay round. Same per-pixel cost as a plain transpose. Also converts HWC->CHW.
+ *
+ * Dest (model) pixel (mx,my) <- source (capture) pixel (xs,ys):
+ *   xs = (CAP_W-1) - my,  ys = mx     (90deg CCW, matches host rot90_ccw). */
+#define CAP_W (STAI_NETWORK_IN_1_HEIGHT)   /* 288: capture width  */
+#define CAP_H (STAI_NETWORK_IN_1_WIDTH)    /* 384: capture height */
+
+static void rotate_ccw_hwc_to_chw(const uint8_t *hwc, uint8_t *chw)
+{
+  const uint32_t MW = (uint32_t)STAI_NETWORK_IN_1_WIDTH;    /* 384 */
+  const uint32_t MH = (uint32_t)STAI_NETWORK_IN_1_HEIGHT;   /* 288 */
+  const uint32_t HW = MW * MH;
+  for (uint32_t my = 0; my < MH; ++my) {
+    for (uint32_t mx = 0; mx < MW; ++mx) {
+      const uint32_t xs  = (CAP_W - 1u) - my;
+      const uint32_t ys  = mx;
+      const uint8_t *src = hwc + (ys * CAP_W + xs) * 3u;
+      const uint32_t p   = my * MW + mx;
+      chw[p]          = src[0];   /* R plane */
+      chw[HW + p]     = src[1];   /* G plane */
+      chw[2 * HW + p] = src[2];   /* B plane */
+    }
+  }
+}
+
+/* (legacy straight transpose, unused now -- kept for quick revert) */
 static void transpose_hwc_to_chw(const uint8_t *hwc, uint8_t *chw)
 {
   const uint32_t HW = (uint32_t)STAI_NETWORK_IN_1_WIDTH * (uint32_t)STAI_NETWORK_IN_1_HEIGHT;
@@ -145,6 +179,26 @@ static void transpose_hwc_to_chw(const uint8_t *hwc, uint8_t *chw)
     chw[HW + p]     = hwc[p * 3 + 1];   /* G plane */
     chw[2 * HW + p] = hwc[p * 3 + 2];   /* B plane */
   }
+}
+
+/* One-shot diagnostic frame dump over UART so the host can view it and try
+ * rotation/transpose offline (no reflashing). Streamed in small chunks across
+ * loop iterations to avoid a single multi-second blocking transmit.
+ * Wire framing:  "\nIMG:" <W:u16le> <H:u16le> <C:u8> <W*H*C raw bytes> "\nEND\n" */
+#define DUMP_CHUNK 2048u
+
+static void uart_send_header(uint16_t w, uint16_t h, uint8_t c)
+{
+  uint8_t hdr[10] = { '\n', 'I', 'M', 'G', ':',
+                      (uint8_t)(w & 0xFF), (uint8_t)(w >> 8),
+                      (uint8_t)(h & 0xFF), (uint8_t)(h >> 8), c };
+  HAL_UART_Transmit(&huart1, hdr, sizeof(hdr), HAL_MAX_DELAY);
+}
+
+static void uart_send_footer(void)
+{
+  const uint8_t end[5] = { '\n', 'E', 'N', 'D', '\n' };
+  HAL_UART_Transmit(&huart1, (uint8_t *)end, sizeof(end), HAL_MAX_DELAY);
 }
 
 #define ALIGN_TO_16(value) (((value) + 15) & ~15)
@@ -249,6 +303,20 @@ int main(void)
   while (1)
   {
     static unsigned g_lc = 0; int dbg = (g_lc++ < 5);
+
+    /* While a dump is in progress, stream one chunk per iteration from the
+     * frozen frame in nn_hwc (we skip re-capture so the image stays stable),
+     * then resume normal operation once the whole frame + footer are out. */
+    if (g_dumping) {
+      const uint32_t total = (uint32_t)STAI_NETWORK_IN_1_WIDTH * STAI_NETWORK_IN_1_HEIGHT * 3u;
+      uint32_t len = total - g_dump_off;
+      if (len > DUMP_CHUNK) len = DUMP_CHUNK;
+      HAL_UART_Transmit(&huart1, nn_hwc + g_dump_off, len, HAL_MAX_DELAY);
+      g_dump_off += len;
+      if (g_dump_off >= total) { uart_send_footer(); g_dumping = 0; }
+      continue;
+    }
+
     if (dbg) printf("L0 loop iter %u\n", g_lc);
     CameraPipeline_IspUpdate();
 
@@ -262,10 +330,36 @@ int main(void)
 
     uint32_t ts[2] = { 0 };
 
-    /* HWC RGB888 -> planar CHW into the channel-first NN input. */
+    /* HWC capture -> CHW NN input (rotated 90deg CCW, or straight transpose). */
     SCB_InvalidateDCache_by_Addr(nn_hwc, sizeof(nn_hwc));
-    transpose_hwc_to_chw(nn_hwc, (uint8_t *)nn_in);
+    uint32_t rot_t0 = HAL_GetTick();
+#if NN_ROTATE_90
+    rotate_ccw_hwc_to_chw(nn_hwc, (uint8_t *)nn_in);   /* 288x384 capture -> 384x288 upright */
+#else
+    transpose_hwc_to_chw(nn_hwc, (uint8_t *)nn_in);    /* 384x288 capture, no rotation */
+#endif
+    if (dbg) printf("L2b cvt+CHW: %lums\n", (unsigned long)(HAL_GetTick() - rot_t0));
     SCB_CleanInvalidateDCache_by_Addr(nn_in, nn_in_len);
+
+    /* Diagnostic frame dump over UART. Auto once after warmup, then on demand
+     * whenever the host sends 'c'. nn_hwc holds the just-captured frame; latch a
+     * dump and the chunked streamer at the top of the loop sends it out. */
+    {
+      uint8_t trig = 0;
+      if (HAL_UART_Receive(&huart1, &trig, 1, 0) == HAL_OK && (trig == 'c' || trig == 'C'))
+        g_dump_req = 1;
+      if (g_lc == 15) g_dump_req = 1;   /* one automatic frame after AE settles */
+      if (g_dump_req && !g_dumping) {
+        g_dump_req = 0;
+#if NN_ROTATE_90
+        uart_send_header(CAP_W, CAP_H, 3);   /* raw 288x384 capture; host rot90_ccw -> upright */
+#else
+        uart_send_header(STAI_NETWORK_IN_1_WIDTH, STAI_NETWORK_IN_1_HEIGHT, 3);
+#endif
+        g_dump_off = 0;
+        g_dumping = 1;   /* streaming begins next iteration from frozen nn_hwc */
+      }
+    }
 
     ts[0] = HAL_GetTick();
     /* run ATON inference */
@@ -500,17 +594,36 @@ static void Display_NetworkOutput(od_pp_out_t *p_postprocess, uint32_t inference
   UTIL_LCD_FillRect(0, 0, lcd_fg_area.XSize, lcd_fg_area.YSize, UTIL_LCD_COLOR_TRANSPARENT); /* Clear previous boxes */
   for (int32_t i = 0; i < nb_rois; i++)
   {
-    uint32_t x0 = (uint32_t) ((rois[i].x_center - rois[i].width / 2) * ((float32_t) lcd_bg_area.XSize));
-    uint32_t y0 = (uint32_t) ((rois[i].y_center - rois[i].height / 2) * ((float32_t) lcd_bg_area.YSize));
-    uint32_t width = (uint32_t) (rois[i].width * ((float32_t) lcd_bg_area.XSize));
-    uint32_t height = (uint32_t) (rois[i].height * ((float32_t) lcd_bg_area.YSize));
+#if NN_ROTATE_90
+    /* The NN runs on a 90deg-CCW-rotated, 3:4-CROPPED frame; the display shows
+     * the raw full 4:3 (sideways) camera. Map the box back into display space:
+     * undo the rotation (90deg CW) AND undo the crop, else the box is stretched.
+     * crop fraction cf = (MH/MW)^2 of the display width; offset centers it.
+     *   xc = off + (1 - yu)*cf,  yc = xu,  wc = hu*cf,  hc = wu              */
+    const float32_t cf  = ((float32_t)STAI_NETWORK_IN_1_HEIGHT * STAI_NETWORK_IN_1_HEIGHT) /
+                          ((float32_t)STAI_NETWORK_IN_1_WIDTH  * STAI_NETWORK_IN_1_WIDTH);
+    const float32_t off = (1.0f - cf) * 0.5f;
+    float32_t xc = off + (1.0f - rois[i].y_center) * cf;
+    float32_t yc = rois[i].x_center;
+    float32_t wc = rois[i].height * cf;
+    float32_t hc = rois[i].width;
+#else
+    float32_t xc = rois[i].x_center;
+    float32_t yc = rois[i].y_center;
+    float32_t wc = rois[i].width;
+    float32_t hc = rois[i].height;
+#endif
+    uint32_t x0 = (uint32_t) ((xc - wc / 2) * ((float32_t) lcd_bg_area.XSize));
+    uint32_t y0 = (uint32_t) ((yc - hc / 2) * ((float32_t) lcd_bg_area.YSize));
+    uint32_t width = (uint32_t) (wc * ((float32_t) lcd_bg_area.XSize));
+    uint32_t height = (uint32_t) (hc * ((float32_t) lcd_bg_area.YSize));
     /* Draw boxes without going outside of the image */
     x0 = x0 < lcd_bg_area.XSize ? x0 : lcd_bg_area.XSize - 1;
     y0 = y0 < lcd_bg_area.YSize ? y0 : lcd_bg_area.YSize - 1;
     width = ((x0 + width) < lcd_bg_area.XSize) ? width : (lcd_bg_area.XSize - x0 - 1);
     height = ((y0 + height) < lcd_bg_area.YSize) ? height : (lcd_bg_area.YSize - y0 - 1);
-    UTIL_LCD_DrawRect(x0, y0, width, height, colors[rois[i].class_index % NUMBER_COLORS]);
-    UTIL_LCDEx_PrintfAt(x0, y0, LEFT_MODE, classes_table[rois[i].class_index]);
+    UTIL_LCD_DrawRect(x0, y0, width, height, UTIL_LCD_COLOR_RED);
+    /* class label ("person") removed; single-class ball detector. Keep conf%. */
     UTIL_LCDEx_PrintfAt(-x0-width, y0, RIGHT_MODE, "%.0f%%", rois[i].conf*100.0f);
   }
 
@@ -758,7 +871,7 @@ static void CONSOLE_Config()
   HAL_GPIO_Init(GPIOE, &gpio_init);
 
   huart1.Instance          = USART1;
-  huart1.Init.BaudRate     = 115200;
+  huart1.Init.BaudRate     = 921600;
   huart1.Init.Mode         = UART_MODE_TX_RX;
   huart1.Init.Parity       = UART_PARITY_NONE;
   huart1.Init.WordLength   = UART_WORDLENGTH_8B;

@@ -98,11 +98,22 @@ static void DCMIPP_PipeInitNn(uint32_t *pitch)
     aspect_ratio = CMW_Aspect_ratio_fit;
   }
 
+#if NN_ROTATE_90
+  /* Camera is mounted 90deg rotated: capture in the sensor's native 3:4
+   * orientation (model HEIGHT x WIDTH) and rotate 90deg CCW in software (see
+   * rotate_ccw_hwc_to_chw). Crop (not fit/stretch) keeps the 4:3 sensor's
+   * aspect so balls stay round; main.c rotates this into the 4:3 NN input. */
+  dcmipp_conf.output_width = STAI_NETWORK_IN_1_HEIGHT;   /* 288 */
+  dcmipp_conf.output_height = STAI_NETWORK_IN_1_WIDTH;   /* 384 */
+  dcmipp_conf.mode = CMW_Aspect_ratio_crop;
+  (void)aspect_ratio;
+#else
   dcmipp_conf.output_width = STAI_NETWORK_IN_1_WIDTH;
   dcmipp_conf.output_height = STAI_NETWORK_IN_1_HEIGHT;
+  dcmipp_conf.mode = aspect_ratio;
+#endif
   dcmipp_conf.output_format = DCMIPP_PIXEL_PACKER_FORMAT_RGB888_YUV444_1;
   dcmipp_conf.output_bpp = STAI_NETWORK_IN_1_CHANNEL;
-  dcmipp_conf.mode = aspect_ratio;
   dcmipp_conf.enable_swap = COLOR_MODE;
   dcmipp_conf.enable_gamma_conversion = 0;
   ret = CMW_CAMERA_SetPipeConfig(DCMIPP_PIPE2, &dcmipp_conf, pitch);
