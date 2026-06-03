@@ -16,20 +16,9 @@
 #include <math.h>
 #include <string.h>
 
-/* --- per-head config (from ball_n6 analyze report) ------------------------ */
-typedef struct {
-    float    scale;
-    uint8_t  zero_point;
-    int16_t  stride;
-    int16_t  grid_h;
-    int16_t  grid_w;
-} yolo_head_cfg_t;
-
-static const yolo_head_cfg_t HEADS[YOLO_NUM_HEADS] = {
-    { 0.256579876f,  41,  8, 36, 48 },  /* p8  */
-    { 0.204285681f,   0, 16, 18, 24 },  /* p16 */
-    { 0.146335885f,   0, 32,  9, 12 },  /* p32 */
-};
+/* Per-head config (count/scale/zp/stride/grid) is now passed in at call time,
+ * sourced from the generated STAI_NETWORK_OUT_* macros -- see head_cfg_init()
+ * in main.c. Fully model-agnostic: 2- or 3-head, any stride set. */
 
 /* Match the training-time decode clamp range. */
 #define TWTH_CLAMP_MIN  (-4.0f)
@@ -60,7 +49,13 @@ static inline float logitf(float p) {
 /* --- main ----------------------------------------------------------------- */
 
 int yolo_postprocess(
-    const uint8_t * const heads[YOLO_NUM_HEADS],
+    const uint8_t * const *heads,
+    int          n_heads,
+    const float *scales,
+    const int   *zps,
+    const int   *strides,
+    const int   *grid_w,
+    const int   *grid_h,
     float conf_thresh,
     float iou_thresh,
     yolo_box_t *out,
@@ -74,17 +69,16 @@ int yolo_postprocess(
 
     const float logit_thr = logitf(conf_thresh);
 
-    for (int h = 0; h < YOLO_NUM_HEADS; ++h) {
-        const yolo_head_cfg_t *cfg = &HEADS[h];
+    for (int h = 0; h < n_heads; ++h) {
         const uint8_t *buf = heads[h];
         if (!buf) continue;
 
-        const int H = cfg->grid_h;
-        const int W = cfg->grid_w;
+        const int H = grid_h[h];
+        const int W = grid_w[h];
         const int HW = H * W;
-        const float scale = cfg->scale;
-        const int   zp    = cfg->zero_point;
-        const float stride = (float)cfg->stride;
+        const float scale = scales[h];          /* per-head, from generated macros */
+        const int   zp    = zps[h];
+        const float stride = (float)strides[h];
 
         /* The NPU outputs are SIGNED int8 (QLinear int8). They MUST be read as
          * int8_t: reading as uint8 turns a negative logit (e.g. -2 = 0xFE) into

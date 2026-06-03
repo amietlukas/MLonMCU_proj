@@ -38,6 +38,19 @@
 #include "stlogo.h"
 #include "motor_control.h"
 #include "servo_control.h"
+#include "ball_tracker.h"
+#include "uart_protocol.h"
+
+/* Hardware-isolation test: 1 = hold servo dead-static at boot angle (90deg),
+ * never touch CCR1 again. If it still jitters, the cause is 100% hardware. */
+#define SERVO_HOLD_TEST   1
+
+/* Simple (non-tracker) servo control params, for the diagnosis build. */
+#define SIMPLE_SIGN      (-1.0f)   /* pan direction toward the ball (verified)   */
+#define SIMPLE_SMOOTH     0.20f    /* EMA low-pass on detected x                 */
+#define SIMPLE_GAIN_US    120.0f   /* us pan per unit of horizontal error        */
+#define SIMPLE_STEP_MAX   12.0f    /* max us change per update (slow)            */
+#define SIMPLE_DEADZONE   0.06f    /* |x-0.5| below this = centered, no move     */
 
 CLASSES_TABLE;
 
@@ -125,6 +138,7 @@ const uint32_t colors[NUMBER_COLORS] = {
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;   /* HC-06 Bluetooth on Arduino D0/D1 (PD9 RX / PD8 TX) */
 volatile int32_t cameraFrameReceived;
+static int g_capture_inflight = 0;   /* a pipelined NN-pipe snapshot is running */
 stai_ptr nn_in;
 void* pp_input;
 od_pp_out_t pp_output;
@@ -295,6 +309,119 @@ static void Display_WelcomeScreen(void);
 static void Hardware_init(void);
 static void NeuralNetwork_init(uint32_t *nn_in_length, stai_ptr *nn_out, stai_size *number_output, int32_t nn_out_len[]);
 
+/* Per-head decode config (count, scale, zero-point, grid, stride) populated from
+ * the generated STAI_NETWORK_OUT_* macros so the YOLO decode is fully model-
+ * agnostic: 2- or 3-head, any stride set, updated automatically on regenerate. */
+static int   g_n_heads;
+static float g_head_scale[YOLO_NUM_HEADS];
+static int   g_head_zp[YOLO_NUM_HEADS];
+static int   g_head_stride[YOLO_NUM_HEADS];
+static int   g_head_gw[YOLO_NUM_HEADS];
+static int   g_head_gh[YOLO_NUM_HEADS];
+static void head_cfg_init(void)
+{
+  g_n_heads = STAI_NETWORK_OUT_NUM;
+  { static const float s[] = STAI_NETWORK_OUT_1_SCALES; static const int o[] = STAI_NETWORK_OUT_1_OFFSETS;
+    g_head_scale[0]=s[0]; g_head_zp[0]=o[0]; g_head_gw[0]=STAI_NETWORK_OUT_1_WIDTH; g_head_gh[0]=STAI_NETWORK_OUT_1_HEIGHT; }
+#if STAI_NETWORK_OUT_NUM >= 2
+  { static const float s[] = STAI_NETWORK_OUT_2_SCALES; static const int o[] = STAI_NETWORK_OUT_2_OFFSETS;
+    g_head_scale[1]=s[0]; g_head_zp[1]=o[0]; g_head_gw[1]=STAI_NETWORK_OUT_2_WIDTH; g_head_gh[1]=STAI_NETWORK_OUT_2_HEIGHT; }
+#endif
+#if STAI_NETWORK_OUT_NUM >= 3
+  { static const float s[] = STAI_NETWORK_OUT_3_SCALES; static const int o[] = STAI_NETWORK_OUT_3_OFFSETS;
+    g_head_scale[2]=s[0]; g_head_zp[2]=o[0]; g_head_gw[2]=STAI_NETWORK_OUT_3_WIDTH; g_head_gh[2]=STAI_NETWORK_OUT_3_HEIGHT; }
+#endif
+  for (int i = 0; i < g_n_heads; i++)
+    g_head_stride[i] = STAI_NETWORK_IN_1_WIDTH / g_head_gw[i];   /* 8/16/32 */
+}
+
+#if APP_BENCHMARK
+/* ---- UART image-benchmark mode ------------------------------------------- *
+ * Host pushes a model-sized HWC RGB888 val image; the board runs the same NN
+ * path as the live app (HWC->CHW, NPU, YOLO decode) with per-stage DWT timing
+ * and replies INFER_DEC{pre_us, infer_us, post_us, boxes}. Never returns. */
+#define BENCH_FW_VERSION   0x0100u
+#define BENCH_UART_CHUNK   4096u
+
+static void dwt_init(void)
+{
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+  DWT->CYCCNT = 0;
+  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+static inline uint32_t dwt_us(uint32_t cyc) { return cyc / (SystemCoreClock / 1000000u); }
+
+static void Benchmark_Run(uint32_t nn_in_len, stai_ptr *nn_out,
+                          stai_size number_output, int32_t *nn_out_len)
+{
+  static uint8_t rx[BENCH_UART_CHUNK + 16];
+  const uint32_t IN_BYTES = (uint32_t)STAI_NETWORK_IN_1_SIZE_BYTES;
+  uint32_t img_off = 0;
+
+  proto_send_log("BallDetector_0D benchmark ready");
+
+  for (;;) {
+    uint8_t type; uint32_t len;
+    if (proto_recv_frame(&type, rx, sizeof(rx), &len) <= 0) continue;
+
+    switch (type) {
+    case PROTO_T_HELLO:
+      proto_send_info(BENCH_FW_VERSION, STAI_NETWORK_IN_1_WIDTH,
+                      STAI_NETWORK_IN_1_HEIGHT, STAI_NETWORK_IN_1_CHANNEL,
+                      (uint8_t)number_output);
+      break;
+
+    case PROTO_T_IMG_BEGIN:
+      img_off = 0;
+      break;
+
+    case PROTO_T_IMG_CHUNK: {
+      if (len < 2) break;
+      uint32_t idx = (uint32_t)rx[0] | ((uint32_t)rx[1] << 8);
+      uint32_t off = idx * BENCH_UART_CHUNK;
+      uint32_t n   = len - 2;
+      if (off + n <= IN_BYTES) { memcpy(nn_hwc + off, rx + 2, n); img_off = off + n; }
+      break;
+    }
+
+    case PROTO_T_IMG_END: {
+      if (img_off != IN_BYTES) { proto_send_log("IMG size mismatch"); break; }
+
+      /* pre: HWC -> CHW (host already sent an upright, model-sized image -> no
+       * rotation; this matches the camera path's per-pixel transpose cost). */
+      uint32_t t0 = DWT->CYCCNT;
+      SCB_InvalidateDCache_by_Addr(nn_hwc, sizeof(nn_hwc));
+      transpose_hwc_to_chw(nn_hwc, (uint8_t *)nn_in);
+      SCB_CleanInvalidateDCache_by_Addr(nn_in, nn_in_len);
+      uint32_t pre_us = dwt_us(DWT->CYCCNT - t0);
+
+      /* infer */
+      t0 = DWT->CYCCNT;
+      int r = stai_network_run(network_context, STAI_MODE_SYNC);
+      uint32_t infer_us = dwt_us(DWT->CYCCNT - t0);
+      if (r != 0) { proto_send_infer_dec(pre_us, infer_us, 0, g_yolo_boxes, 0); break; }
+
+      /* post: make NPU outputs visible + decode the 3 heads */
+      t0 = DWT->CYCCNT;
+      for (int i = 0; i < number_output; i++)
+        SCB_InvalidateDCache_by_Addr(nn_out[i], nn_out_len[i]);
+      const uint8_t *heads[YOLO_NUM_HEADS] = {0};
+      for (int i = 0; i < g_n_heads; i++) heads[i] = (const uint8_t *)nn_out[i];
+      int nb = yolo_postprocess(heads, g_n_heads, g_head_scale, g_head_zp,
+                                g_head_stride, g_head_gw, g_head_gh,
+                                0.05f, 0.25f, g_yolo_boxes, YOLO_MAX_DET);
+      uint32_t post_us = dwt_us(DWT->CYCCNT - t0);
+
+      proto_send_infer_dec(pre_us, infer_us, post_us, g_yolo_boxes, (uint16_t)nb);
+      break;
+    }
+
+    default: break;
+    }
+  }
+}
+#endif /* APP_BENCHMARK */
+
 
 /**
   * @brief  Main program
@@ -313,6 +440,7 @@ int main(void)
   int32_t nn_out_len[STAI_NETWORK_OUT_NUM] = {0};
 
   NeuralNetwork_init(&nn_in_len, nn_out, &number_output, nn_out_len);
+  head_cfg_init();   /* per-head count/scale/zp/stride/grid from generated macros */
   printf("DBG21 nn_init done\n");
 
   /*** Post Processing Init ***************************************************/
@@ -324,6 +452,16 @@ int main(void)
   printf("DBG22 get_info done\n");
   app_postprocess_init(&pp_params, &info);
   printf("DBG23 postproc_init done\n");
+
+#if APP_BENCHMARK
+  /*** UART image-benchmark mode (no camera/UVC; never returns) ***************/
+  dwt_init();
+  proto_init(&huart1);
+  printf("BENCH mode: %dx%dx%d in, %d heads @USART1 4000000\n",
+         STAI_NETWORK_IN_1_WIDTH, STAI_NETWORK_IN_1_HEIGHT,
+         STAI_NETWORK_IN_1_CHANNEL, (int)number_output);
+  Benchmark_Run(nn_in_len, nn_out, number_output, nn_out_len);
+#endif
 
   /*** Camera Init ************************************************************/
   uint32_t pitch_nn = 0;
@@ -360,6 +498,9 @@ int main(void)
   Servo_Init();   /* camera-pan servo -> centers to nominal home on boot */
   printf("DBG28 servo_init done\n");
 
+  BallTracker_Init();   /* alpha-beta tracker + 50 Hz control tick (TIM7) */
+  printf("DBG29 tracker_init done\n");
+
   /*** App Loop ***************************************************************/
   while (1)
   {
@@ -385,16 +526,37 @@ int main(void)
       continue;
     }
 
+    /* Real end-to-end loop rate (camera + rotate + NPU + postproc + UVC). */
+    {
+      static uint32_t fps_t = 0, fps_c = 0;
+      fps_c++;
+      static uint32_t tk_last = 0;
+      uint32_t nt = HAL_GetTick();
+      if (nt - fps_t >= 2000) {
+        uint32_t tk = BallTracker_TickCount();
+        printf("FPS~%lu (%lums/loop) ctrl~%luHz\n",
+               (unsigned long)((fps_c * 1000u) / (nt - fps_t)),
+               (unsigned long)((nt - fps_t) / fps_c),
+               (unsigned long)(((tk - tk_last) * 1000u) / (nt - fps_t)));
+        fps_t = nt; fps_c = 0; tk_last = tk;
+      }
+    }
+
     if (dbg) printf("L0 loop iter %u\n", g_lc);
     CameraPipeline_IspUpdate();
 
-    /* Capture HWC RGB888 into scratch (transposed to CHW below for balldet). */
-    CameraPipeline_NNPipe_Start(nn_hwc, CMW_MODE_SNAPSHOT);
-
-    if (dbg) printf("L1 waiting for frame\n");
+    /* Pipelined capture: the snapshot for THIS frame was kicked off at the end of
+     * the previous iteration so it overlapped the NPU inference. Ensure one is in
+     * flight (first iteration / after a frame dump), then wait for it. */
+    if (!g_capture_inflight) {
+      CameraPipeline_NNPipe_Start(nn_hwc, CMW_MODE_SNAPSHOT);
+      g_capture_inflight = 1;
+    }
+    uint32_t wt0 = HAL_GetTick();
     while (cameraFrameReceived == 0) {};
     cameraFrameReceived = 0;
-    if (dbg) printf("L2 frame received\n");
+    g_capture_inflight = 0;
+    if (dbg) printf("L2 frame wait %lums\n", (unsigned long)(HAL_GetTick() - wt0));
 
     uint32_t ts[2] = { 0 };
 
@@ -412,7 +574,7 @@ int main(void)
     /* Latch a diagnostic frame dump (auto once after warmup, or 'c' from host
      * via process_commands). nn_hwc holds the fresh frame; the chunked streamer
      * at the top of the loop sends it out over the next iterations. */
-    if (g_lc == 15) g_dump_req = 1;   /* one automatic frame after AE settles */
+    /* (auto frame-dump removed; request a dump on demand with 'c' if needed) */
     if (g_dump_req && !g_dumping) {
       g_dump_req = 0;
 #if NN_ROTATE_90
@@ -422,6 +584,13 @@ int main(void)
 #endif
       g_dump_off = 0;
       g_dumping = 1;   /* streaming begins next iteration from frozen nn_hwc */
+    }
+
+    /* Kick off the NEXT capture now so it overlaps the inference below (hides the
+     * camera latency). Skip while dumping so nn_hwc stays frozen for streaming. */
+    if (!g_dumping) {
+      CameraPipeline_NNPipe_Start(nn_hwc, CMW_MODE_SNAPSHOT);
+      g_capture_inflight = 1;
     }
 
     ts[0] = HAL_GetTick();
@@ -438,10 +607,11 @@ int main(void)
     for (int i = 0; i < number_output; i++) {
       SCB_InvalidateDCache_by_Addr(nn_out[i], nn_out_len[i]);   /* read fresh NPU output */
     }
-    const uint8_t *heads[YOLO_NUM_HEADS] = {
-      (const uint8_t *)nn_out[0], (const uint8_t *)nn_out[1], (const uint8_t *)nn_out[2]
-    };
-    int nb = yolo_postprocess(heads, 0.5f, 0.25f, g_yolo_boxes, YOLO_MAX_DET);
+    const uint8_t *heads[YOLO_NUM_HEADS] = {0};
+    for (int i = 0; i < g_n_heads; i++) heads[i] = (const uint8_t *)nn_out[i];
+    int nb = yolo_postprocess(heads, g_n_heads, g_head_scale, g_head_zp,
+                              g_head_stride, g_head_gw, g_head_gh,
+                              0.5f, 0.25f, g_yolo_boxes, YOLO_MAX_DET);
     for (int i = 0; i < nb; i++) {
       float cx = 0.5f * (g_yolo_boxes[i].x1 + g_yolo_boxes[i].x2);
       float cy = 0.5f * (g_yolo_boxes[i].y1 + g_yolo_boxes[i].y2);
@@ -457,25 +627,70 @@ int main(void)
     int32_t pp_ret = 0;
     if (dbg) printf("L4 postproc nb_detect=%d\n", nb);
 
-    /* Ball tracking: pan the camera toward the highest-confidence ball so its
-     * horizontal center aligns with the frame center; hold angle when no ball. */
+#if SERVO_HOLD_TEST
+    /* Servo held dead-static at the boot angle; CCR1 is never written here. */
     {
-      int   present = (nb > 0);
-      float ball_x  = 0.5f;
-      if (present) {
-        int best = 0;
-        for (int i = 1; i < nb; i++)
-          if (g_yolo_boxes[i].score > g_yolo_boxes[best].score) best = i;
-        ball_x = g_od_boxes[best].x_center;
+      static uint32_t hold_log = 0; uint32_t now = HAL_GetTick();
+      if (now - hold_log >= 1000) {
+        printf("HOLD servo us=%u ang=%d (static, no writes)\n",
+               (unsigned)Servo_GetMicros(), Servo_GetAngle());
+        hold_log = now;
       }
-      Servo_Track(present, ball_x);
-      if (dbg) printf("L4b track present=%d x=%d%% -> %ddeg\n",
-                      present, (int)(ball_x * 100.0f), Servo_GetAngle());
     }
+#else
+    /* --- SIMPLE control (alpha-beta + lifecycle BYPASSED for diagnosis) -------
+     * Original strategy: take the most-confident ball, low-pass its x, and nudge
+     * the servo pulse proportionally toward center -- writing CCR1 directly via
+     * Servo_SetMicros. No tracker, no velocity, no coast. If this still jitters,
+     * the problem is in the TIM/PWM path, not the tracking logic. */
+    {
+      static float s_xfilt = 0.5f;
+      static float s_us    = (float)SERVO_CENTER_US;
+      static int   s_init  = 0;
+      if (!s_init) { s_us = (float)Servo_GetMicros(); s_init = 1; }
 
-    if (dbg) printf("L5 sending UVC frame\n");
+      int   present = 0; float ball_x = 0.5f, best = 0.0f, maxscore = 0.0f;
+      for (int i = 0; i < nb; i++) {
+        if (g_yolo_boxes[i].score > maxscore) maxscore = g_yolo_boxes[i].score;
+        if (g_yolo_boxes[i].score < TRACK_CONF_MIN) continue;          /* confidence gate */
+        if (!present || g_yolo_boxes[i].score > best) {
+          best = g_yolo_boxes[i].score; ball_x = g_od_boxes[i].x_center; present = 1;
+        }
+      }
+
+      int moved = 0;
+      if (present) {
+        s_xfilt += SIMPLE_SMOOTH * (ball_x - s_xfilt);                 /* low-pass detection */
+        float err = s_xfilt - 0.5f;
+        if (err > SIMPLE_DEADZONE || err < -SIMPLE_DEADZONE) {
+          float dus = SIMPLE_SIGN * SIMPLE_GAIN_US * err;              /* proportional nudge */
+          if (dus >  SIMPLE_STEP_MAX) dus =  SIMPLE_STEP_MAX;
+          if (dus < -SIMPLE_STEP_MAX) dus = -SIMPLE_STEP_MAX;
+          s_us += dus;
+          if (s_us < (float)SERVO_MIN_US) s_us = (float)SERVO_MIN_US;
+          if (s_us > (float)SERVO_MAX_US) s_us = (float)SERVO_MAX_US;
+          Servo_SetMicros((uint16_t)(s_us + 0.5f));                    /* -> CCR1 */
+          moved = 1;
+        }
+      } else {
+        s_xfilt = 0.5f;                                                /* no ball -> hold servo */
+      }
+
+      static uint32_t last_log = 0;
+      uint32_t now = HAL_GetTick();
+      if (dbg || ((nb > 0 || moved) && (now - last_log) > 250)) {
+        printf("SMPL nb=%d top=%d%% present=%d x=%d%% us=%d ang=%d%s\n",
+               nb, (int)(maxscore * 100.0f), present, (int)(ball_x * 100.0f),
+               (int)s_us, Servo_GetAngle(), moved ? " *MOVED*" : "");
+        last_log = now;
+      }
+    }
+#endif /* SERVO_HOLD_TEST */
+
+    uint32_t ut0 = HAL_GetTick();
     Display_NetworkOutput(&pp_output, ts[1] - ts[0]);
-    if (dbg) printf("L6 frame done\n");
+    if (dbg) printf("L6 uvc %lums (infer %lums)\n",
+                    (unsigned long)(HAL_GetTick() - ut0), (unsigned long)(ts[1] - ts[0]));
     /* Discard nn_out region (used by pp_input and pp_outputs variables) to avoid Dcache evictions during nn inference */
     for (int i = 0; i < number_output; i++)
     {
@@ -988,7 +1203,7 @@ static void CONSOLE_Config()
   HAL_GPIO_Init(GPIOE, &gpio_init);
 
   huart1.Instance          = USART1;
-  huart1.Init.BaudRate     = 921600;
+  huart1.Init.BaudRate     = 4000000;   /* fast benchmark image upload (exact 200MHz/50; was 921600) */
   huart1.Init.Mode         = UART_MODE_TX_RX;
   huart1.Init.Parity       = UART_PARITY_NONE;
   huart1.Init.WordLength   = UART_WORDLENGTH_8B;
@@ -999,6 +1214,13 @@ static void CONSOLE_Config()
   {
     while (1);
   }
+#if APP_BENCHMARK
+  /* RX FIFO buffers the inter-chunk gap during the unpaced image upload so the
+   * polled receiver doesn't overrun as easily (benchmark mode only). */
+  HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8);
+  HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8);
+  HAL_UARTEx_EnableFifoMode(&huart1);
+#endif
 }
 
 int _write(int file, char *ptr, int len)

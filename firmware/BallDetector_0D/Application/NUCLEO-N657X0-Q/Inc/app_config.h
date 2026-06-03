@@ -34,6 +34,11 @@
  * Flip this define and rebuild to A/B the two. */
 #define NN_ROTATE_90 (1)
 
+/* 1 = UART image-benchmark mode (host pushes val images over USART1, board runs
+ *     inference and replies with per-stage timing + boxes; no camera/UVC).
+ * 0 = normal live camera + tracking application. */
+#define APP_BENCHMARK (1)
+
 /* Debug isolation: 1 = run ONLY Bluetooth-receive + motor control (skip the
  * camera/NN entirely) and echo every received command on UART1. Use this to
  * verify the HC-06 link and motor commands in isolation. Set back to 0 to

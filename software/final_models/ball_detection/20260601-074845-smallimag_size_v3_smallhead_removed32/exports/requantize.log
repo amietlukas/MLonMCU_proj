@@ -1,0 +1,24 @@
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/eliza_ball_line_3/eliza_ball_line_30173.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/eliza_ball_line_3/eliza_ball_line_30173.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/eliza_ball_line_5/eliza_ball_line_50054.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/eliza_ball_line_5/eliza_ball_line_50055.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/oisin_ball_robot/oisin_ball_robot0171.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/oisin_ball_robot/oisin_ball_robot0201.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/oisin_ball_robot/oisin_ball_robot0316.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/oisin_ball_robot/oisin_ball_robot0486.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20001.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20127.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20201.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20437.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20507.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20570.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20576.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20583.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20621.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20633.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20635.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20231.png
+[WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20231.png
+[INFO] Reusing existing split files: /mnt/core/MLonMCU_proj/software/ball_detection/splits/train.txt, /mnt/core/MLonMCU_proj/software/ball_detection/splits/val.txt
+[INFO] Exported INT8 QDQ ONNX: /mnt/core/MLonMCU_proj/software/final_models/ball_detection/20260601-074845-smallimag_size_v3_smallhead_removed32/exports/int8_ptq_qdq.onnx
+[INFO] Saved calibration report: /mnt/core/MLonMCU_proj/software/final_models/ball_detection/20260601-074845-smallimag_size_v3_smallhead_removed32/exports/calibration_report.json

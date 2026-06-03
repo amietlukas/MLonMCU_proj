@@ -34,15 +34,13 @@ void Servo_Init(void);
 
 void     Servo_SetMicros(uint16_t us);  /* clamped to [SERVO_MIN_US, SERVO_MAX_US] */
 void     Servo_SetAngle(int deg);       /* 0..180 mapped across the safe band      */
+void     Servo_SetAngleF(float deg);    /* float angle (smooth 50 Hz tracker)      */
 int      Servo_GetAngle(void);          /* last COMMANDED angle (no HW readback)   */
 uint16_t Servo_GetMicros(void);
 
 /* Manual test protocol: 'L'/'l' step left, 'R'/'r' step right, 'M'/'m' center. */
 void Servo_Command(char cmd);
 
-/* Ball tracking: pan toward the ball so its horizontal center aligns with the
- * frame center. x_center is normalized [0,1] in the upright frame. When
- * ball_present == 0, holds the last angle (does not move). Call once per frame. */
-void Servo_Track(int ball_present, float x_center);
+/* Ball tracking now lives in ball_tracker.{c,h} (alpha-beta + 50 Hz control). */
 
 #endif /* SERVO_CONTROL_H */

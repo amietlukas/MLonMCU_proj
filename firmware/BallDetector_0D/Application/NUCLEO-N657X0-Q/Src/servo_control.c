@@ -12,15 +12,6 @@
 #define SERVO_STEP_DEG   5         /* manual L/R step size (gentle for calibration) */
 #define SERVO_FINE_US    20        /* fine '<' / '>' nudge for finding center */
 
-/* ---- Ball-tracking tuning (deliberately slow to start; tune up later) ---- *
- * Proportional pan toward the ball's horizontal frame offset, capped per frame
- * so motion is gentle. Dead-zone avoids jitter when already centered. */
-#define TRK_DEADZONE     0.06f     /* |x-0.5| below this = centered, don't move */
-#define TRK_GAIN_US      70.0f     /* microseconds of pan per unit of error     */
-#define TRK_STEP_US_MAX  8.0f      /* max us per update (~0.7 deg) -> slow       */
-#define TRK_SIGN         (-1)      /* sign so the camera pans TOWARD the ball    */
-#define TRK_SMOOTH       0.30f     /* input low-pass (lower = smoother, laggier) */
-
 static TIM_HandleTypeDef htim16;
 static int      g_servo_deg = 90;            /* last commanded angle (tracked)  */
 static uint16_t g_servo_us  = SERVO_CENTER_US;
@@ -38,40 +29,6 @@ void Servo_SetMicros(uint16_t us)
   __HAL_TIM_SET_COMPARE(&htim16, TIM_CHANNEL_1, us);
 }
 
-/* Pan the camera so the ball's horizontal center aligns with the frame center.
- * x_center is normalized [0,1] in the UPRIGHT (NN_ROTATE_90) frame, which is the
- * real-world horizontal the servo pans on. Only the horizontal axis is used.
- * When the ball is not present we return without moving -> holds last angle. */
-void Servo_Track(int ball_present, float x_center)
-{
-  static float x_filt = 0.5f;        /* low-pass of detected ball x  */
-  static float pos_us = SERVO_CENTER_US; /* float pan position (sub-us accum) */
-  static int   was_present = 0;
-
-  if (!ball_present) { was_present = 0; return; }   /* ball lost -> hold angle */
-
-  if (!was_present) {                /* just (re)acquired: start from where we are */
-    pos_us = (float)g_servo_us;
-    x_filt = x_center;
-    was_present = 1;
-  }
-
-  /* Low-pass the detection to reject per-frame box jitter -> smooth motion. */
-  x_filt += TRK_SMOOTH * (x_center - x_filt);
-
-  float err = x_filt - 0.5f;                        /* + : ball right of center */
-  if (err < TRK_DEADZONE && err > -TRK_DEADZONE) return;  /* centered enough    */
-
-  float dus = (float)TRK_SIGN * TRK_GAIN_US * err;  /* proportional, eases near center */
-  if (dus >  TRK_STEP_US_MAX) dus =  TRK_STEP_US_MAX;     /* cap per-frame speed */
-  if (dus < -TRK_STEP_US_MAX) dus = -TRK_STEP_US_MAX;
-
-  pos_us += dus;                                    /* float accumulate (no truncation) */
-  if (pos_us < (float)SERVO_MIN_US) pos_us = (float)SERVO_MIN_US;
-  if (pos_us > (float)SERVO_MAX_US) pos_us = (float)SERVO_MAX_US;
-  Servo_SetMicros((uint16_t)(pos_us + 0.5f));
-}
-
 void Servo_SetAngle(int deg)
 {
   if (deg < 0)   deg = 0;
@@ -81,6 +38,16 @@ void Servo_SetAngle(int deg)
   uint16_t us = (uint16_t)(SERVO_MIN_US +
                 ((uint32_t)deg * (SERVO_MAX_US - SERVO_MIN_US)) / 180u);
   Servo_SetMicros(us);
+}
+
+/* Float angle (used by the 50 Hz tracker for smooth sub-degree motion). */
+void Servo_SetAngleF(float deg)
+{
+  if (deg < 0.0f)   deg = 0.0f;
+  if (deg > 180.0f) deg = 180.0f;
+  float us = (float)SERVO_MIN_US +
+             deg * (float)(SERVO_MAX_US - SERVO_MIN_US) / 180.0f;
+  Servo_SetMicros((uint16_t)(us + 0.5f));
 }
 
 void Servo_Command(char cmd)

@@ -26,7 +26,7 @@ All frames start with a 4-byte magic and a 1-byte type:
 | `0x21` | F → H     | `INFER_DEC` | `inference_us:u32, n_boxes:u16, box[n] = {x1:f32, y1:f32, x2:f32, y2:f32, score:f32}` (after NPU + on-board NMS) |
 | `0x30` | H → F     | `CAM_START` | `period_ms:u16` (0 = free-run) |
 | `0x31` | H → F     | `CAM_STOP`  | empty |
-| `0x32` | F → H     | `CAM_FRAME` | `frame_idx:u32, jpeg_len:u32, jpeg[]` followed by an `INFER_DEC` for the same frame |
+| `0x32` | F → H     | `CAM_FRAME` | `frame_idx:u32, prev_w:u16, prev_h:u16, rgb[prev_w*prev_h*3]` (RGB888 low-res preview) — immediately followed by a separate `INFER_DEC` frame whose boxes are in MODEL space (384×288) |
 | `0xFE` | F → H     | `LOG`       | UTF-8 string |
 | `0xFF` | both      | `ACK/NACK`  | `status:u8` (0=ok, !=0=error code) |
 
@@ -36,15 +36,12 @@ All frames start with a 4-byte magic and a 1-byte type:
   runs inference, replies with `INFER_DEC` (or `INFER_RAW` if host requested
   raw via a future config flag). Use this for accuracy validation against
   the eval set.
-- **CAM mode**: host sends `CAM_START`. Board grabs frames from B-CAMS-IMX
-  via DCMIPP, downscales to 384×288 RGB888 (the model input), runs NPU,
-  replies with `CAM_FRAME` + decoded boxes per frame. Host sends `CAM_STOP`
-  to end.
-
-## Open questions (resolve when firmware exists)
-
-- Whether on-board NMS lives in firmware or we always stream `INFER_RAW`.
-  Streaming raw output is ~36 kB per inference → ~30 ms at 921600 baud, so
-  if we want >30 fps in CAM mode the NMS has to be on-board.
-- JPEG quality / camera native resolution downscale ratio. IMX335 is 5 MP;
-  DCMIPP can downscale on the fly.
+- **CAM mode** (implemented in `BallDetector_N6_cam`): host sends `CAM_START`.
+  The board brings up the B-CAMS-IMX (IMX335) via the Camera Middleware,
+  captures RGB888 frames on DCMIPP_PIPE1 (ISP debayer → 384×288), transposes
+  HWC→CHW into the NPU input, runs the NPU, and per frame streams a `CAM_FRAME`
+  (a small RGB preview, integer-downscaled from the model frame) followed by an
+  `INFER_DEC` (boxes in model space). Host sends `CAM_STOP` to end. A full
+  384×288×3 frame is 331 KB ≈ 3.6 s at 921600 baud, so only the downscaled
+  preview is streamed (default 128×96 ≈ 2.5 fps; see `PREVIEW_SCALE` in
+  `constants.h`). On-board NMS keeps `INFER_DEC` tiny.

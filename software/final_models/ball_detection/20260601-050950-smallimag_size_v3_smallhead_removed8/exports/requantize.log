@@ -20,5 +20,5 @@
 [WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20231.png
 [WARN] image missing or unsupported extension skipped: /mnt/core/MLonMCU_proj/datasets/BALL/SPLDataset/robby_rc16_ball2/robby_rc16_ball20231.png
 [INFO] Reusing existing split files: /mnt/core/MLonMCU_proj/software/ball_detection/splits/train.txt, /mnt/core/MLonMCU_proj/software/ball_detection/splits/val.txt
-[INFO] Exported INT8 QDQ ONNX: /mnt/core/MLonMCU_proj/software/ball_detection/runs/20260522-133921-simota_diou_v2_pruned_50/exports/int8_ptq_qdq.onnx
-[INFO] Saved calibration report: /mnt/core/MLonMCU_proj/software/ball_detection/runs/20260522-133921-simota_diou_v2_pruned_50/exports/calibration_report.json
+[INFO] Exported INT8 QDQ ONNX: /mnt/core/MLonMCU_proj/software/final_models/ball_detection/20260601-050950-smallimag_size_v3_smallhead_removed8/exports/int8_ptq_qdq.onnx
+[INFO] Saved calibration report: /mnt/core/MLonMCU_proj/software/final_models/ball_detection/20260601-050950-smallimag_size_v3_smallhead_removed8/exports/calibration_report.json

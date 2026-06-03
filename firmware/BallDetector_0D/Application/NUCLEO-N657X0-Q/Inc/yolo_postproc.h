@@ -42,8 +42,18 @@ typedef struct {
  *
  * Returns number of boxes written.
  */
+/* N-head, fully model-agnostic: pass the actual head count and per-head
+ * scale / zero-point / stride / grid (all from the generated STAI_NETWORK_OUT_*
+ * macros). Works for 2- or 3-head models, any stride set. heads[] has n_heads
+ * pointers (heads[h] = nn_out[h]). */
 int yolo_postprocess(
-    const uint8_t * const heads[YOLO_NUM_HEADS],
+    const uint8_t * const *heads,
+    int          n_heads,
+    const float *scales,    /* [n_heads] output scale     */
+    const int   *zps,       /* [n_heads] zero-point        */
+    const int   *strides,   /* [n_heads] = input_w/grid_w  */
+    const int   *grid_w,    /* [n_heads]                   */
+    const int   *grid_h,    /* [n_heads]                   */
     float conf_thresh,
     float iou_thresh,
     yolo_box_t *out,

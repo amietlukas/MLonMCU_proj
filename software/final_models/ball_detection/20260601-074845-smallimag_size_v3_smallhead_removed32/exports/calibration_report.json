@@ -1,7 +1,7 @@
 {
-  "num_calibration_images": 640,
-  "fp32_onnx": "/mnt/core/MLonMCU_proj/software/ball_detection/runs/20260522-133921-simota_diou_v2_pruned_50/exports/fp32.onnx",
-  "int8_qdq_onnx": "/mnt/core/MLonMCU_proj/software/ball_detection/runs/20260522-133921-simota_diou_v2_pruned_50/exports/int8_ptq_qdq.onnx",
+  "num_calibration_images": 676,
+  "fp32_onnx": "/mnt/core/MLonMCU_proj/software/final_models/ball_detection/20260601-074845-smallimag_size_v3_smallhead_removed32/exports/fp32.onnx",
+  "int8_qdq_onnx": "/mnt/core/MLonMCU_proj/software/final_models/ball_detection/20260601-074845-smallimag_size_v3_smallhead_removed32/exports/int8_ptq_qdq.onnx",
   "quantization": {
     "quant_format": "QDQ",
     "per_channel": true,
@@ -53,8 +53,8 @@
       "seed": 42
     },
     "input": {
-      "width": 640,
-      "height": 480,
+      "width": 384,
+      "height": 288,
       "color_mode": "rgb",
       "channels": 3,
       "resize_policy": "resize",
@@ -66,16 +66,15 @@
       "num_classes": 1,
       "strides": [
         8,
-        16,
-        32
+        16
       ],
       "width_mult": 1.0,
       "neck_out_ch": 96
     },
     "train": {
       "epochs": 150,
-      "batch_size": 32,
-      "num_workers": 4,
+      "batch_size": 48,
+      "num_workers": 8,
       "optimizer": "adamw",
       "optimizer_params": {
         "betas": [

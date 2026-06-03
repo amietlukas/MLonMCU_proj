@@ -23,3 +23,6 @@ Ball-Detection - Smaller:
 - Drop few heads
 - Aggressive pruning
 - Reduce neck_out_ch
+
+- Double check if we can use any papers for reference
+- 

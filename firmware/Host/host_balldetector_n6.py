@@ -9,6 +9,7 @@ Wire format is defined in protocol_balldetector_n6.md.
 from __future__ import annotations
 
 import argparse
+import csv
 import struct
 import sys
 import time
@@ -136,14 +137,15 @@ def push_image(ser: serial.Serial, img_bytes: bytes, chunk_delay: float = 0.0,
             print(f"[fw] {payload.decode(errors='ignore').rstrip()}")
             continue
         if ftype == T_INFER_DEC:
-            inf_us, n = struct.unpack("<IH", payload[:6])
+            pre_us, inf_us, post_us, n = struct.unpack("<IIIH", payload[:14])
             boxes = []
-            off = 6
+            off = 14
             for _ in range(n):
                 x1, y1, x2, y2, s = struct.unpack("<5f", payload[off:off + 20])
                 boxes.append((x1, y1, x2, y2, s))
                 off += 20
-            return {"inference_us": inf_us, "boxes": boxes}
+            return {"pre_us": pre_us, "inference_us": inf_us, "post_us": post_us,
+                    "boxes": boxes}
 
 
 def _resolve_list_entry(line: str, root: Path) -> Path:
@@ -270,10 +272,251 @@ def mode_cam(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Benchmark mode: run a val set, compute detection metrics + per-stage timing,
+# write a per-model results_<tag>.csv and upsert a model_comparison.csv row.
+# Boxes are in 384x288 model space; GT comes from viz_common.load_gt_model_space
+# (same stretch-to-model scaling as the image we send). Single class (ball).
+# ---------------------------------------------------------------------------
+def _iou(a, b) -> float:
+    ix1, iy1 = max(a[0], b[0]), max(a[1], b[1])
+    ix2, iy2 = min(a[2], b[2]), min(a[3], b[3])
+    iw, ih = max(0.0, ix2 - ix1), max(0.0, iy2 - iy1)
+    inter = iw * ih
+    if inter <= 0.0:
+        return 0.0
+    ua = (a[2]-a[0])*(a[3]-a[1]) + (b[2]-b[0])*(b[3]-b[1]) - inter
+    return inter / ua if ua > 0 else 0.0
+
+
+def _match_image(preds, gts, iou_thr):
+    """preds sorted desc by score. Greedy highest-score-first GT matching.
+    Returns (scored=[(score,is_tp)], sum_iou_of_TP, [center_err_px], n_fn)."""
+    used = [False] * len(gts)
+    scored, sum_iou, cerr = [], 0.0, []
+    for (x1, y1, x2, y2, s) in preds:
+        best, best_iou = -1, iou_thr
+        for j, g in enumerate(gts):
+            if used[j]:
+                continue
+            v = _iou((x1, y1, x2, y2), g)
+            if v >= best_iou:
+                best, best_iou = j, v
+        if best >= 0:
+            used[best] = True
+            scored.append((s, 1))
+            sum_iou += best_iou
+            gx, gy = (gts[best][0]+gts[best][2])/2.0, (gts[best][1]+gts[best][3])/2.0
+            cerr.append((((x1+x2)/2.0 - gx) ** 2 + ((y1+y2)/2.0 - gy) ** 2) ** 0.5)
+        else:
+            scored.append((s, 0))
+    return scored, sum_iou, cerr, used.count(False)
+
+
+def _ap(all_scored, n_gt) -> float:
+    """All-point AP at the match IoU (single class)."""
+    if n_gt == 0 or not all_scored:
+        return 0.0
+    s = sorted(all_scored, key=lambda x: -x[0])
+    tp = fp = 0
+    rec, prec = [], []
+    for _, istp in s:
+        tp += istp
+        fp += (1 - istp)
+        rec.append(tp / n_gt)
+        prec.append(tp / (tp + fp))
+    for i in range(len(prec) - 2, -1, -1):        # monotonic precision envelope
+        prec[i] = max(prec[i], prec[i + 1])
+    ap = prev = 0.0
+    for i in range(len(rec)):
+        ap += prec[i] * (rec[i] - prev)
+        prev = rec[i]
+    return ap
+
+
+def _metrics_at_conf(all_scored, n_gt, n_img, conf):
+    """Precision/recall/F1/fp_per_image counting only detections with score>=conf
+    (matches training's eval at cfg.eval.conf_threshold). is_tp was assigned by a
+    greedy score-sorted match, so filtering by score is equivalent to re-matching."""
+    tp = sum(1 for s, istp in all_scored if s >= conf and istp)
+    fp = sum(1 for s, istp in all_scored if s >= conf and not istp)
+    fn = n_gt - tp
+    p = tp / (tp + fp) if (tp + fp) else 0.0
+    r = tp / (tp + fn) if (tp + fn) else 0.0
+    f1 = 2 * p * r / (p + r) if (p + r) else 0.0
+    return p, r, f1, (fp / n_img if n_img else 0.0)
+
+
+def _load_ref_metrics(model_dir):
+    """Pull the training-time val metrics (best-val_map50 epoch) from the model's
+    metrics.csv so on-device vs training sit side-by-side in the table. These are
+    at the same conf_threshold (0.5) / nms (0.25) / matching IoU (0.5)."""
+    p = Path(model_dir) / "metrics.csv"
+    if not p.is_file():
+        return {}
+    try:
+        rows = list(csv.DictReader(open(p, newline="")))
+    except Exception:
+        return {}
+    if not rows:
+        return {}
+    def fnum(r, k):
+        try:
+            return float(r.get(k, "") or "nan")
+        except ValueError:
+            return float("nan")
+    best = max(rows, key=lambda r: (fnum(r, "val_map50") if fnum(r, "val_map50") == fnum(r, "val_map50") else -1.0))
+    def fmt(k, nd=4):
+        v = best.get(k, "")
+        try:
+            return f"{float(v):.{nd}f}"
+        except (ValueError, TypeError):
+            return ""
+    return {
+        "ref_map50":         fmt("val_map50"),
+        "ref_precision":     fmt("val_precision"),
+        "ref_recall":        fmt("val_recall"),
+        "ref_f1":            fmt("val_f1"),
+        "ref_mean_iou":      fmt("val_mean_iou"),
+        "ref_center_err_px": fmt("val_center_error_px", 3),
+        "ref_fp_per_image":  fmt("val_fp_per_image"),
+    }
+
+
+def _pct(sorted_vals, q):
+    if not sorted_vals:
+        return 0.0
+    k = (len(sorted_vals) - 1) * q
+    lo = int(k)
+    hi = min(lo + 1, len(sorted_vals) - 1)
+    return sorted_vals[lo] + (sorted_vals[hi] - sorted_vals[lo]) * (k - lo)
+
+
+def _upsert_comparison(cmp_csv: Path, cols, row, tag):
+    """Replace/insert the row for `tag`; leave other models' rows untouched."""
+    existing = []
+    extra_cols = []  # columns present in the file but not in `cols`
+    if cmp_csv.is_file():
+        lines = cmp_csv.read_text().splitlines()
+        if lines:
+            hdr = lines[0].split(",")
+            extra_cols = [c for c in hdr if c not in cols]  # e.g. params/macc/flash_KB/ram_KB/energy_mJ
+            for ln in lines[1:]:
+                if not ln.strip():
+                    continue
+                d = dict(zip(hdr, ln.split(",")))
+                if d.get("model") != tag:
+                    existing.append(d)
+    existing.append(row)
+    # Preserve any extra columns (e.g. the static/energy cols added by
+    # ball_add_static.py) so a bench upsert doesn't wipe them. The freshly
+    # upserted row leaves them blank -- re-run ball_add_static.py to fill it.
+    out_cols = list(cols) + extra_cols
+    cmp_csv.parent.mkdir(parents=True, exist_ok=True)
+    with open(cmp_csv, "w") as f:
+        f.write(",".join(out_cols) + "\n")
+        for d in existing:
+            f.write(",".join(str(d.get(c, "")) for c in out_cols) + "\n")
+
+
+def mode_bench(args) -> int:
+    paths = _gather_paths(args)
+    if not paths:
+        print("no images (check --image-list/--image-root)", file=sys.stderr)
+        return 2
+
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    tag = args.model_name
+    results_csv = out_dir / f"results_{tag}.csv"
+
+    rows, all_scored, cerr_all = [], [], []
+    n_gt_total = tp_t = fp_t = fn_t = 0
+    iou_sum = 0.0
+    pre_l, inf_l, post_l = [], [], []
+
+    with serial.Serial(args.port, args.baud, timeout=1) as ser:
+        info = hello(ser)
+        print(f"connected fw=0x{info['fw_ver']:04x} model {info['w']}x{info['h']}x{info['c']}")
+        if (info["w"], info["h"]) != (MODEL_W, MODEL_H):
+            print(f"WARNING: board model {info['w']}x{info['h']} != host MODEL {MODEL_W}x{MODEL_H}; "
+                  f"GT scaling uses the host MODEL_* constants -- set them equal for correct metrics.",
+                  file=sys.stderr)
+        for k, p in enumerate(paths):
+            buf = load_image(p, "hwc")           # HWC -> board transposes (pre stage)
+            r = push_image(ser, buf, chunk_delay=args.chunk_delay, fmt=1)
+            preds = sorted(r["boxes"], key=lambda b: -b[4])   # all boxes; conf applied to metrics below
+            gts = viz_common.load_gt_model_space(p)
+            scored, sum_iou, cerr, n_fn = _match_image(preds, gts, args.iou)
+            tp = sum(t for _, t in scored)
+            fp = len(scored) - tp
+            tp_t += tp; fp_t += fp; fn_t += n_fn
+            iou_sum += sum_iou; cerr_all += cerr
+            n_gt_total += len(gts); all_scored += scored
+            pre_l.append(r["pre_us"] / 1000.0)
+            inf_l.append(r["inference_us"] / 1000.0)
+            post_l.append(r["post_us"] / 1000.0)
+            rows.append((p.name, len(gts), len(preds), tp, fp, n_fn,
+                         r["pre_us"]/1000.0, r["inference_us"]/1000.0, r["post_us"]/1000.0))
+            if (k + 1) % 25 == 0 or k + 1 == len(paths):
+                print(f"  [{k+1}/{len(paths)}] {p.name:32s} gt={len(gts)} pred={len(preds)} "
+                      f"infer={r['inference_us']/1000:.1f}ms")
+
+    n = len(rows)
+    op_conf = args.conf
+    map50 = _ap(all_scored, n_gt_total)                       # AP over all boxes (~training ap_conf)
+    precision, recall, f1, fp_per_image = _metrics_at_conf(all_scored, n_gt_total, n, op_conf)
+    ref = _load_ref_metrics(args.out_dir)                     # training metrics, side-by-side
+    mean_iou = iou_sum / tp_t if tp_t else 0.0
+    cerr_sorted = sorted(cerr_all)
+    cerr_mean = sum(cerr_all) / len(cerr_all) if cerr_all else 0.0
+    inf_sorted = sorted(inf_l)
+
+    with open(results_csv, "w") as f:
+        f.write("image,n_gt,n_pred,tp,fp,fn,pre_ms,infer_ms,post_ms\n")
+        for rw in rows:
+            f.write("{},{},{},{},{},{},{:.3f},{:.3f},{:.3f}\n".format(*rw))
+
+    cols = ["model", "n_samples", "conf", "iou_match",
+            "map50", "precision", "recall", "f1", "mean_iou",
+            "center_err_px_mean", "center_err_px_median", "center_err_px_p95", "fp_per_image",
+            "ref_map50", "ref_precision", "ref_recall", "ref_f1", "ref_mean_iou",
+            "ref_center_err_px", "ref_fp_per_image",
+            "pre_ms_mean", "infer_ms_mean", "post_ms_mean", "infer_ms_p50", "infer_ms_p95",
+            "results_csv"]
+    row = {
+        "model": tag, "n_samples": n, "conf": f"{op_conf}", "iou_match": f"{args.iou}",
+        "map50": f"{map50:.4f}", "precision": f"{precision:.4f}", "recall": f"{recall:.4f}",
+        "f1": f"{f1:.4f}", "mean_iou": f"{mean_iou:.4f}",
+        "center_err_px_mean": f"{cerr_mean:.3f}",
+        "center_err_px_median": f"{_pct(cerr_sorted,0.5):.3f}",
+        "center_err_px_p95": f"{_pct(cerr_sorted,0.95):.3f}",
+        "fp_per_image": f"{fp_per_image:.4f}",
+        "pre_ms_mean": f"{sum(pre_l)/n:.3f}" if n else "",
+        "infer_ms_mean": f"{sum(inf_l)/n:.3f}" if n else "",
+        "post_ms_mean": f"{sum(post_l)/n:.3f}" if n else "",
+        "infer_ms_p50": f"{_pct(inf_sorted,0.5):.2f}",
+        "infer_ms_p95": f"{_pct(inf_sorted,0.95):.2f}",
+        "results_csv": str(results_csv),
+    }
+    row.update(ref)   # ref_map50 / ref_precision / ... (blank if no metrics.csv)
+    _upsert_comparison(Path(args.comparison_csv), cols, row, tag)
+
+    print(f"\n=== {tag} : {n} images  (conf={op_conf}, iou={args.iou}) ===")
+    print(f"  on-device:  map50={map50:.4f}  P={precision:.4f}  R={recall:.4f}  F1={f1:.4f}  mIoU={mean_iou:.4f}  fp/img={fp_per_image:.3f}")
+    if ref:
+        print(f"  training :  map50={ref.get('ref_map50','?')}  P={ref.get('ref_precision','?')}  "
+              f"R={ref.get('ref_recall','?')}  F1={ref.get('ref_f1','?')}  mIoU={ref.get('ref_mean_iou','?')}  fp/img={ref.get('ref_fp_per_image','?')}")
+    print(f"  center_err_px mean={cerr_mean:.2f} median={_pct(cerr_sorted,0.5):.2f} p95={_pct(cerr_sorted,0.95):.2f}  (train {ref.get('ref_center_err_px','?')})")
+    print(f"  timing: pre={sum(pre_l)/max(n,1):.2f}ms infer={sum(inf_l)/max(n,1):.1f}ms post={sum(post_l)/max(n,1):.3f}ms")
+    print(f"  -> {results_csv}\n  -> {args.comparison_csv}")
+    return 0
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--port", default="/dev/ttyACM0")
-    p.add_argument("--baud", type=int, default=921600)
+    p.add_argument("--baud", type=int, default=4000000)   # fast image upload (firmware USART1 @ 4 Mbaud)
     sub = p.add_subparsers(dest="mode", required=True)
 
     pi = sub.add_parser("img", help="feed images from disk")
@@ -295,6 +538,26 @@ def parse_args() -> argparse.Namespace:
                     help="folder to save annotated <name>_mcu.png (GT green, pred red) "
                          "after each inference; set '' to disable")
 
+    pb = sub.add_parser("bench", help="run a val set, compute detection metrics + timing")
+    pb.add_argument("--image-list", required=True,
+                    help="text file of image paths (software/ball_detection/splits/val.txt)")
+    pb.add_argument("--image-root", default="datasets/BALL",
+                    help="root for spl/->SPLDataset, our/->OurDataset")
+    pb.add_argument("--limit", type=int, default=0, help="process at most N images (0=all)")
+    pb.add_argument("--chunk-delay", type=float, default=0.0,
+                    help="seconds between IMG_CHUNKs (try 0.002 if the board drops bytes)")
+    pb.add_argument("--conf", type=float, default=0.5,
+                    help="operating confidence for P/R/F1 (match training cfg.eval.conf_threshold; "
+                         "default 0.5). map50 always uses ALL boxes regardless.")
+    pb.add_argument("--iou", type=float, default=0.5,
+                    help="IoU threshold for TP matching (match training matching_iou_threshold=0.5)")
+    pb.add_argument("--model-name", required=True,
+                    help="row tag, e.g. widthmult075_int8")
+    pb.add_argument("--out-dir", required=True,
+                    help="folder for results_<tag>.csv (the model's final_models dir)")
+    pb.add_argument("--comparison-csv",
+                    default="software/final_models/ball_detection/model_comparison.csv")
+
     pc = sub.add_parser("cam", help="live camera view")
     pc.add_argument("--period-ms", type=int, default=0,
                     help="0 = free-run, otherwise frame period")
@@ -308,6 +571,8 @@ def main() -> int:
     args = parse_args()
     if args.mode == "img":
         return mode_img(args)
+    if args.mode == "bench":
+        return mode_bench(args)
     if args.mode == "cam":
         return mode_cam(args)
     return 2
