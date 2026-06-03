@@ -34,6 +34,12 @@
  * Flip this define and rebuild to A/B the two. */
 #define NN_ROTATE_90 (1)
 
+/* Debug isolation: 1 = run ONLY Bluetooth-receive + motor control (skip the
+ * camera/NN entirely) and echo every received command on UART1. Use this to
+ * verify the HC-06 link and motor commands in isolation. Set back to 0 to
+ * restore the full detection + UVC + motor application. */
+#define BT_MOTOR_ISOLATE (0)
+
 #define ASPECT_RATIO_CROP       (1) /* Crop both pipes to nn input aspect ratio; Original aspect ratio kept */
 #define ASPECT_RATIO_FIT        (2) /* Resize both pipe to NN input aspect ratio; Original aspect ratio not kept */
 #define ASPECT_RATIO_FULLSCREEN (3) /* Resize camera image to NN input size and display a maximized image. See Doc/Build-Options.md#aspect-ratio-mode */

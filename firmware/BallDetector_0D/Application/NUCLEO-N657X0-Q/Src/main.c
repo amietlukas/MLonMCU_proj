@@ -36,6 +36,8 @@
 #include "app_config.h"
 #include "crop_img.h"
 #include "stlogo.h"
+#include "motor_control.h"
+#include "servo_control.h"
 
 CLASSES_TABLE;
 
@@ -121,6 +123,7 @@ const uint32_t colors[NUMBER_COLORS] = {
 #endif
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart3;   /* HC-06 Bluetooth on Arduino D0/D1 (PD9 RX / PD8 TX) */
 volatile int32_t cameraFrameReceived;
 stai_ptr nn_in;
 void* pp_input;
@@ -201,6 +204,56 @@ static void uart_send_footer(void)
   HAL_UART_Transmit(&huart1, (uint8_t *)end, sizeof(end), HAL_MAX_DELAY);
 }
 
+/* ---- HC-06 Bluetooth RX: interrupt-driven ring buffer -------------------- *
+ * Polling USART3 once per (slow, NN-bound) loop iteration dropped bytes and
+ * latched on overrun -> commands flaky / receiver stuck. Instead receive in the
+ * USART3 ISR into a ring buffer and let the loop drain it, decoupled from the
+ * loop period. ORE is cleared so a single overrun never wedges reception. */
+#define BT_RING_SZ 64u
+static volatile uint8_t  bt_ring[BT_RING_SZ];
+static volatile uint16_t bt_head = 0, bt_tail = 0;
+
+static int bt_ring_pop(void)
+{
+  if (bt_tail == bt_head) return -1;
+  uint8_t b = bt_ring[bt_tail];
+  bt_tail = (uint16_t)((bt_tail + 1u) % BT_RING_SZ);
+  return (int)b;
+}
+
+void USART3_IRQHandler(void)
+{
+  if (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_RXNE)) {
+    uint8_t b = (uint8_t)(huart3.Instance->RDR & 0xFFu);   /* read clears RXNE */
+    uint16_t nh = (uint16_t)((bt_head + 1u) % BT_RING_SZ);
+    if (nh != bt_tail) { bt_ring[bt_head] = b; bt_head = nh; }  /* drop if full */
+  }
+  if (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_ORE)) {
+    __HAL_UART_CLEAR_OREFLAG(&huart3);                    /* recover from overrun */
+  }
+}
+
+/* Drain pending commands and echo every byte on UART1 (the console VCP) so the
+ * actual received traffic is visible while debugging. */
+static void process_commands(void)
+{
+  int b;
+  while ((b = bt_ring_pop()) >= 0) {
+    printf("BT rx 0x%02X '%c'\n", (unsigned)b, (b >= 32 && b < 127) ? (char)b : '.');
+    if (b >= '0' && b <= '5') Motor_Command((char)b);
+    else if (b=='L'||b=='l'||b=='R'||b=='r'||b=='M'||b=='m'||b=='<'||b=='>') {
+      Servo_Command((char)b);
+      printf("Servo -> %ddeg (%uus)\n", Servo_GetAngle(), (unsigned)Servo_GetMicros());
+    }
+  }
+  /* USB VCP: 'c' = frame dump; '0'-'5' = wired fallback drive command. */
+  uint8_t t = 0;
+  if (HAL_UART_Receive(&huart1, &t, 1, 0) == HAL_OK) {
+    if (t == 'c' || t == 'C')          g_dump_req = 1;
+    else if (t >= '0' && t <= '5') {   printf("VCP cmd '%c'\n", t); Motor_Command((char)t); }
+  }
+}
+
 #define ALIGN_TO_16(value) (((value) + 15) & ~15)
 
 /* When NN input dimensions are not a multiple of 16, the DCMIPP output needs cropping */
@@ -230,6 +283,7 @@ static uint8_t screen_buffer[LCD_FG_WIDTH * LCD_FG_HEIGHT * 2];
 
 static void SystemClock_Config(void);
 static void CONSOLE_Config(void);
+static void BT_Config(void);
 static void NPURam_enable(void);
 static void NPUCache_config(void);
 static void Display_NetworkOutput(od_pp_out_t *p_postprocess, uint32_t inference_ms);
@@ -299,10 +353,24 @@ int main(void)
   printf("NN model: %s\n", STAI_NETWORK_ORIGIN_MODEL_NAME);
   printf("========================================\n");
 
+  /*** Motor control (paul_car RC-car port) **********************************/
+  Motor_Init();   /* car stopped; drive with single-char commands '0'..'5' */
+  printf("DBG27 motor_init done\n");
+
+  Servo_Init();   /* camera-pan servo -> centers to nominal home on boot */
+  printf("DBG28 servo_init done\n");
+
   /*** App Loop ***************************************************************/
   while (1)
   {
     static unsigned g_lc = 0; int dbg = (g_lc++ < 5);
+
+    /* Bluetooth + VCP commands first, decoupled from the slow NN path. */
+    process_commands();
+
+#if BT_MOTOR_ISOLATE
+    continue;   /* debug: motor + Bluetooth only; skip camera / NN / UVC */
+#endif
 
     /* While a dump is in progress, stream one chunk per iteration from the
      * frozen frame in nn_hwc (we skip re-capture so the image stays stable),
@@ -341,24 +409,19 @@ int main(void)
     if (dbg) printf("L2b cvt+CHW: %lums\n", (unsigned long)(HAL_GetTick() - rot_t0));
     SCB_CleanInvalidateDCache_by_Addr(nn_in, nn_in_len);
 
-    /* Diagnostic frame dump over UART. Auto once after warmup, then on demand
-     * whenever the host sends 'c'. nn_hwc holds the just-captured frame; latch a
-     * dump and the chunked streamer at the top of the loop sends it out. */
-    {
-      uint8_t trig = 0;
-      if (HAL_UART_Receive(&huart1, &trig, 1, 0) == HAL_OK && (trig == 'c' || trig == 'C'))
-        g_dump_req = 1;
-      if (g_lc == 15) g_dump_req = 1;   /* one automatic frame after AE settles */
-      if (g_dump_req && !g_dumping) {
-        g_dump_req = 0;
+    /* Latch a diagnostic frame dump (auto once after warmup, or 'c' from host
+     * via process_commands). nn_hwc holds the fresh frame; the chunked streamer
+     * at the top of the loop sends it out over the next iterations. */
+    if (g_lc == 15) g_dump_req = 1;   /* one automatic frame after AE settles */
+    if (g_dump_req && !g_dumping) {
+      g_dump_req = 0;
 #if NN_ROTATE_90
-        uart_send_header(CAP_W, CAP_H, 3);   /* raw 288x384 capture; host rot90_ccw -> upright */
+      uart_send_header(CAP_W, CAP_H, 3);   /* raw 288x384 capture; host rot90_ccw -> upright */
 #else
-        uart_send_header(STAI_NETWORK_IN_1_WIDTH, STAI_NETWORK_IN_1_HEIGHT, 3);
+      uart_send_header(STAI_NETWORK_IN_1_WIDTH, STAI_NETWORK_IN_1_HEIGHT, 3);
 #endif
-        g_dump_off = 0;
-        g_dumping = 1;   /* streaming begins next iteration from frozen nn_hwc */
-      }
+      g_dump_off = 0;
+      g_dumping = 1;   /* streaming begins next iteration from frozen nn_hwc */
     }
 
     ts[0] = HAL_GetTick();
@@ -393,6 +456,22 @@ int main(void)
     pp_output.nb_detect = nb;
     int32_t pp_ret = 0;
     if (dbg) printf("L4 postproc nb_detect=%d\n", nb);
+
+    /* Ball tracking: pan the camera toward the highest-confidence ball so its
+     * horizontal center aligns with the frame center; hold angle when no ball. */
+    {
+      int   present = (nb > 0);
+      float ball_x  = 0.5f;
+      if (present) {
+        int best = 0;
+        for (int i = 1; i < nb; i++)
+          if (g_yolo_boxes[i].score > g_yolo_boxes[best].score) best = i;
+        ball_x = g_od_boxes[best].x_center;
+      }
+      Servo_Track(present, ball_x);
+      if (dbg) printf("L4b track present=%d x=%d%% -> %ddeg\n",
+                      present, (int)(ball_x * 100.0f), Servo_GetAngle());
+    }
 
     if (dbg) printf("L5 sending UVC frame\n");
     Display_NetworkOutput(&pp_output, ts[1] - ts[0]);
@@ -429,6 +508,8 @@ static void Hardware_init(void)
   SystemClock_Config();
 
   CONSOLE_Config();
+
+  BT_Config();   /* HC-06 Bluetooth (USART3 @ 9600 on Arduino D0/D1) */
 
   NPURam_enable();
 
@@ -853,6 +934,42 @@ static void SystemClock_Config(void)
   {
     while (1);
   }
+}
+
+/* HC-06 Bluetooth module: transparent serial bridge (same role as Serial in
+ * paul_car.ino). It sits on the Arduino D0/D1 header pins = USART3 (PD9 RX,
+ * PD8 TX). HC-06 default baud is 9600. Received bytes are drive commands. */
+static void BT_Config(void)
+{
+  GPIO_InitTypeDef gpio_init = {0};
+
+  __HAL_RCC_USART3_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  gpio_init.Mode      = GPIO_MODE_AF_PP;
+  gpio_init.Pull      = GPIO_PULLUP;
+  gpio_init.Speed     = GPIO_SPEED_FREQ_HIGH;
+  gpio_init.Pin       = GPIO_PIN_8 | GPIO_PIN_9;   /* PD8 USART3_TX, PD9 USART3_RX */
+  gpio_init.Alternate = GPIO_AF7_USART3;
+  HAL_GPIO_Init(GPIOD, &gpio_init);
+
+  huart3.Instance          = USART3;
+  huart3.Init.BaudRate     = 9600;                 /* HC-06 default */
+  huart3.Init.Mode         = UART_MODE_TX_RX;
+  huart3.Init.Parity       = UART_PARITY_NONE;
+  huart3.Init.WordLength   = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits     = UART_STOPBITS_1;
+  huart3.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    while (1);
+  }
+
+  /* Interrupt-driven RX (see USART3_IRQHandler / ring buffer). */
+  HAL_NVIC_SetPriority(USART3_IRQn, 6, 0);
+  HAL_NVIC_EnableIRQ(USART3_IRQn);
+  __HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
 }
 
 static void CONSOLE_Config()
