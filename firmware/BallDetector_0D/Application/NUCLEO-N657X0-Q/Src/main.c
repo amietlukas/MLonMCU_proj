@@ -380,7 +380,10 @@ static void Benchmark_Run(uint32_t nn_in_len, stai_ptr *nn_out,
       uint32_t idx = (uint32_t)rx[0] | ((uint32_t)rx[1] << 8);
       uint32_t off = idx * BENCH_UART_CHUNK;
       uint32_t n   = len - 2;
-      if (off + n <= IN_BYTES) { memcpy(nn_hwc + off, rx + 2, n); img_off = off + n; }
+      /* track TOTAL bytes received (running sum), not the last chunk's end --
+       * a dropped/CRC-failed middle chunk must leave img_off < IN_BYTES so
+       * IMG_END rejects the image (else it silently runs on a stale band). */
+      if (off + n <= IN_BYTES) { memcpy(nn_hwc + off, rx + 2, n); img_off += n; }
       break;
     }
 
@@ -390,7 +393,11 @@ static void Benchmark_Run(uint32_t nn_in_len, stai_ptr *nn_out,
       /* pre: HWC -> CHW (host already sent an upright, model-sized image -> no
        * rotation; this matches the camera path's per-pixel transpose cost). */
       uint32_t t0 = DWT->CYCCNT;
-      SCB_InvalidateDCache_by_Addr(nn_hwc, sizeof(nn_hwc));
+      /* nn_hwc was filled by CPU memcpy (UART chunks) -> cache-coherent for the CPU
+       * transpose read. Do NOT invalidate: a plain invalidate DISCARDS the still-dirty
+       * (most-recently-written = bottom) cache lines, so the NPU sees a stale bottom
+       * band of the image -> the on-device map50/recall loss. (The camera path DMAs
+       * into nn_hwc and DOES need the invalidate; this CPU-fed path must not.) */
       transpose_hwc_to_chw(nn_hwc, (uint8_t *)nn_in);
       SCB_CleanInvalidateDCache_by_Addr(nn_in, nn_in_len);
       uint32_t pre_us = dwt_us(DWT->CYCCNT - t0);

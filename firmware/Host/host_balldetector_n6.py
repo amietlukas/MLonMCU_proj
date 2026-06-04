@@ -121,31 +121,46 @@ def hello(ser: serial.Serial) -> dict:
 
 
 def push_image(ser: serial.Serial, img_bytes: bytes, chunk_delay: float = 0.0,
-               fmt: int = 0) -> dict:
+               fmt: int = 0, retries: int = 5) -> dict:
     # fmt: 0 = planar CHW (matches the NCHW model), 1 = interleaved HWC
-    send_frame(ser, T_IMG_BEGIN, struct.pack("<HHBB", MODEL_W, MODEL_H, MODEL_C, fmt))
-    for i in range(0, len(img_bytes), CHUNK):
-        chunk = img_bytes[i:i + CHUNK]
-        send_frame(ser, T_IMG_CHUNK, struct.pack("<H", i // CHUNK) + chunk)
-        if chunk_delay:
-            time.sleep(chunk_delay)   # pace the upload if the board drops bytes (no flow ctrl)
-    send_frame(ser, T_IMG_END)
+    # The UART link has no flow control. The firmware now rejects any image with a
+    # missing chunk ("IMG size mismatch"); we re-send the whole image (up to
+    # `retries`) so a dropped chunk can't silently corrupt a frame's pixels.
+    for attempt in range(retries):
+        ser.reset_input_buffer()
+        send_frame(ser, T_IMG_BEGIN, struct.pack("<HHBB", MODEL_W, MODEL_H, MODEL_C, fmt))
+        for i in range(0, len(img_bytes), CHUNK):
+            chunk = img_bytes[i:i + CHUNK]
+            send_frame(ser, T_IMG_CHUNK, struct.pack("<H", i // CHUNK) + chunk)
+            if chunk_delay:
+                time.sleep(chunk_delay)   # pace the upload (no flow ctrl)
+        send_frame(ser, T_IMG_END)
 
-    while True:
-        ftype, payload = read_frame(ser)
-        if ftype == T_LOG:
-            print(f"[fw] {payload.decode(errors='ignore').rstrip()}")
-            continue
-        if ftype == T_INFER_DEC:
-            pre_us, inf_us, post_us, n = struct.unpack("<IIIH", payload[:14])
-            boxes = []
-            off = 14
-            for _ in range(n):
-                x1, y1, x2, y2, s = struct.unpack("<5f", payload[off:off + 20])
-                boxes.append((x1, y1, x2, y2, s))
-                off += 20
-            return {"pre_us": pre_us, "inference_us": inf_us, "post_us": post_us,
-                    "boxes": boxes}
+        resend = False
+        while True:
+            try:
+                ftype, payload = read_frame(ser, timeout_s=5.0)
+            except TimeoutError:
+                resend = True; break               # no reply -> re-send the image
+            if ftype == T_LOG:
+                msg = payload.decode(errors="ignore").rstrip()
+                print(f"[fw] {msg}")
+                if "size mismatch" in msg.lower():
+                    resend = True; break           # dropped chunk -> re-send
+                continue
+            if ftype == T_INFER_DEC:
+                pre_us, inf_us, post_us, n = struct.unpack("<IIIH", payload[:14])
+                boxes = []
+                off = 14
+                for _ in range(n):
+                    x1, y1, x2, y2, s = struct.unpack("<5f", payload[off:off + 20])
+                    boxes.append((x1, y1, x2, y2, s))
+                    off += 20
+                return {"pre_us": pre_us, "inference_us": inf_us, "post_us": post_us,
+                        "boxes": boxes}
+        if not resend:
+            break
+    raise IOError(f"image upload failed after {retries} attempts (persistent UART drops)")
 
 
 def _resolve_list_entry(line: str, root: Path) -> Path:
@@ -431,6 +446,7 @@ def mode_bench(args) -> int:
     results_csv = out_dir / f"results_{tag}.csv"
 
     rows, all_scored, cerr_all = [], [], []
+    dump_rows = []
     n_gt_total = tp_t = fp_t = fn_t = 0
     iou_sum = 0.0
     pre_l, inf_l, post_l = [], [], []
@@ -446,6 +462,9 @@ def mode_bench(args) -> int:
             buf = load_image(p, "hwc")           # HWC -> board transposes (pre stage)
             r = push_image(ser, buf, chunk_delay=args.chunk_delay, fmt=1)
             preds = sorted(r["boxes"], key=lambda b: -b[4])   # all boxes; conf applied to metrics below
+            if args.dump_boxes:
+                for (bx1, by1, bx2, by2, bsc) in preds:
+                    dump_rows.append((p.name, bx1, by1, bx2, by2, bsc))
             gts = viz_common.load_gt_model_space(p)
             scored, sum_iou, cerr, n_fn = _match_image(preds, gts, args.iou)
             tp = sum(t for _, t in scored)
@@ -463,6 +482,12 @@ def mode_bench(args) -> int:
                       f"infer={r['inference_us']/1000:.1f}ms")
 
     n = len(rows)
+    if args.dump_boxes:
+        with open(args.dump_boxes, "w") as f:
+            f.write("image,x1,y1,x2,y2,score\n")
+            for rw in dump_rows:
+                f.write("{},{:.3f},{:.3f},{:.3f},{:.3f},{:.4f}\n".format(*rw))
+        print(f"  dumped {len(dump_rows)} board boxes -> {args.dump_boxes}")
     op_conf = args.conf
     map50 = _ap(all_scored, n_gt_total)                       # AP over all boxes (~training ap_conf)
     precision, recall, f1, fp_per_image = _metrics_at_conf(all_scored, n_gt_total, n, op_conf)
@@ -534,6 +559,24 @@ def parse_args() -> argparse.Namespace:
     pi.add_argument("--layout", choices=["chw", "hwc"], default="chw",
                     help="pixel layout sent to the NPU input buffer: chw=planar "
                          "(matches the NCHW model, default), hwc=interleaved (A/B test)")
+
+    pb = sub.add_parser("bench", help="benchmark over a val set: metrics + timing")
+    bsrc = pb.add_mutually_exclusive_group(required=True)
+    bsrc.add_argument("--images", help="folder of images")
+    bsrc.add_argument("--image-list", help="text file of image paths (e.g. splits/val.txt)")
+    pb.add_argument("--image-root", default="datasets/BALL")
+    pb.add_argument("--limit", type=int, default=0)
+    pb.add_argument("--chunk-delay", type=float, default=0.0)
+    pb.add_argument("--conf", type=float, default=0.45,
+                    help="operating confidence for P/R/F1 -- 0.45 == BallDetector_N6 firmware "
+                         "CONF_THR (was 0.5). NMS(0.25)/max_det(8) already match N6 on-device.")
+    pb.add_argument("--iou", type=float, default=0.5, help="matching IoU for a TP")
+    pb.add_argument("--model-name", required=True)
+    pb.add_argument("--out-dir", required=True)
+    pb.add_argument("--comparison-csv",
+                    default="software/final_models/ball_detection/model_comparison.csv")
+    pb.add_argument("--dump-boxes", default="",
+                    help="write the board's per-image boxes to this CSV (for ONNX A/B diff)")
 
     pc = sub.add_parser("cam", help="live camera view")
     pc.add_argument("--period-ms", type=int, default=0,
