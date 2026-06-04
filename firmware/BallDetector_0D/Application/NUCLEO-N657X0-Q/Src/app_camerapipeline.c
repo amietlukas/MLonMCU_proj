@@ -21,7 +21,9 @@
 #include "app_camerapipeline.h"
 #include "app_config.h"
 #include "crop_img.h"
+#if APP_UVC
 #include "scrl.h"
+#endif
 #include "main.h"
 #include "stai_network.h"
 
@@ -32,6 +34,7 @@
 
 extern int32_t cameraFrameReceived;
 
+#if APP_UVC
 static void DCMIPP_PipeInitDisplay(CMW_CameraInit_t *camConf, uint32_t *layers_width[2], uint32_t *layers_height[2])
 {
   CMW_Aspect_Ratio_Mode_t aspect_ratio;
@@ -78,6 +81,7 @@ static void DCMIPP_PipeInitDisplay(CMW_CameraInit_t *camConf, uint32_t *layers_w
   assert(ret == HAL_OK);
   assert(dcmipp_conf.output_width * dcmipp_conf.output_bpp == pitch);
 }
+#endif /* APP_UVC */
 
 static void DCMIPP_PipeInitNn(uint32_t *pitch)
 {
@@ -138,7 +142,12 @@ void CameraPipeline_Init(uint32_t *layers_width[2], uint32_t *layers_height[2], 
 
   ret = CMW_CAMERA_Init(&cam_conf, NULL);
   assert(ret == CMW_ERROR_NONE);
+#if APP_UVC
   DCMIPP_PipeInitDisplay(&cam_conf, layers_width, layers_height);
+#else
+  (void)layers_width;
+  (void)layers_height;
+#endif
   DCMIPP_PipeInitNn(pitch_nn);
 }
 
@@ -185,15 +194,17 @@ void CameraPipeline_IspUpdate(void)
   */
 int CMW_CAMERA_PIPE_FrameEventCallback(uint32_t pipe)
 {
-  int ret;
-
   switch (pipe)
   {
     case DCMIPP_PIPE2 :
       cameraFrameReceived++;
 
-      ret = SRCL_Update();
-      assert(ret == 0);
+#if APP_UVC
+      {
+        int ret = SRCL_Update();
+        assert(ret == 0);
+      }
+#endif
       break;
   }
   return 0;

@@ -37,6 +37,7 @@ void     Servo_SetAngle(int deg);       /* 0..180 mapped across the safe band   
 void     Servo_SetAngleF(float deg);    /* float angle (smooth 50 Hz tracker)      */
 int      Servo_GetAngle(void);          /* last COMMANDED angle (no HW readback)   */
 uint16_t Servo_GetMicros(void);
+void     Servo_DumpState(void);         /* print TIM16/PA3 state for PWM debugging */
 
 /* Manual test protocol: 'L'/'l' step left, 'R'/'r' step right, 'M'/'m' center. */
 void Servo_Command(char cmd);

@@ -28,11 +28,32 @@ BINARY_DIR = Binary
 # SPI or UVCL
 SCR_LIB_SCREEN_ITF := UVCL
 SCR_LIB_RTOS := NONE
+APP_UVC ?= 1
+APP_PRINTF_FLOAT ?= $(APP_UVC)
 ifdef APP_GIT_SHA1_STRING
 C_DEFS += -DAPP_GIT_SHA1_STRING=\"$(APP_GIT_SHA1_STRING)\"
 endif
 ifdef APP_VERSION_STRING
 C_DEFS += -DAPP_VERSION_STRING=\"$(APP_VERSION_STRING)\"
+endif
+C_DEFS += -DAPP_UVC=$(APP_UVC)
+ifdef APP_BENCHMARK
+C_DEFS += -DAPP_BENCHMARK=$(APP_BENCHMARK)
+endif
+ifdef BT_MOTOR_ISOLATE
+C_DEFS += -DBT_MOTOR_ISOLATE=$(BT_MOTOR_ISOLATE)
+endif
+ifdef NN_ROTATE_90
+C_DEFS += -DNN_ROTATE_90=$(NN_ROTATE_90)
+endif
+ifdef SERVO_HOLD_TEST
+C_DEFS += -DSERVO_HOLD_TEST=$(SERVO_HOLD_TEST)
+endif
+ifdef YOLO_DECODE_CONF
+C_DEFS += -DYOLO_DECODE_CONF=$(YOLO_DECODE_CONF)
+endif
+ifdef TRACK_CONF_MIN
+C_DEFS += -DTRACK_CONF_MIN=$(TRACK_CONF_MIN)
 endif
 
 ######################################
@@ -59,9 +80,13 @@ C_SOURCES += Src/ball_tracker.c
 C_SOURCES += Src/uart_protocol.c
 C_SOURCES += Src/syscalls.c
 C_SOURCES += Src/app_fuseprogramming.c
+ifneq ($(APP_UVC),0)
 C_SOURCES += $(wildcard ../../Middlewares/ai-postprocessing-wrapper/*.c)
 C_SOURCES += $(wildcard ../../Middlewares/stm32-vision-models-postprocessing/lib_vision_models_pp/Src/*.c)
+endif
+ifneq ($(APP_UVC),0)
 C_SOURCES += Src/stm32_lcd_ex.c
+endif
 C_SOURCES += Src/stm32n6xx_it.c
 C_SOURCES += ../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/mcu_cache.c
 C_SOURCES += ../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c
@@ -74,7 +99,9 @@ C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ha
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_spi.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_dma_ex.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_dma.c
+ifneq ($(APP_UVC),0)
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_dma2d.c
+endif
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_gpio.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_uart.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_uart_ex.c
@@ -82,8 +109,10 @@ C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ha
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_tim_ex.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_i2c.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_i2c_ex.c
+ifneq ($(APP_UVC),0)
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ltdc_ex.c
+endif
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_rif.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_ramcfg.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_cacheaxi.c
@@ -93,9 +122,11 @@ C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ha
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_rcc_ex.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_xspi.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_bsec.c
+ifneq ($(APP_UVC),0)
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_pcd.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_hal_pcd_ex.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Src/stm32n6xx_ll_usb.c
+endif
 C_SOURCES += ../../Middlewares/stm32-mw-camera/cmw_camera.c
 C_SOURCES += ../../Middlewares/stm32-mw-camera/cmw_utils.c
 C_SOURCES += ../../STM32Cube_FW_N6/Drivers/BSP/STM32N6xx_Nucleo/stm32n6xx_nucleo.c
@@ -124,7 +155,9 @@ C_SOURCES += ../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_cmd_parse
 C_SOURCES += ../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_core.c
 C_SOURCES += ../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_services.c
 C_SOURCES += ../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_tool_com.c
+ifneq ($(APP_UVC),0)
 C_SOURCES += ../../STM32Cube_FW_N6/Utilities/lcd/stm32_lcd.c
+endif
 C_SOURCES += ../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton.c
 C_SOURCES += ../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_rt_main.c
 C_SOURCES += ../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_runtime.c
@@ -219,7 +252,9 @@ C_INCLUDES += -I../../STM32Cube_FW_N6/Drivers/BSP/STM32N6xx_Nucleo
 C_INCLUDES += -I../../Middlewares/stm32-mw-camera/ISP_Library/isp/Inc
 C_INCLUDES += -I../../Middlewares/stedgeai-lib/Inc
 C_INCLUDES += -I../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx
+ifneq ($(APP_UVC),0)
 C_INCLUDES += -I../../STM32Cube_FW_N6/Utilities/lcd
+endif
 C_INCLUDES += -I../../STM32Cube_FW_N6/Drivers/BSP/Components/aps256xx
 
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fstack-usage -fdata-sections -ffunction-sections -fcyclomatic-complexity
@@ -233,14 +268,20 @@ CFLAGS += -std=gnu11
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32CubeIDE/STM32N657xx.ld
+ifeq ($(APP_UVC),0)
+LDSCRIPT ?= STM32CubeIDE/STM32N657xx_headless.ld
+else
+LDSCRIPT ?= STM32CubeIDE/STM32N657xx.ld
+endif
 
 # libraries
 LIBS = -lc -lm -lnosys -l:NetworkRuntime1200_CM55_GCC.a
 LIBDIR = -L../../Middlewares/stedgeai-lib/Lib/GCC/ARMCortexM55
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 # Uncomment to enable %f formatted output
+ifneq ($(APP_PRINTF_FLOAT),0)
 LDFLAGS += -u _printf_float
+endif
 LDFLAGS += -Wl,--print-memory-usage
 # Avoid 'build/Project.elf has a LOAD segment with RWX permissions' warning
 LDFLAGS += -Wl,--no-warn-rwx-segments
@@ -248,8 +289,10 @@ LDFLAGS += -Wl,--no-warn-rwx-segments
 #######################################
 # Include mk files
 #######################################
+ifneq ($(APP_UVC),0)
 SCR_USBX_REL_DIR := ../../STM32Cube_FW_N6/Middlewares/ST/usbx
 include ../../Middlewares/screenl/scr_lib.mk
+endif
 
 #######################################
 # base build

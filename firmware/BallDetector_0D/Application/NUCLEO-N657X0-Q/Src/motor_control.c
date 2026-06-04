@@ -85,10 +85,10 @@ void Motor_Command(char cmd)
 {
   switch (cmd) {
     case '0': Motor_Stop();              break;  /* stop          */
-    case '1': Motor_ForwardStraight(220);break;  /* forward       */
-    case '2': Motor_Curve(220, 110);     break;  /* forward-right */
-    case '3': Motor_Curve(110, 220);     break;  /* forward-left  */
-    case '4': Motor_BackwardStraight(200);break; /* backward      */
+    case '1': Motor_ForwardStraight(110);break;  /* forward       */
+    case '2': Motor_Curve(110, 55);      break;  /* forward-right */
+    case '3': Motor_Curve(55, 110);      break;  /* forward-left  */
+    case '4': Motor_BackwardStraight(100);break; /* backward      */
     case '5': Motor_Stop();              break;  /* (reserved)    */
     default:  /* keep previous command */ break;
   }

@@ -19,13 +19,17 @@
 #include <unistd.h>
 
 #include "cmw_camera.h"
+#include "app_config.h"
+#if APP_UVC
 #include "scrl.h"
+#include "stm32_lcd.h"
+#include "stm32_lcd_ex.h"
+#include "stlogo.h"
+#endif
 #include "stm32n6xx_nucleo_bus.h"
 #include "stm32n6xx_nucleo_xspi.h"
 #include "stm32n6xx_nucleo.h"
-#include "stm32_lcd.h"
 #include "app_fuseprogramming.h"
-#include "stm32_lcd_ex.h"
 #include "app_postprocess.h"
 #include "yolo_postproc.h"   /* proven balldet 3-head decoder (from BallDetector_N6) */
 #include "stai.h"
@@ -33,9 +37,7 @@
 #include "app_camerapipeline.h"
 #include "main.h"
 #include <stdio.h>
-#include "app_config.h"
 #include "crop_img.h"
-#include "stlogo.h"
 #include "motor_control.h"
 #include "servo_control.h"
 #include "ball_tracker.h"
@@ -43,25 +45,25 @@
 
 /* Hardware-isolation test: 1 = hold servo dead-static at boot angle (90deg),
  * never touch CCR1 again. If it still jitters, the cause is 100% hardware. */
-#define SERVO_HOLD_TEST   1
+#ifndef SERVO_HOLD_TEST
+#define SERVO_HOLD_TEST   0
+#endif
+
+/* Decode threshold before NMS. Keep this lower than the final tracking gate
+ * while debugging live camera/preprocess issues, otherwise yolo_postprocess()
+ * can return nb_detect=0 before the servo logic sees anything. */
+#ifndef YOLO_DECODE_CONF
+#define YOLO_DECODE_CONF  0.50f
+#endif
 
 /* Simple (non-tracker) servo control params, for the diagnosis build. */
 #define SIMPLE_SIGN      (-1.0f)   /* pan direction toward the ball (verified)   */
-#define SIMPLE_SMOOTH     0.20f    /* EMA low-pass on detected x                 */
-#define SIMPLE_GAIN_US    120.0f   /* us pan per unit of horizontal error        */
-#define SIMPLE_STEP_MAX   12.0f    /* max us change per update (slow)            */
-#define SIMPLE_DEADZONE   0.06f    /* |x-0.5| below this = centered, no move     */
+#define SIMPLE_SMOOTH     0.30f    /* EMA low-pass on detected x                 */
+#define SIMPLE_GAIN_US    240.0f   /* us pan per unit of horizontal error        */
+#define SIMPLE_STEP_MAX   24.0f    /* max us change per update                   */
+#define SIMPLE_DEADZONE   0.05f    /* |x-0.5| below this = centered, no move     */
 
 CLASSES_TABLE;
-
-#define LCD_BG_WIDTH  SCREEN_WIDTH
-#define LCD_BG_HEIGHT SCREEN_HEIGHT
-#define LCD_FG_WIDTH  SCREEN_WIDTH
-#define LCD_FG_HEIGHT SCREEN_HEIGHT
-
-#define LCD_FG_FRAMEBUFFER_SIZE  (LCD_FG_WIDTH * LCD_FG_HEIGHT * 2)
-
-#define UTIL_LCD_COLOR_TRANSPARENT 0
 
 #ifndef APP_GIT_SHA1_STRING
 #define APP_GIT_SHA1_STRING "dev"
@@ -70,6 +72,15 @@ CLASSES_TABLE;
 #define APP_VERSION_STRING "unversioned"
 #endif
 
+#if APP_UVC
+#define LCD_BG_WIDTH  SCREEN_WIDTH
+#define LCD_BG_HEIGHT SCREEN_HEIGHT
+#define LCD_FG_WIDTH  SCREEN_WIDTH
+#define LCD_FG_HEIGHT SCREEN_HEIGHT
+
+#define LCD_FG_FRAMEBUFFER_SIZE  (LCD_FG_WIDTH * LCD_FG_HEIGHT * 2)
+
+#define UTIL_LCD_COLOR_TRANSPARENT 0
 
 typedef struct
 {
@@ -116,7 +127,9 @@ const uint32_t colors[NUMBER_COLORS] = {
     UTIL_LCD_COLOR_BLUE,
     UTIL_LCD_COLOR_ORANGE
 };
+#endif /* APP_UVC */
 
+#if APP_UVC
 #if POSTPROCESS_TYPE == POSTPROCESS_OD_YOLO_V2_UI
   od_yolov2_pp_static_param_t pp_params;
 #elif POSTPROCESS_TYPE == POSTPROCESS_OD_YOLO_V5_UU
@@ -134,6 +147,7 @@ const uint32_t colors[NUMBER_COLORS] = {
 #else
   #error "PostProcessing type not supported"
 #endif
+#endif /* APP_UVC */
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;   /* HC-06 Bluetooth on Arduino D0/D1 (PD9 RX / PD8 TX) */
@@ -256,8 +270,14 @@ static void process_commands(void)
     printf("BT rx 0x%02X '%c'\n", (unsigned)b, (b >= 32 && b < 127) ? (char)b : '.');
     if (b >= '0' && b <= '5') Motor_Command((char)b);
     else if (b=='L'||b=='l'||b=='R'||b=='r'||b=='M'||b=='m'||b=='<'||b=='>') {
+#if SERVO_HOLD_TEST
+      Servo_SetMicros(SERVO_CENTER_US);
+      printf("Servo hold: ignored cmd '%c', centered at %uus\n",
+             (b >= 32 && b < 127) ? (char)b : '.', (unsigned)Servo_GetMicros());
+#else
       Servo_Command((char)b);
       printf("Servo -> %ddeg (%uus)\n", Servo_GetAngle(), (unsigned)Servo_GetMicros());
+#endif
     }
   }
   /* USB VCP: 'c' = frame dump; '0'-'5' = wired fallback drive command. */
@@ -284,6 +304,7 @@ static uint8_t dcmipp_out_nn[DCMIPP_OUT_NN_BUFF_LEN];
 
 /* model */
 STAI_NETWORK_CONTEXT_DECLARE(network_context, STAI_NETWORK_CONTEXT_SIZE)
+#if APP_UVC
 /* Lcd Background Buffer */
 __attribute__ ((aligned (32)))
 static uint8_t lcd_bg_buffer[LCD_BG_WIDTH * LCD_BG_HEIGHT * 2];
@@ -294,18 +315,21 @@ static int lcd_fg_buffer_rd_idx;
 /* screen buffer */
 __attribute__ ((aligned (32)))
 static uint8_t screen_buffer[LCD_FG_WIDTH * LCD_FG_HEIGHT * 2];
+#endif /* APP_UVC */
 
 static void SystemClock_Config(void);
 static void CONSOLE_Config(void);
 static void BT_Config(void);
 static void NPURam_enable(void);
 static void NPUCache_config(void);
+#if APP_UVC
 static void Display_NetworkOutput(od_pp_out_t *p_postprocess, uint32_t inference_ms);
 static void Display_init(void);
+static void Display_WelcomeScreen(void);
+#endif
 static void Security_Config(void);
 static void set_clk_sleep_mode(void);
 static void IAC_Config(void);
-static void Display_WelcomeScreen(void);
 static void Hardware_init(void);
 static void NeuralNetwork_init(uint32_t *nn_in_length, stai_ptr *nn_out, stai_size *number_output, int32_t nn_out_len[]);
 
@@ -416,7 +440,7 @@ static void Benchmark_Run(uint32_t nn_in_len, stai_ptr *nn_out,
       for (int i = 0; i < g_n_heads; i++) heads[i] = (const uint8_t *)nn_out[i];
       int nb = yolo_postprocess(heads, g_n_heads, g_head_scale, g_head_zp,
                                 g_head_stride, g_head_gw, g_head_gh,
-                                0.05f, 0.25f, g_yolo_boxes, YOLO_MAX_DET);
+                                YOLO_DECODE_CONF, 0.25f, g_yolo_boxes, YOLO_MAX_DET);
       uint32_t post_us = dwt_us(DWT->CYCCNT - t0);
 
       proto_send_infer_dec(pre_us, infer_us, post_us, g_yolo_boxes, (uint16_t)nb);
@@ -450,15 +474,21 @@ int main(void)
   head_cfg_init();   /* per-head count/scale/zp/stride/grid from generated macros */
   printf("DBG21 nn_init done\n");
 
+  int ret;
+
+#if APP_UVC
   /*** Post Processing Init ***************************************************/
   stai_network_info info;
-  int ret;
 
   ret = stai_network_get_info(network_context, &info);
   assert(ret == STAI_SUCCESS);
   printf("DBG22 get_info done\n");
   app_postprocess_init(&pp_params, &info);
   printf("DBG23 postproc_init done\n");
+#else
+  printf("DBG22 get_info skipped (headless APP_UVC=0)\n");
+  printf("DBG23 postproc_init skipped\n");
+#endif
 
 #if APP_BENCHMARK
   /*** UART image-benchmark mode (no camera/UVC; never returns) ***************/
@@ -472,6 +502,7 @@ int main(void)
 
   /*** Camera Init ************************************************************/
   uint32_t pitch_nn = 0;
+#if APP_UVC
   CameraPipeline_Init((uint32_t *[2]) {&lcd_bg_area.XSize, &lcd_fg_area.XSize}, (uint32_t *[2]) {&lcd_bg_area.YSize, &lcd_fg_area.YSize}, &pitch_nn);
   printf("DBG24 cam_init done\n");
 
@@ -481,6 +512,12 @@ int main(void)
   /* Start LCD Display camera pipe stream */
   CameraPipeline_DisplayPipe_Start(lcd_bg_buffer, CMW_MODE_CONTINUOUS);
   printf("DBG26 disp_pipe started\n");
+#else
+  CameraPipeline_Init(NULL, NULL, &pitch_nn);
+  printf("DBG24 cam_init done (headless APP_UVC=0)\n");
+  printf("DBG25 display_init skipped\n");
+  printf("DBG26 disp_pipe skipped\n");
+#endif
 
   /*** App header *************************************************************/
   printf("========================================\n");
@@ -505,8 +542,13 @@ int main(void)
   Servo_Init();   /* camera-pan servo -> centers to nominal home on boot */
   printf("DBG28 servo_init done\n");
 
+#if SERVO_HOLD_TEST
+  Servo_SetMicros(SERVO_CENTER_US);
+  printf("DBG29 tracker_init skipped: SERVO_HOLD_TEST=1, servo forced center\n");
+#else
   BallTracker_Init();   /* alpha-beta tracker + 50 Hz control tick (TIM7) */
   printf("DBG29 tracker_init done\n");
+#endif
 
   /*** App Loop ***************************************************************/
   while (1)
@@ -550,8 +592,6 @@ int main(void)
     }
 
     if (dbg) printf("L0 loop iter %u\n", g_lc);
-    CameraPipeline_IspUpdate();
-
     /* Pipelined capture: the snapshot for THIS frame was kicked off at the end of
      * the previous iteration so it overlapped the NPU inference. Ensure one is in
      * flight (first iteration / after a frame dump), then wait for it. */
@@ -559,6 +599,8 @@ int main(void)
       CameraPipeline_NNPipe_Start(nn_hwc, CMW_MODE_SNAPSHOT);
       g_capture_inflight = 1;
     }
+    CameraPipeline_IspUpdate();
+
     uint32_t wt0 = HAL_GetTick();
     while (cameraFrameReceived == 0) {};
     cameraFrameReceived = 0;
@@ -610,7 +652,9 @@ int main(void)
     /* Decode balldet's 3 heads (p8/p16/p32 = nn_out[0..2], CHW int8
      * [tx,ty,tw,th,tobj]) with the proven decoder, then convert pixel xyxy ->
      * normalized center/wh that Display_NetworkOutput expects. */
+#if APP_UVC
     (void)pp_params;
+#endif
     for (int i = 0; i < number_output; i++) {
       SCB_InvalidateDCache_by_Addr(nn_out[i], nn_out_len[i]);   /* read fresh NPU output */
     }
@@ -618,7 +662,7 @@ int main(void)
     for (int i = 0; i < g_n_heads; i++) heads[i] = (const uint8_t *)nn_out[i];
     int nb = yolo_postprocess(heads, g_n_heads, g_head_scale, g_head_zp,
                               g_head_stride, g_head_gw, g_head_gh,
-                              0.5f, 0.25f, g_yolo_boxes, YOLO_MAX_DET);
+                              YOLO_DECODE_CONF, 0.25f, g_yolo_boxes, YOLO_MAX_DET);
     for (int i = 0; i < nb; i++) {
       float cx = 0.5f * (g_yolo_boxes[i].x1 + g_yolo_boxes[i].x2);
       float cy = 0.5f * (g_yolo_boxes[i].y1 + g_yolo_boxes[i].y2);
@@ -631,16 +675,18 @@ int main(void)
     }
     pp_output.pOutBuff  = g_od_boxes;
     pp_output.nb_detect = nb;
-    int32_t pp_ret = 0;
     if (dbg) printf("L4 postproc nb_detect=%d\n", nb);
 
 #if SERVO_HOLD_TEST
-    /* Servo held dead-static at the boot angle; CCR1 is never written here. */
+    /* Servo held at the center pulse. Reassert the same CCR value so any stray
+     * command/noise cannot leave it away from center while this test is active. */
     {
       static uint32_t hold_log = 0; uint32_t now = HAL_GetTick();
+      Servo_SetMicros(SERVO_CENTER_US);
       if (now - hold_log >= 1000) {
-        printf("HOLD servo us=%u ang=%d (static, no writes)\n",
+        printf("HOLD servo us=%u ang=%d (forced center)\n",
                (unsigned)Servo_GetMicros(), Servo_GetAngle());
+        Servo_DumpState();
         hold_log = now;
       }
     }
@@ -694,10 +740,14 @@ int main(void)
     }
 #endif /* SERVO_HOLD_TEST */
 
+#if APP_UVC
     uint32_t ut0 = HAL_GetTick();
     Display_NetworkOutput(&pp_output, ts[1] - ts[0]);
     if (dbg) printf("L6 uvc %lums (infer %lums)\n",
                     (unsigned long)(HAL_GetTick() - ut0), (unsigned long)(ts[1] - ts[0]));
+#else
+    if (dbg) printf("L6 uvc skipped (infer %lums)\n", (unsigned long)(ts[1] - ts[0]));
+#endif
     /* Discard nn_out region (used by pp_input and pp_outputs variables) to avoid Dcache evictions during nn inference */
     for (int i = 0; i < number_output; i++)
     {
@@ -815,13 +865,19 @@ static void set_clk_sleep_mode(void)
   /* Keep all IP's enabled during WFE so they can wake up CPU. Fine tune
    * this if you want to save maximum power
    */
+#if APP_UVC
   __HAL_RCC_XSPI1_CLK_SLEEP_ENABLE();    /* For display frame buffer */
+#endif
   __HAL_RCC_XSPI2_CLK_SLEEP_ENABLE();    /* For NN weights */
   __HAL_RCC_NPU_CLK_SLEEP_ENABLE();      /* For NN inference */
   __HAL_RCC_CACHEAXI_CLK_SLEEP_ENABLE(); /* For NN inference */
+#if APP_UVC
   __HAL_RCC_DMA2D_CLK_SLEEP_ENABLE();    /* For display */
+#endif
   __HAL_RCC_DCMIPP_CLK_SLEEP_ENABLE();   /* For camera configuration retention */
   __HAL_RCC_CSI_CLK_SLEEP_ENABLE();      /* For camera configuration retention */
+  __HAL_RCC_TIM16_CLK_SLEEP_ENABLE();    /* Keep servo PWM alive during WFE/NPU */
+  __HAL_RCC_GPIOA_CLK_SLEEP_ENABLE();    /* Keep PA3 alternate output active */
 
   __HAL_RCC_FLEXRAM_MEM_CLK_SLEEP_ENABLE();
   __HAL_RCC_AXISRAM1_MEM_CLK_SLEEP_ENABLE();
@@ -844,19 +900,27 @@ static void Security_Config(void)
   RIMC_master.MasterCID = RIF_CID_1;
   RIMC_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV;
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_NPU, &RIMC_master);
+#if APP_UVC
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_DMA2D, &RIMC_master);
+#endif
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_DCMIPP, &RIMC_master);
+#if APP_UVC
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_LTDC1 , &RIMC_master);
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_LTDC2 , &RIMC_master);
   HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_OTG1 , &RIMC_master);
+#endif
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_NPU , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+#if APP_UVC
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_DMA2D , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+#endif
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_CSI    , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_DCMIPP , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+#if APP_UVC
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_LTDC   , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_LTDCL1 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_LTDCL2 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_OTG1HS , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
+#endif
   HAL_RIF_RISC_SetSlaveSecureAttributes(RIF_RISC_PERIPH_INDEX_SPI5 , RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_PRIV);
 }
 
@@ -875,6 +939,44 @@ void IAC_IRQHandler(void)
   }
 }
 
+#if APP_UVC
+static void Display_Text90CW(uint32_t x, uint32_t y, const char *text)
+{
+  sFONT *font = UTIL_LCD_GetFont();
+  const uint32_t fw = font->Width;
+  const uint32_t fh = font->Height;
+  const uint32_t bytes_per_row = (fw + 7u) / 8u;
+  const uint32_t row_offset = (8u * bytes_per_row) - fw;
+  const uint32_t color = UTIL_LCD_GetTextColor();
+
+  for (uint32_t ci = 0; text[ci] != '\0'; ++ci) {
+    uint8_t ch = (uint8_t)text[ci];
+    if (ch < ' ' || ch > '~') ch = '?';
+    const uint8_t *glyph = font->table + ((uint32_t)(ch - ' ') * fh * bytes_per_row);
+
+    for (uint32_t row = 0; row < fh; ++row) {
+      const uint8_t *p = glyph + (bytes_per_row * row);
+      uint32_t bits;
+      if (bytes_per_row == 1u) {
+        bits = p[0];
+      } else if (bytes_per_row == 2u) {
+        bits = ((uint32_t)p[0] << 8) | p[1];
+      } else {
+        bits = ((uint32_t)p[0] << 16) | ((uint32_t)p[1] << 8) | p[2];
+      }
+
+      for (uint32_t col = 0; col < fw; ++col) {
+        if ((bits & (1u << (fw - col + row_offset - 1u))) == 0u) continue;
+        uint32_t dx = x + (fh - 1u - row);
+        uint32_t dy = y + (ci * fw) + col;
+        if (dx < lcd_fg_area.XSize && dy < lcd_fg_area.YSize) {
+          UTIL_LCD_SetPixel((uint16_t)dx, (uint16_t)dy, color);
+        }
+      }
+    }
+  }
+}
+
 /**
 * @brief Display Neural Network output classification results as well as other performances informations
 *
@@ -887,6 +989,7 @@ static void Display_NetworkOutput(od_pp_out_t *p_postprocess, uint32_t inference
   od_pp_outBuffer_t *rois = p_postprocess->pOutBuff;
   uint32_t nb_rois = p_postprocess->nb_detect;
   int ret;
+  (void)inference_ms;
 
   __disable_irq();
   ret = SCRL_SetAddress_NoReload(lcd_fg_buffer[lcd_fg_buffer_rd_idx], SCRL_LAYER_1);
@@ -930,10 +1033,13 @@ static void Display_NetworkOutput(od_pp_out_t *p_postprocess, uint32_t inference
     UTIL_LCDEx_PrintfAt(-x0-width, y0, RIGHT_MODE, "%.0f%%", rois[i].conf*100.0f);
   }
 
-  UTIL_LCD_SetBackColor(0x40000000);
-  UTIL_LCDEx_PrintfAt(0, LINE(0), LEFT_MODE, "Inference");
-  UTIL_LCDEx_PrintfAt(0, LINE(1), LEFT_MODE, "%ums", inference_ms);
-  UTIL_LCDEx_PrintfAt(0, LINE(0), RIGHT_MODE, "Objects %u", nb_rois);
+  {
+    char objects_label[24];
+    sFONT *font = UTIL_LCD_GetFont();
+    snprintf(objects_label, sizeof(objects_label), "Objects %lu", (unsigned long)nb_rois);
+    UTIL_LCD_SetTextColor(UTIL_LCD_COLOR_WHITE);
+    Display_Text90CW(lcd_fg_area.XSize - font->Height - 2u, 4u, objects_label);
+  }
   UTIL_LCD_SetBackColor(0);
 
   Display_WelcomeScreen();
@@ -1019,6 +1125,7 @@ static void Display_WelcomeScreen(void)
     UTIL_LCD_SetBackColor(0);
   }
 }
+#endif /* APP_UVC */
 
 /**
   * @brief  DCMIPP Clock Config for DCMIPP.

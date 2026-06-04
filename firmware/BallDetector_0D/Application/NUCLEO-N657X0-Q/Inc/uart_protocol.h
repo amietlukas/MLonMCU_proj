@@ -41,7 +41,7 @@ void proto_send_log(const char *msg);
 void proto_send_infer_dec(uint32_t pre_us, uint32_t infer_us, uint32_t post_us,
                           const yolo_box_t *boxes, uint16_t n);
 
-/* Returns 1 on a good frame (sets *type/*len), 0 on timeout, <0 on CRC/overflow. */
+/* Returns 1 on a good frame, 0 on timeout, <0 on CRC/overflow. */
 int proto_recv_frame(uint8_t *type, uint8_t *payload, uint32_t cap, uint32_t *len);
 
 #endif /* UART_PROTOCOL_H */

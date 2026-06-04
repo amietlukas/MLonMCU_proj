@@ -2,7 +2,10 @@
 
 set -eu # Exit on any error, Exit on unset variable
 
-stedgeai generate --model balldet_int8.onnx --target stm32n6 --st-neural-art default@user_neuralart_NUCLEO-N657X0-Q.json --input-data-type uint8 --output-data-type int8
+MODEL=${STEDGEAI_MODEL:-balldet_int8.onnx}
+NEURAL_ART=${STEDGEAI_NEURAL_ART:-default@user_neuralart_NUCLEO-N657X0-Q.json}
+
+stedgeai generate --model "$MODEL" --target stm32n6 --st-neural-art "$NEURAL_ART" --input-data-type uint8 --output-data-type int8
 
 cp st_ai_output/network.c NUCLEO-N657X0-Q/
 cp st_ai_output/network_ecblobs.h NUCLEO-N657X0-Q/

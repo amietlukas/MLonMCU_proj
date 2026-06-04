@@ -22,7 +22,9 @@
 /* Detector confidence required to feed a box to the tracker (display may draw
  * weaker ones). Association gate: while tracking, only accept detections within
  * TRK_GATE (normalized) of the current estimate -> rejects far false positives. */
-#define TRACK_CONF_MIN  0.70f
+#ifndef TRACK_CONF_MIN
+#define TRACK_CONF_MIN  0.60f
+#endif
 #define TRK_GATE        0.25f
 
 enum { TRK_IDLE = 0, TRK_TENTATIVE = 1, TRK_CONFIRMED = 2, TRK_COAST = 3 };

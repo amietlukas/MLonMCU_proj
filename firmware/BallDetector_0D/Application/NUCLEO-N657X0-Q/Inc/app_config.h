@@ -32,18 +32,31 @@
  *       The UVC display stays sideways; box overlay is mapped back (incl. crop).
  *   0 = original: straight HWC->CHW transpose, no rotation (sideways to the NN).
  * Flip this define and rebuild to A/B the two. */
+#ifndef NN_ROTATE_90
 #define NN_ROTATE_90 (1)
+#endif
 
 /* 1 = UART image-benchmark mode (host pushes val images over USART1, board runs
  *     inference and replies with per-stage timing + boxes; no camera/UVC).
  * 0 = normal live camera + tracking application. */
+#ifndef APP_BENCHMARK
 #define APP_BENCHMARK (0)
+#endif
+
+/* 1 = enable USB/UVC live video feed and LCD overlay buffers.
+ * 0 = headless tracking: keep camera NN pipe + Bluetooth/motor/servo, but skip
+ *     the display pipe and screen/USB buffers so large models can use cpuRAM1. */
+#ifndef APP_UVC
+#define APP_UVC (1)
+#endif
 
 /* Debug isolation: 1 = run ONLY Bluetooth-receive + motor control (skip the
  * camera/NN entirely) and echo every received command on UART1. Use this to
  * verify the HC-06 link and motor commands in isolation. Set back to 0 to
  * restore the full detection + UVC + motor application. */
+#ifndef BT_MOTOR_ISOLATE
 #define BT_MOTOR_ISOLATE (0)
+#endif
 
 #define ASPECT_RATIO_CROP       (1) /* Crop both pipes to nn input aspect ratio; Original aspect ratio kept */
 #define ASPECT_RATIO_FIT        (2) /* Resize both pipe to NN input aspect ratio; Original aspect ratio not kept */

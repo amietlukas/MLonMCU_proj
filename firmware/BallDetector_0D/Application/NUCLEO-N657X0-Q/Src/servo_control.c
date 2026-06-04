@@ -19,6 +19,23 @@ static uint16_t g_servo_us  = SERVO_CENTER_US;
 int      Servo_GetAngle(void)  { return g_servo_deg; }
 uint16_t Servo_GetMicros(void) { return g_servo_us; }
 
+void Servo_DumpState(void)
+{
+  uint32_t pa3_mode  = (GPIOA->MODER   >> (3u * 2u)) & 0x3u;
+  uint32_t pa3_pupd  = (GPIOA->PUPDR   >> (3u * 2u)) & 0x3u;
+  uint32_t pa3_speed = (GPIOA->OSPEEDR >> (3u * 2u)) & 0x3u;
+  uint32_t pa3_af    = (GPIOA->AFR[0]  >> (3u * 4u)) & 0xFu;
+  uint32_t pa3_idr   = (GPIOA->IDR     >> 3u) & 0x1u;
+
+  printf("ServoHW: PSC=%lu ARR=%lu CCR1=%lu CNT=%lu CR1=0x%08lx CCER=0x%08lx BDTR=0x%08lx PA3(mode=%lu af=%lu pupd=%lu spd=%lu idr=%lu)\n",
+         (unsigned long)TIM16->PSC, (unsigned long)TIM16->ARR,
+         (unsigned long)TIM16->CCR1, (unsigned long)TIM16->CNT,
+         (unsigned long)TIM16->CR1, (unsigned long)TIM16->CCER,
+         (unsigned long)TIM16->BDTR, (unsigned long)pa3_mode,
+         (unsigned long)pa3_af, (unsigned long)pa3_pupd,
+         (unsigned long)pa3_speed, (unsigned long)pa3_idr);
+}
+
 void Servo_SetMicros(uint16_t us)
 {
   if (us < SERVO_MIN_US) us = SERVO_MIN_US;   /* never command past the safe band */
