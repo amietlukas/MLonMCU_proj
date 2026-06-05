@@ -50,6 +50,18 @@
 #define APP_UVC (1)
 #endif
 
+/* Servo tracking strategy (toggle + rebuild to A/B them):
+ *   TRACKER_SIMPLE    = the proven direct-pulse proportional controller (low-pass
+ *                       the detected x, nudge CCR1 toward center). Fast, robust.
+ *   TRACKER_ALPHABETA = the alpha-beta filter + track lifecycle in ball_tracker.c
+ *                       (position+velocity estimate, coast through dropouts).
+ * Test SIMPLE first; switch to ALPHABETA once its gains are tuned. */
+#define TRACKER_SIMPLE     (0)
+#define TRACKER_ALPHABETA  (1)
+#ifndef TRACKER_MODE
+#define TRACKER_MODE TRACKER_SIMPLE
+#endif
+
 /* Debug isolation: 1 = run ONLY Bluetooth-receive + motor control (skip the
  * camera/NN entirely) and echo every received command on UART1. Use this to
  * verify the HC-06 link and motor commands in isolation. Set back to 0 to

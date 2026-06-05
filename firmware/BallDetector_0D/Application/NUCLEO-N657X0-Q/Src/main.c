@@ -56,12 +56,20 @@
 #define YOLO_DECODE_CONF  0.50f
 #endif
 
-/* Simple (non-tracker) servo control params, for the diagnosis build. */
+/* Simple (non-tracker) servo control: a PI controller in the velocity-command
+ * form. s_us accumulates the command, so GAIN_US*err is INTEGRAL action (zeroes
+ * steady-state error for any ball position) and KD_US*(error rate) integrates to
+ * a PROPORTIONAL position term that damps the loop. Pure-integral (KD=0) + the
+ * ~80ms loop dead-time overshoots and limit-cycles ("swinging"); the KD term and
+ * a moderate GAIN_US fix that while STEP_MAX still allows a fast slew for a
+ * fast-moving ball. The loop runs at the inference rate (~12 Hz), so top pan
+ * speed ~ STEP_MAX[us] * loop_hz / (~11 us/deg) deg/s. */
 #define SIMPLE_SIGN      (-1.0f)   /* pan direction toward the ball (verified)   */
-#define SIMPLE_SMOOTH     0.30f    /* EMA low-pass on detected x                 */
-#define SIMPLE_GAIN_US    240.0f   /* us pan per unit of horizontal error        */
-#define SIMPLE_STEP_MAX   24.0f    /* max us change per update                   */
-#define SIMPLE_DEADZONE   0.05f    /* |x-0.5| below this = centered, no move     */
+#define SIMPLE_SMOOTH     0.50f    /* EMA low-pass on detected x (higher=snappier) */
+#define SIMPLE_GAIN_US    220.0f   /* integral gain: us/update per unit error     */
+#define SIMPLE_KD_US      350.0f   /* derivative (damping) gain on error rate     */
+#define SIMPLE_STEP_MAX   90.0f    /* max us change per update (~95 deg/s @12Hz) */
+#define SIMPLE_DEADZONE   0.04f    /* |x-0.5| below this = centered, no move     */
 
 CLASSES_TABLE;
 
@@ -238,23 +246,49 @@ static void uart_send_footer(void)
  * USART3 ISR into a ring buffer and let the loop drain it, decoupled from the
  * loop period. ORE is cleared so a single overrun never wedges reception. */
 #define BT_RING_SZ 64u
-static volatile uint8_t  bt_ring[BT_RING_SZ];
+/* Each event carries the received byte plus how many CPU cycles the in-ISR
+ * motor/servo activation took (receive -> CCR/GPIO written). The loop prints it. */
+typedef struct { uint8_t b; uint32_t act_cyc; } bt_evt_t;
+static volatile bt_evt_t bt_ring[BT_RING_SZ];
 static volatile uint16_t bt_head = 0, bt_tail = 0;
 
-static int bt_ring_pop(void)
+/* Pop one event; returns 1 and fills *evt, or 0 if the ring is empty. */
+static int bt_ring_pop(bt_evt_t *evt)
 {
-  if (bt_tail == bt_head) return -1;
-  uint8_t b = bt_ring[bt_tail];
+  if (bt_tail == bt_head) return 0;
+  *evt = bt_ring[bt_tail];
   bt_tail = (uint16_t)((bt_tail + 1u) % BT_RING_SZ);
-  return (int)b;
+  return 1;
+}
+
+/* Execute a Bluetooth command IMMEDIATELY in ISR context. Motor_Command and
+ * Servo_Command are pure register writes (CCR/GPIO, no blocking, no HAL_Delay),
+ * so they are ISR-safe and run the instant the byte arrives -- even during the
+ * ~70 ms NPU inference, because __WFE wakes the CPU for this IRQ. That removes
+ * the up-to-one-loop (~80 ms) latency of servicing commands from the main loop;
+ * the loop now only echoes the bytes to the console. */
+static void bt_dispatch(uint8_t b)
+{
+  if (b >= '0' && b <= '5') Motor_Command((char)b);
+#if !SERVO_HOLD_TEST
+  else if (b=='L'||b=='l'||b=='R'||b=='r'||b=='M'||b=='m'||b=='<'||b=='>') Servo_Command((char)b);
+#endif
 }
 
 void USART3_IRQHandler(void)
 {
-  if (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_RXNE)) {
-    uint8_t b = (uint8_t)(huart3.Instance->RDR & 0xFFu);   /* read clears RXNE */
+  /* Drain the ENTIRE RX FIFO each entry: after the ~70ms inference window the
+   * FIFO may hold several queued bytes; reading only one would leave the rest
+   * (and eventually overrun). Loop while the FIFO is non-empty. */
+  while (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_RXNE)) {
+    uint8_t b = (uint8_t)(huart3.Instance->RDR & 0xFFu);   /* pops one FIFO entry */
+    uint32_t t0 = DWT->CYCCNT;
+    bt_dispatch(b);                                        /* act now */
+    uint32_t act_cyc = DWT->CYCCNT - t0;                   /* receive -> motor/servo set */
     uint16_t nh = (uint16_t)((bt_head + 1u) % BT_RING_SZ);
-    if (nh != bt_tail) { bt_ring[bt_head] = b; bt_head = nh; }  /* drop if full */
+    if (nh != bt_tail) {                                   /* queue for console print */
+      bt_ring[bt_head].b = b; bt_ring[bt_head].act_cyc = act_cyc; bt_head = nh;
+    }
   }
   if (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_ORE)) {
     __HAL_UART_CLEAR_OREFLAG(&huart3);                    /* recover from overrun */
@@ -265,20 +299,19 @@ void USART3_IRQHandler(void)
  * actual received traffic is visible while debugging. */
 static void process_commands(void)
 {
-  int b;
-  while ((b = bt_ring_pop()) >= 0) {
-    printf("BT rx 0x%02X '%c'\n", (unsigned)b, (b >= 32 && b < 127) ? (char)b : '.');
-    if (b >= '0' && b <= '5') Motor_Command((char)b);
-    else if (b=='L'||b=='l'||b=='R'||b=='r'||b=='M'||b=='m'||b=='<'||b=='>') {
-#if SERVO_HOLD_TEST
-      Servo_SetMicros(SERVO_CENTER_US);
-      printf("Servo hold: ignored cmd '%c', centered at %uus\n",
-             (b >= 32 && b < 127) ? (char)b : '.', (unsigned)Servo_GetMicros());
-#else
-      Servo_Command((char)b);
-      printf("Servo -> %ddeg (%uus)\n", Servo_GetAngle(), (unsigned)Servo_GetMicros());
-#endif
-    }
+  bt_evt_t e;
+  while (bt_ring_pop(&e)) {
+    /* Already executed in USART3_IRQHandler. Print byte + how long activation took. */
+    char c = (e.b >= 32 && e.b < 127) ? (char)e.b : '.';
+    int is_cmd = (e.b >= '0' && e.b <= '5') ||
+                 e.b=='L'||e.b=='l'||e.b=='R'||e.b=='r'||e.b=='M'||e.b=='m'||e.b=='<'||e.b=='>';
+    uint32_t cpus = SystemCoreClock / 1000000u; if (!cpus) cpus = 1u;
+    uint32_t ns = (uint32_t)(((uint64_t)e.act_cyc * 1000u) / cpus);
+    if (is_cmd)
+      printf("BT rx '%c' (0x%02X) -> motor/servo set in %lu cyc (~%lu ns)\n",
+             c, (unsigned)e.b, (unsigned long)e.act_cyc, (unsigned long)ns);
+    else
+      printf("BT rx '%c' (0x%02X) [no command]\n", c, (unsigned)e.b);
   }
   /* USB VCP: 'c' = frame dump; '0'-'5' = wired fallback drive command. */
   uint8_t t = 0;
@@ -516,7 +549,13 @@ int main(void)
   CameraPipeline_Init(NULL, NULL, &pitch_nn);
   printf("DBG24 cam_init done (headless APP_UVC=0)\n");
   printf("DBG25 display_init skipped\n");
-  printf("DBG26 disp_pipe skipped\n");
+  /* No display pipe in headless. Start the NN pipe CONTINUOUS so the sensor +
+   * ISP keep streaming: in SNAPSHOT-only the ISP auto-exposure never converged
+   * and every pixel came out 0 (black frames -> no detections). Single-buffered
+   * into nn_hwc; minor tearing is fine for detection. */
+  CameraPipeline_NNPipe_Start(nn_hwc, CMW_MODE_CONTINUOUS);
+  g_capture_inflight = 1;
+  printf("DBG26 nn_pipe started CONTINUOUS (headless)\n");
 #endif
 
   /*** App header *************************************************************/
@@ -594,11 +633,15 @@ int main(void)
     if (dbg) printf("L0 loop iter %u\n", g_lc);
     /* Pipelined capture: the snapshot for THIS frame was kicked off at the end of
      * the previous iteration so it overlapped the NPU inference. Ensure one is in
-     * flight (first iteration / after a frame dump), then wait for it. */
+     * flight (first iteration / after a frame dump), then wait for it.
+     * Headless runs the NN pipe CONTINUOUS (started once at init), so no per-loop
+     * snapshot start/re-arm there -- the stream is self-sustaining. */
+#if APP_UVC
     if (!g_capture_inflight) {
       CameraPipeline_NNPipe_Start(nn_hwc, CMW_MODE_SNAPSHOT);
       g_capture_inflight = 1;
     }
+#endif
     CameraPipeline_IspUpdate();
 
     uint32_t wt0 = HAL_GetTick();
@@ -636,11 +679,14 @@ int main(void)
     }
 
     /* Kick off the NEXT capture now so it overlaps the inference below (hides the
-     * camera latency). Skip while dumping so nn_hwc stays frozen for streaming. */
+     * camera latency). Skip while dumping so nn_hwc stays frozen for streaming.
+     * Headless uses a CONTINUOUS stream (no re-arm needed). */
+#if APP_UVC
     if (!g_dumping) {
       CameraPipeline_NNPipe_Start(nn_hwc, CMW_MODE_SNAPSHOT);
       g_capture_inflight = 1;
     }
+#endif
 
     ts[0] = HAL_GetTick();
     /* run ATON inference */
@@ -648,6 +694,11 @@ int main(void)
     if (dbg) printf("L3 nn_run ret=%d\n", ret);
     assert(ret == 0);
     ts[1] = HAL_GetTick();
+
+    /* Service Bluetooth/VCP commands again right after the ~70ms inference: bytes
+     * that arrived during it are already in the ring (the USART3 ISR runs through
+     * inference), so this halves worst-case command latency vs once-per-loop. */
+    process_commands();
 
     /* Decode balldet's 3 heads (p8/p16/p32 = nn_out[0..2], CHW int8
      * [tx,ty,tw,th,tobj]) with the proven decoder, then convert pixel xyxy ->
@@ -690,15 +741,44 @@ int main(void)
         hold_log = now;
       }
     }
+#elif TRACKER_MODE == TRACKER_ALPHABETA
+    /* --- ALPHA-BETA tracker path ----------------------------------------------
+     * Feed the best confident ball into the alpha-beta filter + track lifecycle
+     * (ball_tracker.c), then run one control tick. The tracker owns the servo
+     * angle (Servo_SetAngleF), including velocity prediction and coast through
+     * brief detection dropouts. Tune its gains in ball_tracker.c. */
+    {
+      int present = 0; float ball_x = 0.5f, best = 0.0f, maxscore = 0.0f;
+      for (int i = 0; i < nb; i++) {
+        if (g_yolo_boxes[i].score > maxscore) maxscore = g_yolo_boxes[i].score;
+        if (g_yolo_boxes[i].score < TRACK_CONF_MIN) continue;          /* confidence gate */
+        if (!present || g_yolo_boxes[i].score > best) {
+          best = g_yolo_boxes[i].score; ball_x = g_od_boxes[i].x_center; present = 1;
+        }
+      }
+      BallTracker_Measure(present, ball_x);   /* deposit detection for the filter */
+      BallTracker_ControlTick();              /* alpha-beta + lifecycle + servo   */
+
+      static uint32_t last_log = 0;
+      uint32_t now = HAL_GetTick();
+      if (dbg || ((nb > 0) && (now - last_log) > 250)) {
+        printf("AB   nb=%d top=%d%% present=%d x=%d%% est=%d%% st=%d ang=%d\n",
+               nb, (int)(maxscore * 100.0f), present, (int)(ball_x * 100.0f),
+               (int)(BallTracker_GetX() * 100.0f), BallTracker_State(),
+               Servo_GetAngle());
+        last_log = now;
+      }
+    }
 #else
-    /* --- SIMPLE control (alpha-beta + lifecycle BYPASSED for diagnosis) -------
-     * Original strategy: take the most-confident ball, low-pass its x, and nudge
-     * the servo pulse proportionally toward center -- writing CCR1 directly via
-     * Servo_SetMicros. No tracker, no velocity, no coast. If this still jitters,
-     * the problem is in the TIM/PWM path, not the tracking logic. */
+    /* --- SIMPLE control (PI position controller, velocity-command form) -------
+     * Take the most-confident ball, low-pass its x, then drive the servo pulse
+     * with GAIN_US*err (integral) + KD_US*(error rate) (derivative -> proportional
+     * damping). Writes CCR1 directly via Servo_SetMicros. This is the default;
+     * toggle to the alpha-beta path with TRACKER_MODE in app_config.h. */
     {
       static float s_xfilt = 0.5f;
       static float s_us    = (float)SERVO_CENTER_US;
+      static float s_eprev = 0.0f;   /* previous error, for the damping term */
       static int   s_init  = 0;
       if (!s_init) { s_us = (float)Servo_GetMicros(); s_init = 1; }
 
@@ -714,9 +794,13 @@ int main(void)
       int moved = 0;
       if (present) {
         s_xfilt += SIMPLE_SMOOTH * (ball_x - s_xfilt);                 /* low-pass detection */
-        float err = s_xfilt - 0.5f;
+        float err  = s_xfilt - 0.5f;
+        float derr = err - s_eprev;                                    /* per-update error rate */
+        s_eprev = err;
         if (err > SIMPLE_DEADZONE || err < -SIMPLE_DEADZONE) {
-          float dus = SIMPLE_SIGN * SIMPLE_GAIN_US * err;              /* proportional nudge */
+          /* PI: integral (GAIN*err) + damping (KD*derr). KD opposes the swing as
+           * the ball approaches center, so the integrator stops overshooting. */
+          float dus = SIMPLE_SIGN * (SIMPLE_GAIN_US * err + SIMPLE_KD_US * derr);
           if (dus >  SIMPLE_STEP_MAX) dus =  SIMPLE_STEP_MAX;
           if (dus < -SIMPLE_STEP_MAX) dus = -SIMPLE_STEP_MAX;
           s_us += dus;
@@ -727,6 +811,7 @@ int main(void)
         }
       } else {
         s_xfilt = 0.5f;                                                /* no ball -> hold servo */
+        s_eprev = 0.0f;                                                /* no derivative kick on re-acquire */
       }
 
       static uint32_t last_log = 0;
@@ -778,6 +863,12 @@ static void Hardware_init(void)
 #endif
 
   SystemClock_Config();
+
+  /* Enable the DWT cycle counter so we can time the in-ISR BT command activation
+   * (used by process_commands to print receive -> motor/servo latency). */
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+  DWT->CYCCNT = 0;
+  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
   CONSOLE_Config();
 
@@ -1029,8 +1120,17 @@ static void Display_NetworkOutput(od_pp_out_t *p_postprocess, uint32_t inference
     width = ((x0 + width) < lcd_bg_area.XSize) ? width : (lcd_bg_area.XSize - x0 - 1);
     height = ((y0 + height) < lcd_bg_area.YSize) ? height : (lcd_bg_area.YSize - y0 - 1);
     UTIL_LCD_DrawRect(x0, y0, width, height, UTIL_LCD_COLOR_RED);
-    /* class label ("person") removed; single-class ball detector. Keep conf%. */
-    UTIL_LCDEx_PrintfAt(-x0-width, y0, RIGHT_MODE, "%.0f%%", rois[i].conf*100.0f);
+    /* class label ("person") removed; single-class ball detector. Keep conf%.
+     * Draw it rotated 90deg CW (like the "Objects" label) so it reads upright on
+     * the sideways display, placed just left of the box's top corner. */
+    {
+      char conf_label[8];
+      sFONT *cfont = UTIL_LCD_GetFont();
+      snprintf(conf_label, sizeof(conf_label), "%d%%", (int)(rois[i].conf * 100.0f + 0.5f));
+      uint32_t lx = (x0 >= cfont->Height) ? (x0 - cfont->Height) : 0u;
+      UTIL_LCD_SetTextColor(UTIL_LCD_COLOR_RED);
+      Display_Text90CW(lx, y0, conf_label);
+    }
   }
 
   {
@@ -1294,6 +1394,15 @@ static void BT_Config(void)
   {
     while (1);
   }
+
+  /* Enable the 8-byte RX FIFO. The CPU is busy in NPU inference ~70ms of every
+   * ~80ms loop and can't service this ISR meanwhile; with only the 1-byte RDR a
+   * command burst overruns and all but the last byte is lost (the "Arduino was
+   * better" symptom -- the Arduino is never blocked). The FIFO buffers a whole
+   * short burst in hardware through that window; the ISR drains it all at once
+   * once the CPU is free (see the while-loop in USART3_IRQHandler). */
+  HAL_UARTEx_SetRxFifoThreshold(&huart3, UART_RXFIFO_THRESHOLD_1_8);
+  HAL_UARTEx_EnableFifoMode(&huart3);
 
   /* Interrupt-driven RX (see USART3_IRQHandler / ring buffer). */
   HAL_NVIC_SetPriority(USART3_IRQn, 6, 0);

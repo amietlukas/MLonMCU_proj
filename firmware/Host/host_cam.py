@@ -138,16 +138,13 @@ def main():
 
     print("[HOST] synced.", flush=True)
 
-    fig = ax = im = txt = None
+    use_cv = False
     if not args.no_preview:
-        import matplotlib.pyplot as plt
-        plt.ion()
-        fig, ax = plt.subplots(figsize=(4, 3.5))
-        im = ax.imshow(np.zeros((MODEL_H, MODEL_W), dtype=np.uint8),
-                       cmap="gray", vmin=0, vmax=255)
-        ax.set_xticks([]); ax.set_yticks([])
-        txt = ax.set_title("starting…", fontsize=11)
-        fig.tight_layout()
+        import cv2   # reliable GUI window (matplotlib here defaults to the
+                     # non-GUI 'agg' backend, so no window ever showed)
+        cv2.namedWindow("U5 inference", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("U5 inference", 640, 480)
+        use_cv = True
 
     save_dir = None
     if args.save:
@@ -190,11 +187,15 @@ def main():
                 flush=True,
             )
 
-            if im is not None:
-                im.set_data(frame["img"])
-                txt.set_text(f"{cls} ({frame['conf']*100:.1f}%) — {frame['t_all_ms']:.0f} ms")
-                fig.canvas.draw_idle()
-                fig.canvas.flush_events()
+            if use_cv:
+                vis = cv2.cvtColor(frame["img"], cv2.COLOR_GRAY2BGR)
+                vis = cv2.resize(vis, (640, 480), interpolation=cv2.INTER_NEAREST)
+                cv2.putText(vis, f"{cls} ({frame['conf']*100:.0f}%)  "
+                                 f"{frame['t_all_ms']:.0f}ms  {fps:.1f}fps",
+                            (8, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                cv2.imshow("U5 inference", vis)
+                if (cv2.waitKey(1) & 0xFF) == ord('q'):
+                    break
 
             if save_dir:
                 from PIL import Image

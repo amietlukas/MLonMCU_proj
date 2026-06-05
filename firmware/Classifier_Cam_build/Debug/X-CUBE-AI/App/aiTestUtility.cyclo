@@ -6,7 +6,7 @@
 ../X-CUBE-AI/App/aiTestUtility.c:210:6:ioRawDisableLLWrite	1
 ../X-CUBE-AI/App/aiTestUtility.c:223:5:_write	4
 ../X-CUBE-AI/App/aiTestUtility.c:321:7:uint64ToDecimal	3
-../X-CUBE-AI/App/aiTestUtility.c:334:6:uint32_to_str	4
+../X-CUBE-AI/App/aiTestUtility.c:334:6:uint32_to_str	5
 ../X-CUBE-AI/App/aiTestUtility.c:373:6:lc_print	1
 ../X-CUBE-AI/App/aiTestUtility.c:397:8:lc_vsnprint	1
 ../X-CUBE-AI/App/aiTestUtility.c:421:7:__wrap_malloc	4

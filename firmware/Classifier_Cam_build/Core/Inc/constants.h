@@ -60,7 +60,7 @@
  *     "PRED ... -> BT 'X' (...)" status line per inference.
  *     Best for picocom-style debugging.
  * ================================================================== */
-#define STREAM_FRAMES_TO_HOST   0
+#define STREAM_FRAMES_TO_HOST   1
 
 /* When set, skip camera/AI entirely and run a transparent USART1 <->
  * USART3 byte bridge so the ST-LINK VCP (picocom on /dev/ttyACM0) talks

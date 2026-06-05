@@ -22,9 +22,9 @@
 
 /* ---- control law (pan rate from position error + velocity feedforward) --- */
 #define TRK_SIGN         (-1.0f)   /* pan direction toward ball (verified)      */
-#define TRK_KP           12.0f     /* deg/s per unit of error (slow crawl for debug) */
-#define TRK_KV           0.0f      /* velocity feedforward off (was too jumpy)  */
-#define TRK_OMEGA_MAX    12.0f     /* max pan rate ~12 deg/s (deliberately slow) */
+#define TRK_KP           60.0f     /* deg/s per unit of error                   */
+#define TRK_KV           0.0f      /* velocity feedforward off (tune later)     */
+#define TRK_OMEGA_MAX    95.0f     /* max pan rate (matches the faster SIMPLE path) */
 #define TRK_DEADZONE     0.05f     /* |x-0.5| below this = centered, no pan      */
 #define TRK_COAST_TAU    0.5f      /* coast pan-rate decay time constant (s)     */
 

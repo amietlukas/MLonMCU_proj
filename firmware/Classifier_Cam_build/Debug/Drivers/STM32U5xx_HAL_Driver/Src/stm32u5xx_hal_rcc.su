@@ -1,7 +1,7 @@
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c:2197:26:RCC_SetFlashLatencyFromMSIRange	24	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c:360:19:HAL_RCC_DeInit	16	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c:1657:6:HAL_RCC_MCOConfig	40	static
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c:1710:10:HAL_RCC_GetSysClockFreq	12	static
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c:1710:10:HAL_RCC_GetSysClockFreq	8	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c:1352:19:HAL_RCC_ClockConfig	32	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c:1812:10:HAL_RCC_GetHCLKFreq	8	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc.c:525:19:HAL_RCC_OscConfig	40	static

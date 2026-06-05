@@ -19,8 +19,13 @@
 #define APP_CAMERAPIPELINE
 
 #define CAMERA_FPS 30
-#define SCREEN_HEIGHT (240)
-#define SCREEN_WIDTH  (320)
+/* UVC/display resolution. Matched to the model's 4:3 working resolution
+ * (384x288) so the streamed video has the same field of view / aspect the NN
+ * sees. The display pipe is configured FULLSCREEN from the 4:3 sensor, so
+ * lcd_bg_width = SCREEN_HEIGHT*4/3 = 384 lines up exactly (multiple of 16).
+ * Buffers grow 1.44x vs 320x240 (~864KB of the 1647KB AXISRAM1_S). */
+#define SCREEN_HEIGHT (288)
+#define SCREEN_WIDTH  (384)
 
 void CameraPipeline_Init(uint32_t *layers_width[2], uint32_t *layers_height[2], uint32_t *pitch_nn);
 void CameraPipeline_DeInit(void);

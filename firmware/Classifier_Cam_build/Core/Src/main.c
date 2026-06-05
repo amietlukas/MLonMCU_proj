@@ -40,7 +40,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+/* 1 = run the HC-05 AT passthrough (USART1 VCP <-> USART3 HC-05 @38400) instead
+ * of the classifier. Flash this to talk to the HC-05 in AT mode from a PC
+ * terminal, then set back to 0 and reflash the normal app. */
+#define HC05_AT_BRIDGE  0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -63,7 +66,35 @@ static void SystemPower_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#if HC05_AT_BRIDGE
+/* Transparent byte relay USART1(ST-LINK VCP) <-> USART3(HC-05), both @38400 so
+ * a PC terminal at 38400/8N1/CR+LF talks straight to the HC-05 in full AT mode
+ * (HC-05 must boot with KEY/EN high -> slow blink). Register-level poll with
+ * overrun clear so it never wedges. Never returns. */
+static void HC05_AT_Bridge(void)
+{
+  huart1.Init.BaudRate = 38400; HAL_UART_Init(&huart1);
+  huart3.Init.BaudRate = 38400; HAL_UART_Init(&huart3);
 
+  static const char banner[] = "\r\nHC-05 AT bridge @38400 (USART1<->USART3). Type AT.\r\n";
+  HAL_UART_Transmit(&huart1, (uint8_t *)banner, (uint16_t)(sizeof(banner) - 1u), HAL_MAX_DELAY);
+
+  for (;;) {
+    if (huart1.Instance->ISR & USART_ISR_RXNE) {
+      uint8_t b = (uint8_t)huart1.Instance->RDR;
+      while (!(huart3.Instance->ISR & USART_ISR_TXE)) {}
+      huart3.Instance->TDR = b;
+    }
+    if (huart3.Instance->ISR & USART_ISR_RXNE) {
+      uint8_t b = (uint8_t)huart3.Instance->RDR;
+      while (!(huart1.Instance->ISR & USART_ISR_TXE)) {}
+      huart1.Instance->TDR = b;
+    }
+    if (huart1.Instance->ISR & USART_ISR_ORE) huart1.Instance->ICR = USART_ICR_ORECF;
+    if (huart3.Instance->ISR & USART_ISR_ORE) huart3.Instance->ICR = USART_ICR_ORECF;
+  }
+}
+#endif
 /* USER CODE END 0 */
 
 /**
@@ -107,6 +138,10 @@ int main(void)
   /* CubeMX's regen omits MX_USART1_UART_Init() — pull it in here so
    * status logs reach the ST-LINK VCP. */
   MX_USART1_UART_Init();
+
+#if HC05_AT_BRIDGE
+  HC05_AT_Bridge();   /* never returns: relay VCP<->HC-05 for AT-mode setup */
+#endif
 
   CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
   DWT->CYCCNT = 0;

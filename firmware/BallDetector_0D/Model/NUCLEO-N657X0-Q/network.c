@@ -29,14 +29,14 @@
  * --cache-maintenance = true
  * --enable-virtual-mem-pools = true
  * --native-float = true
- * --json-quant-file = "/mnt/core/MLonMCU_proj/firmware/BallDetector_0D/Model/st_ai_output/int8_ptq_qdq_OE_3_3_1_Q.json"
+ * --json-quant-file = "/mnt/core/MLonMCU_proj/firmware/BallDetector_0D/Model/st_ai_output/balldet_int8_OE_3_3_1_Q.json"
  * --optimization = 3
  * --Os = true
  * --Omax-ca-pipe = 4
  * --Ocache-opt = true
  * --enable-epoch-controller = true
  * --output-info-file = "c_info"
- * --onnx-input = "/mnt/core/MLonMCU_proj/firmware/BallDetector_0D/Model/st_ai_output/int8_ptq_qdq_OE_3_3_1.onnx"
+ * --onnx-input = "/mnt/core/MLonMCU_proj/firmware/BallDetector_0D/Model/st_ai_output/balldet_int8_OE_3_3_1.onnx"
  * --out-dir-prefix = "/mnt/core/MLonMCU_proj/firmware/BallDetector_0D/Model/st_ai_ws/neural_art__network/"
  * --network-name = "network"
  * --all-buffers-info = true

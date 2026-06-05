@@ -1,5 +1,6 @@
 ../Drivers/BSP/Components/mx_wifi/mx_wifi.c:2798:35:mx_s_addr_in_to_packed	2
-../Drivers/BSP/Components/mx_wifi/mx_wifi.c:689:25:_mx_wifi_set_eap_cert.isra	3
+../Drivers/BSP/Components/mx_wifi/mx_wifi.c:2817:30:mx_s_addr_in_from_packed	1
+../Drivers/BSP/Components/mx_wifi/mx_wifi.c:689:25:_mx_wifi_set_eap_cert.constprop	4
 ../Drivers/BSP/Components/mx_wifi/mx_wifi.c:78:18:MX_WIFI_RegisterBusIO	7
 ../Drivers/BSP/Components/mx_wifi/mx_wifi.c:105:18:MX_WIFI_HardResetModule	2
 ../Drivers/BSP/Components/mx_wifi/mx_wifi.c:129:18:MX_WIFI_SetTimeout	2

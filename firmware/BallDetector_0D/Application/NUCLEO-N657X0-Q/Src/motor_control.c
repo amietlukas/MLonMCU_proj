@@ -23,10 +23,22 @@
 #define RPWM_CH  TIM_CHANNEL_2   /* D5 PE10 -> TIM1_CH2N (right speed) */
 
 /* PWM: ARR=255 so a 0..255 command maps directly to duty (like analogWrite).
- * Prescaler targets ~1-2 kHz (safe for common H-bridge driver shields); tune
- * MOTOR_PWM_PSC if the actual TIM1 kernel clock makes the motors whine/stall. */
+ * Higher PWM frequency (~5 kHz here vs the old ~1 kHz) smooths the current
+ * through the motor inductance, so LOW duty runs steadier instead of cogging/
+ * stuttering -- that's what lets us cruise slower without ruckeln. (L298N is a
+ * slow BJT bridge; keep this <= ~10 kHz.) Lower MOTOR_PWM_PSC = higher freq. */
 #define MOTOR_PWM_ARR   255u
-#define MOTOR_PWM_PSC   780u
+#define MOTOR_PWM_PSC   155u
+
+/* Cruise speeds (0..255 duty). Tuning knobs: 220 was smooth but too fast, 110
+ * stuttered. 150 + the higher PWM freq above aims for "slow but smooth". If it
+ * still ruckelt, the L298N's voltage drop is the floor -> raise toward ~180 (the
+ * slowest still-smooth value) or switch to a MOSFET driver (TB6612/DRV8833).
+ * CURVE_SLOW = inner wheel in a turn. */
+#define MOTOR_FWD_SPEED    150
+#define MOTOR_BWD_SPEED    150
+#define MOTOR_CURVE_FAST   150
+#define MOTOR_CURVE_SLOW   100
 
 static TIM_HandleTypeDef htim1;
 
@@ -84,13 +96,13 @@ void Motor_Curve(int leftSpeed, int rightSpeed)
 void Motor_Command(char cmd)
 {
   switch (cmd) {
-    case '0': Motor_Stop();              break;  /* stop          */
-    case '1': Motor_ForwardStraight(110);break;  /* forward       */
-    case '2': Motor_Curve(110, 55);      break;  /* forward-right */
-    case '3': Motor_Curve(55, 110);      break;  /* forward-left  */
-    case '4': Motor_BackwardStraight(100);break; /* backward      */
-    case '5': Motor_Stop();              break;  /* (reserved)    */
-    default:  /* keep previous command */ break;
+    case '0': Motor_Stop();                                          break;  /* stop          */
+    case '1': Motor_ForwardStraight(MOTOR_FWD_SPEED);                break;  /* forward       */
+    case '2': Motor_Curve(MOTOR_CURVE_FAST, MOTOR_CURVE_SLOW);       break;  /* forward-right */
+    case '3': Motor_Curve(MOTOR_CURVE_SLOW, MOTOR_CURVE_FAST);       break;  /* forward-left  */
+    case '4': Motor_BackwardStraight(MOTOR_BWD_SPEED);               break;  /* backward      */
+    case '5': Motor_Stop();                                          break;  /* (reserved)    */
+    default:  /* keep previous command */                           break;
   }
 }
 

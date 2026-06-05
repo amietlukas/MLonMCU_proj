@@ -2,8 +2,8 @@
 ../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:160:13:MX_WIFI_IO_DELAY	0	static
 ../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:238:15:wait_flow_high	8	static
 ../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:257:17:MX_WIFI_SPI_Write	16	static
-../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:193:15:MX_WIFI_SPI_DeInit	8	static
 ../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:171:15:MX_WIFI_SPI_Init	8	static
+../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:193:15:MX_WIFI_SPI_DeInit	8	static
 ../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:200:6:HAL_SPI_TransferCallback	0	static
 ../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:207:6:HAL_SPI_ErrorCallback	8	static
 ../Drivers/BSP/Components/mx_wifi/io_pattern/mx_wifi_spi.c:223:6:mxchip_WIFI_ISR	0	static

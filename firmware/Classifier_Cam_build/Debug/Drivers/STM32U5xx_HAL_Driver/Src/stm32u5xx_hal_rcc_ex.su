@@ -3,9 +3,9 @@
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:4077:26:RCCEx_PLLSource_Enable	16	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:430:19:HAL_RCCEx_PeriphCLKConfig	40	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:1276:6:HAL_RCCEx_GetPeriphCLKConfig	0	static
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:1498:6:HAL_RCCEx_GetPLL1ClockFreq	16	static
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:1585:6:HAL_RCCEx_GetPLL2ClockFreq	16	static
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:1672:6:HAL_RCCEx_GetPLL3ClockFreq	16	static
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:1498:6:HAL_RCCEx_GetPLL1ClockFreq	8	static
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:1585:6:HAL_RCCEx_GetPLL2ClockFreq	8	static
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:1672:6:HAL_RCCEx_GetPLL3ClockFreq	8	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:1794:10:HAL_RCCEx_GetPeriphCLKFreq	24	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:3093:19:HAL_RCCEx_EnablePLL2	16	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_rcc_ex.c:3175:19:HAL_RCCEx_DisablePLL2	16	static

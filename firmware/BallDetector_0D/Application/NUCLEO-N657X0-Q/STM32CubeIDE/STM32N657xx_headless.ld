@@ -6,7 +6,9 @@ _estack = ORIGIN(AXISRAM1_S) + LENGTH(AXISRAM1_S); /* end of "AXISRAM1_S" Ram ty
 _sstack = _estack - _Min_Stack_Size;
 
 _Min_Heap_Size = 0x200; /* required amount of heap  */
-_Min_Stack_Size = 0x3000; /* required amount of stack */
+_Min_Stack_Size = 0x2800; /* 10K: trimmed from 12K so the larger smallimgsize_v1
+   network.c fits the 663K headless CPU region. Headless has no float-printf and
+   the NN runs on the NPU, so the worst-case CPU stack stays well under 10K. */
 
 /* Memories definition
  *

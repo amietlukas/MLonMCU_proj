@@ -52,7 +52,7 @@
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3062:19:HAL_LIN_SendBreak	0	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3107:23:HAL_UART_GetState	0	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3123:10:HAL_UART_GetError	0	static
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3168:19:UART_SetConfig	24	static
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3168:19:UART_SetConfig	16	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3325:6:UART_AdvFeatureConfig	8	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3470:19:UART_WaitOnFlagUntilTimeout	32	static
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:1110:19:HAL_UART_Transmit	40	static
@@ -65,6 +65,6 @@
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:2965:19:HAL_MultiProcessor_EnableMuteMode	0	static,ignoring_inline_asm
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:2985:19:HAL_MultiProcessor_DisableMuteMode	0	static,ignoring_inline_asm
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3538:19:UART_Start_Receive_IT	12	static,ignoring_inline_asm
-../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:1376:19:HAL_UART_Receive_IT	16	static,ignoring_inline_asm
+../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:1376:19:HAL_UART_Receive_IT	8	static,ignoring_inline_asm
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:3611:19:UART_Start_Receive_DMA	16	static,ignoring_inline_asm
 ../Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_uart.c:1542:19:HAL_UART_Receive_DMA	8	static,ignoring_inline_asm

@@ -1,4 +1,5 @@
 ../Core/Src/classifier_cam_app.c:84:13:uart_send_str	1
+../Core/Src/classifier_cam_app.c:89:13:uart_send_bytes	1
 ../Core/Src/classifier_cam_app.c:192:6:BSP_CAMERA_FrameEventCallback	1
 ../Core/Src/classifier_cam_app.c:199:6:BSP_CAMERA_VsyncEventCallback	1
 ../Core/Src/classifier_cam_app.c:205:6:BSP_CAMERA_LineEventCallback	1
