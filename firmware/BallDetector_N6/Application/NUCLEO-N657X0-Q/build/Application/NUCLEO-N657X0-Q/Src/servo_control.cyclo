@@ -1,0 +1,8 @@
+Src/servo_control.c:19:10:Servo_GetAngle	1
+Src/servo_control.c:20:10:Servo_GetMicros	1
+Src/servo_control.c:22:6:Servo_DumpState	1
+Src/servo_control.c:39:6:Servo_SetMicros	1
+Src/servo_control.c:49:6:Servo_SetAngle	1
+Src/servo_control.c:61:6:Servo_SetAngleF	2
+Src/servo_control.c:70:6:Servo_Command	11
+Src/servo_control.c:84:6:Servo_Init	5

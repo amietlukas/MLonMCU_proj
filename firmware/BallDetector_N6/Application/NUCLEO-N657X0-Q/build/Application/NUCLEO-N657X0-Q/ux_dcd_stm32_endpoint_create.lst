@@ -1,0 +1,586 @@
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_dcd_stm32_endpoint_create.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm
+  25              		.section	.text._ux_dcd_stm32_endpoint_create,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_dcd_stm32_endpoint_create
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_dcd_stm32_endpoint_create:
+  33              	.LVL0:
+  34              	.LFB866:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**                                                                       */
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /** USBX Component                                                        */
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**   STM32 Controller Driver                                             */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** #define UX_SOURCE_CODE
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** #define UX_DCD_STM32_SOURCE_CODE
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /* Include necessary system files.  */
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** #include "ux_api.h"
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** #include "ux_dcd_stm32.h"
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** #include "ux_device_stack.h"
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**************************************************************************/
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  FUNCTION                                               RELEASE        */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    _ux_dcd_stm32_endpoint_create                       PORTABLE C      */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                           6.1          */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  AUTHOR                                                                */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  DESCRIPTION                                                           */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    This function will create a physical endpoint.                      */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  INPUT                                                                 */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    dcd_stm32                             Pointer to device controller  */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    endpoint                              Pointer to endpoint container */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  OUTPUT                                                                */
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    Completion Status                                                   */
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  CALLS                                                                 */
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    HAL_PCD_EP_Open                       Open endpoint                 */
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  CALLED BY                                                             */
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    STM32 Controller Driver                                             */
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  RELEASE HISTORY                                                       */
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*    DATE              NAME                      DESCRIPTION             */
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s), used ST  */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                            HAL library to drive the    */
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                            controller,                 */
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                            resulting in version 6.1    */
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /*                                                                        */
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** /**************************************************************************/
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** UINT  _ux_dcd_stm32_endpoint_create(UX_DCD_STM32 *dcd_stm32, UX_SLAVE_ENDPOINT *endpoint)
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** {
+  35              		.loc 1 77 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 3
+
+
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** UX_DCD_STM32_ED     *ed;
+  39              		.loc 1 79 1 view .LVU1
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** ULONG               stm32_endpoint_index;
+  40              		.loc 1 80 1 view .LVU2
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     /* The endpoint index in the array of the STM32 must match the endpoint number.  */
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     stm32_endpoint_index =  endpoint -> ux_slave_endpoint_descriptor.bEndpointAddress & ~UX_ENDPOIN
+  41              		.loc 1 84 5 view .LVU3
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  42              		.loc 1 77 1 is_stmt 0 view .LVU4
+  43 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+  44              		.cfi_def_cfa_offset 24
+  45              		.cfi_offset 3, -24
+  46              		.cfi_offset 4, -20
+  47              		.cfi_offset 5, -16
+  48              		.cfi_offset 6, -12
+  49              		.cfi_offset 7, -8
+  50              		.cfi_offset 14, -4
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  51              		.loc 1 77 1 view .LVU5
+  52 0002 0A46     		mov	r2, r1
+  53              		.loc 1 84 69 view .LVU6
+  54 0004 897B     		ldrb	r1, [r1, #14]	@ zero_extendqisi2
+  55              	.LVL1:
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     /* Get STM32 ED.  */
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     ed = _stm32_ed_get(dcd_stm32, endpoint -> ux_slave_endpoint_descriptor.bEndpointAddress);
+  56              		.loc 1 87 5 is_stmt 1 view .LVU7
+  57              	.LBB4:
+  58              	.LBI4:
+  59              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**                                                                       */
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /** USBX Component                                                        */
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**   STM32 Controller Driver                                             */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**************************************************************************/
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 4
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*  COMPONENT DEFINITION                                   RELEASE        */
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*    ux_dcd_stm32.h                                      PORTABLE C      */
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                           6.1.10       */
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*  AUTHOR                                                                */
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*  DESCRIPTION                                                           */
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*    This file defines the USB OTG device equivalences for the STM32     */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*    controller.                                                         */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*  RELEASE HISTORY                                                       */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*    DATE              NAME                      DESCRIPTION             */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s), used ST  */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                            HAL library to drive the    */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                            controller,                 */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                            resulting in version 6.1    */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*  01-31-2022     Chaoqiong Xiao           Modified comment(s),          */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                            added standalone support,   */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                            added bi-dir EP support,    */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                            resulting in version 6.1.10 */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /*                                                                        */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /**************************************************************************/
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #ifndef UX_DCD_STM32_H
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_H
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #include "ux_stm32_config.h"
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /* Define STM32 generic equivalences.  */
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_SLAVE_CONTROLLER                           0x80
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #ifndef UX_DCD_STM32_MAX_ED
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_MAX_ED                                     4
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #endif /* UX_DCD_STM32_MAX_ED */
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_IN_FIFO                                    3
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_FLUSH_RX_FIFO                              0x00000010
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_FLUSH_TX_FIFO                              0x00000020
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_FLUSH_FIFO_ALL                             0x00000010
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ENDPOINT_SPACE_SIZE                        0x00000020
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ENDPOINT_CHANNEL_SIZE                      0x00000020
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /* Define USB STM32 physical endpoint status definition.  */
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_UNUSED                            0u
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_USED                              1u
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_TRANSFER                          2u
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_STALLED                           4u
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_DONE                              8u
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 5
+
+
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_SETUP_IN                          (1u<<8)
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_SETUP_STATUS                      (2u<<8)
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_SETUP_OUT                         (3u<<8)
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_SETUP                             (3u<<8)
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATUS_TASK_PENDING                      (1u<<10)
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /* Define USB STM32 physical endpoint state machine definition.  */
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATE_IDLE                               0
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATE_DATA_TX                            1
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATE_DATA_RX                            2
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATE_STATUS_TX                          3
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_STATE_STATUS_RX                          4
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /* Define USB STM32 device callback notification state definition.  */
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_SOF_RECEIVED                                0xF0U
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_DEVICE_CONNECTED                            0xF1U
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_DEVICE_DISCONNECTED                         0xF2U
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_DEVICE_RESUMED                              0xF3U
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_DEVICE_SUSPENDED                            0xF4U
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /* Define USB STM32 endpoint transfer status definition.  */
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_TRANSFER_STATUS_IDLE                     0
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_TRANSFER_STATUS_SETUP                    1
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_TRANSFER_STATUS_IN_COMPLETION            2
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #define UX_DCD_STM32_ED_TRANSFER_STATUS_OUT_COMPLETION           3
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /* Define USB STM32 physical endpoint structure.  */
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** typedef struct UX_DCD_STM32_ED_STRUCT
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** {
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     struct UX_SLAVE_ENDPOINT_STRUCT
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****                     *ux_dcd_stm32_ed_endpoint;
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     ULONG           ux_dcd_stm32_ed_status;
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     UCHAR           ux_dcd_stm32_ed_state;
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     UCHAR           ux_dcd_stm32_ed_index;
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     UCHAR           ux_dcd_stm32_ed_direction;
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     UCHAR           reserved;
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** } UX_DCD_STM32_ED;
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** /* Define USB STM32 DCD structure definition.  */
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** typedef struct UX_DCD_STM32_STRUCT
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** {
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     struct UX_SLAVE_DCD_STRUCT
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****                         *ux_dcd_stm32_dcd_owner;
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     struct UX_DCD_STM32_ED_STRUCT
+ 133:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****                         ux_dcd_stm32_ed[UX_DCD_STM32_MAX_ED];
+ 134:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #if defined(UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT)
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     struct UX_DCD_STM32_ED_STRUCT
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****                         ux_dcd_stm32_ed_in[UX_DCD_STM32_MAX_ED];
+ 137:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #endif /* defined(UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT) */
+ 138:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     PCD_HandleTypeDef   *pcd_handle;
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 6
+
+
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** } UX_DCD_STM32;
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** static inline struct UX_DCD_STM32_ED_STRUCT *_stm32_ed_get(UX_DCD_STM32 *dcd_stm32, ULONG ep_addr)
+  60              		.loc 2 141 46 view .LVU8
+  61              	.LBB5:
+ 142:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** {
+ 143:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #if defined(UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT)
+ 144:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** ULONG ep_dir = ep_addr & 0x80u;
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #endif /* defined(UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT) */
+ 146:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** ULONG ep_num = ep_addr & 0x7Fu;
+  62              		.loc 2 146 1 view .LVU9
+  63              	.LBE5:
+  64              	.LBE4:
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  65              		.loc 1 77 1 is_stmt 0 view .LVU10
+  66 0006 0346     		mov	r3, r0
+  67 0008 01F07F05 		and	r5, r1, #127
+  68              	.LVL2:
+  69              	.LBB8:
+  70              	.LBB6:
+ 147:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     if (ep_num >= UX_DCD_STM32_MAX_ED ||
+  71              		.loc 2 148 5 is_stmt 1 view .LVU11
+  72              		.loc 2 148 8 is_stmt 0 view .LVU12
+  73 000c 082D     		cmp	r5, #8
+  74 000e 29D8     		bhi	.L7
+ 149:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****         ep_num >= dcd_stm32->pcd_handle->Init.dev_endpoints)
+  75              		.loc 2 149 28 view .LVU13
+  76 0010 006F     		ldr	r0, [r0, #112]
+  77              	.LVL3:
+  78              		.loc 2 149 46 view .LVU14
+  79 0012 0479     		ldrb	r4, [r0, #4]	@ zero_extendqisi2
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****         ep_num >= dcd_stm32->pcd_handle->Init.dev_endpoints)
+  80              		.loc 2 148 39 view .LVU15
+  81 0014 A542     		cmp	r5, r4
+  82 0016 25D2     		bcs	.L7
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****         return(UX_NULL);
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 152:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #if defined(UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT)
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     if (ep_dir)
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****         return(&dcd_stm32->ux_dcd_stm32_ed_in[ep_num]);
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** #endif /* defined(UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT) */
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h **** 
+ 157:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32.h ****     return(&dcd_stm32->ux_dcd_stm32_ed[ep_num]);
+  83              		.loc 2 157 5 is_stmt 1 view .LVU16
+  84              	.LVL4:
+  85              		.loc 2 157 5 is_stmt 0 view .LVU17
+  86              	.LBE6:
+  87              	.LBE8:
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     if (ed == UX_NULL)
+  88              		.loc 1 89 5 is_stmt 1 view .LVU18
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         return(UX_NO_ED_AVAILABLE);
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     /* Check the endpoint status, if it is free, reserve it. If not reject this endpoint.  */
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     if ((ed -> ux_dcd_stm32_ed_status & UX_DCD_STM32_ED_STATUS_USED) == 0)
+  89              		.loc 1 93 5 view .LVU19
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 7
+
+
+  90 0018 05EB4504 		add	r4, r5, r5, lsl #1
+  91 001c A600     		lsls	r6, r4, #2
+  92 001e 03EB8404 		add	r4, r3, r4, lsl #2
+  93              		.loc 1 93 13 is_stmt 0 view .LVU20
+  94 0022 D4F808C0 		ldr	ip, [r4, #8]
+  95              		.loc 1 93 8 view .LVU21
+  96 0026 1CF00107 		ands	r7, ip, #1
+  97 002a 1BD1     		bne	.L7
+  98              	.LBB9:
+  99              	.LBB7:
+ 100              		.loc 2 157 12 view .LVU22
+ 101 002c 0436     		adds	r6, r6, #4
+ 102 002e 1E44     		add	r6, r6, r3
+ 103              	.LBE7:
+ 104              	.LBE9:
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     {
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         /* We can use this endpoint.  */
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         ed -> ux_dcd_stm32_ed_status |=  UX_DCD_STM32_ED_STATUS_USED;
+ 105              		.loc 1 97 38 view .LVU23
+ 106 0030 4CF0010C 		orr	ip, ip, #1
+ 107 0034 C4F808C0 		str	ip, [r4, #8]
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         /* Keep the physical endpoint address in the endpoint container.  */
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         endpoint -> ux_slave_endpoint_ed =  (VOID *) ed;
+ 108              		.loc 1 100 42 view .LVU24
+ 109 0038 9660     		str	r6, [r2, #8]
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         /* Save the endpoint pointer.  */
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         ed -> ux_dcd_stm32_ed_endpoint =  endpoint;
+ 110              		.loc 1 103 40 view .LVU25
+ 111 003a 6260     		str	r2, [r4, #4]
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         /* And its index.  */
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         ed -> ux_dcd_stm32_ed_index =  stm32_endpoint_index;
+ 112              		.loc 1 106 37 view .LVU26
+ 113 003c 0C24     		movs	r4, #12
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 114              		.loc 1 84 26 view .LVU27
+ 115 003e 21F0800E 		bic	lr, r1, #128
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 116              		.loc 1 97 9 is_stmt 1 view .LVU28
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 117              		.loc 1 100 9 view .LVU29
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 118              		.loc 1 103 9 view .LVU30
+ 119              		.loc 1 106 9 view .LVU31
+ 120              		.loc 1 106 37 is_stmt 0 view .LVU32
+ 121 0042 04FB0533 		mla	r3, r4, r5, r3
+ 122              	.LVL5:
+ 123              		.loc 1 106 37 view .LVU33
+ 124 0046 7446     		mov	r4, lr
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         /* And its direction.  */
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         ed -> ux_dcd_stm32_ed_direction =  endpoint -> ux_slave_endpoint_descriptor.bEndpointAddres
+ 125              		.loc 1 109 102 view .LVU34
+ 126 0048 21F07F05 		bic	r5, r1, #127
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 8
+
+
+ 127              	.LVL6:
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 128              		.loc 1 106 37 view .LVU35
+ 129 004c 83F80DE0 		strb	lr, [r3, #13]
+ 130              		.loc 1 109 9 is_stmt 1 view .LVU36
+ 131              		.loc 1 109 41 is_stmt 0 view .LVU37
+ 132 0050 9D73     		strb	r5, [r3, #14]
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         /* Check if it is non-control endpoint.  */
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         if (stm32_endpoint_index != 0)
+ 133              		.loc 1 112 9 is_stmt 1 view .LVU38
+ 134              		.loc 1 112 12 is_stmt 0 view .LVU39
+ 135 0052 2CB1     		cbz	r4, .L1
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         {
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****             /* Open the endpoint.  */
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****             HAL_PCD_EP_Open(dcd_stm32 -> pcd_handle, endpoint -> ux_slave_endpoint_descriptor.bEndp
+ 136              		.loc 1 116 13 is_stmt 1 view .LVU40
+ 137 0054 D37B     		ldrb	r3, [r2, #15]	@ zero_extendqisi2
+ 138 0056 128A     		ldrh	r2, [r2, #16]
+ 139              	.LVL7:
+ 140              		.loc 1 116 13 is_stmt 0 view .LVU41
+ 141 0058 03F00303 		and	r3, r3, #3
+ 142 005c FFF7FEFF 		bl	HAL_PCD_EP_Open
+ 143              	.LVL8:
+ 144              	.L1:
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****                             endpoint -> ux_slave_endpoint_descriptor.wMaxPacketSize,
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****                             endpoint -> ux_slave_endpoint_descriptor.bmAttributes & UX_MASK_ENDPOIN
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         }
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         /* Return successful completion.  */
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****         return(UX_SUCCESS);
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     }
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     /* Return an error.  */
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c ****     return(UX_NO_ED_AVAILABLE);
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** }
+ 145              		.loc 1 127 1 view .LVU42
+ 146 0060 3846     		mov	r0, r7
+ 147 0062 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 148              	.LVL9:
+ 149              	.L7:
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_stm32_device_controllers/ux_dcd_stm32_endpoint_create.c **** 
+ 150              		.loc 1 90 15 view .LVU43
+ 151 0064 1427     		movs	r7, #20
+ 152 0066 FBE7     		b	.L1
+ 153              		.cfi_endproc
+ 154              	.LFE866:
+ 156              		.text
+ 157              	.Letext0:
+ 158              		.file 3 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 159              		.file 4 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 160              		.file 5 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 161              		.file 6 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+ 162              		.file 7 "../../STM32Cube_FW_N6/Drivers/CMSIS/Device/ST/STM32N6xx/Include/stm32n657xx.h"
+ 163              		.file 8 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_def.h"
+ 164              		.file 9 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_ll_usb.h"
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 9
+
+
+ 165              		.file 10 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_pcd.h"
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_dcd_stm32_endpoint_create.c
+/tmp/claude-1000/ccvs39fO.s:26     .text._ux_dcd_stm32_endpoint_create:00000000 $t
+/tmp/claude-1000/ccvs39fO.s:32     .text._ux_dcd_stm32_endpoint_create:00000000 _ux_dcd_stm32_endpoint_create
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+                           .group:00000000 wm4.stm32n6xx_hal_conf.h.21.a3ee9875a8d50695591dfaa6b0d72c91
+                           .group:00000000 wm4.arm_cmse.h.103.a0d15a79c4c9a67da8d5831704d7248e
+                           .group:00000000 wm4.stm32n6xx.h.34.c523a1ffdf274a69e8802892c6776332
+                           .group:00000000 wm4.stm32n657xx.h.26.acd272cb67318cc1a4791ce2f0720ca6
+                           .group:00000000 wm4.cmsis_version.h.30.d128735bf87720f7436b74fefeb5043c
+                           .group:00000000 wm4.core_cm55.h.67.25006a3ce7048d64bcddd2996d5fac93
+                           .group:00000000 wm4.arm_acle.h.28.ce8f475a5cc50333e54ae4adeb8c0298
+                           .group:00000000 wm4.cmsis_gcc.h.39.eba7438bc45fd1a6e6376b63ffe44436
+                           .group:00000000 wm4.cmsis_gcc_m.h.24.e590ec51aeda3a1242400351d73f5dce
+                           .group:00000000 wm4.core_cm55.h.213.0528f46a674315ef8d35c4477e230358
+                           .group:00000000 wm4.armv8m_mpu.h.24.bf28cc25bee30a7ff9d2f7a44a5e2230
+                           .group:00000000 wm4.armv8m_pmu.h.24.6ded195d2625055391fd378c0e1d2519
+                           .group:00000000 wm4.core_cm55.h.4477.396e822ef855bcfb932819ad48de1c4c
+                           .group:00000000 wm4.armv7m_cachel1.h.24.936dd92d6e204a8d0b17d5e4ea4a356e
+                           .group:00000000 wm4.stm32n657xx.h.575.78d331c417ec710388ced647138f735f
+                           .group:00000000 wm4.stm32n6xx.h.116.b4247d9785590e7c5ec9234ffb2153bf
+                           .group:00000000 wm4.stm32_hal_legacy.h.22.e62aae2fd3ae33360b6781c8a72e5b18
+                           .group:00000000 wm4.math.h.13.35ad80917fddb38312d53499dad31194
+                           .group:00000000 wm4.stm32n6xx_hal_def.h.63.3a8f01490e8852464e9fcb69092e9c75
+                           .group:00000000 wm4.stm32n6xx_ll_bus.h.38.2366a295ee4cdb04833997d3787fcd2d
+ARM GAS  /tmp/claude-1000/ccvs39fO.s 			page 11
+
+
+                           .group:00000000 wm4.stm32n6xx_ll_rcc.h.21.656bd5637db608589ad16ea57d39430c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.194.69b522b1afdf59a82d05a1f71efe03c7
+                           .group:00000000 wm4.stm32n6xx_hal_rcc_ex.h.21.cc6be0a7d168882a1a6f470236ba784c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.4361.4b490a4a19722e68c21f88cb8a774a30
+                           .group:00000000 wm4.stm32n6xx_hal_gpio.h.21.89d54af663b98eb8fc098192053f7eeb
+                           .group:00000000 wm4.stm32n6xx_hal_gpio_ex.h.22.f7e795fb05a69a19b87d946b47c8db8b
+                           .group:00000000 wm4.stm32n6xx_hal_rif.h.21.33f2c553a8a3fc14dca8c470b213ab19
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.21.61e48c5c2e8d25d22177834b232fe45c
+                           .group:00000000 wm4.stm32n6xx_hal_dma_ex.h.21.82f854ecdb6a463b06d0b4e5c217c368
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.1020.87e2180c009560b617c1f8208140c950
+                           .group:00000000 wm4.stm32n6xx_hal_cortex.h.21.f493623cc58f9454ab4eae41e395c5cc
+                           .group:00000000 wm4.stm32n6xx_hal_bsec.h.21.1ee89319140541f82434908b4267aa30
+                           .group:00000000 wm4.stm32n6xx_hal_dcmipp.h.21.e2b87dce83d7d722d696a597f6ac56bf
+                           .group:00000000 wm4.stm32n6xx_hal_dma2d.h.21.75c8d46cdbb72970123b3f34ae2043d7
+                           .group:00000000 wm4.stm32n6xx_hal_exti.h.21.e0efb23591051684dc14f1f2431c6aab
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.21.3f483626ff64c5bf027265bb2e1d1331
+                           .group:00000000 wm4.stm32n6xx_hal_i2c_ex.h.21.79e9196c22282cdaf6b4047893638c45
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.741.1084702632703acc669e4282b3043372
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.21.ae1eb09930e7e550e48e418ac5849e4d
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.1002.b13ede7fc94ed5ad1c6768a157d2149a
+                           .group:00000000 wm4.stm32n6xx_ll_usb.h.21.daaf86158046f2cf02166c495d637480
+                           .group:00000000 wm4.stm32n6xx_hal_pcd.h.155.27040aac6844effe2af8c180caf1dd2e
+                           .group:00000000 wm4.stm32n6xx_hal_pwr.h.21.cdb73e4869c3fed3fc84f901ec0e5f0a
+                           .group:00000000 wm4.stm32n6xx_hal_pwr_ex.h.21.1a673224a58b0c1e5fad8eeda6514208
+                           .group:00000000 wm4.stm32n6xx_hal_ramcfg.h.21.a62dfbb4d2c14e9a8c634a215e37bd3d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.21.9f810303326e2d91749800e9911f8e4d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.906.8ad9375f39dce09dc0a4db0025ee7a76
+                           .group:00000000 wm4.stm32n6xx_hal_tim.h.21.839dd2b2a70382fb2c44f8f293a84d5f
+                           .group:00000000 wm4.stm32n6xx_hal_tim_ex.h.21.e372d5ac63c13441211ea4ecbd353150
+                           .group:00000000 wm4.stm32n6xx_hal_uart.h.21.230f549bfa0d5ebfd77bfb311b2aca15
+                           .group:00000000 wm4.stm32n6xx_hal_uart_ex.h.21.a0d5511e1d0703b7b5278c8f5472b96d
+                           .group:00000000 wm4.stm32n6xx_hal_xspi.h.21.7fd922d3bdb871475cf18436a68935bb
+                           .group:00000000 wm4.stm32n6xx_hal_cacheaxi.h.21.7c3375b7903ec42376e4883320997f74
+                           .group:00000000 wm4.stm32n6xx_hal.h.81.e79d59262ba173c33cf1d69281830d15
+                           .group:00000000 wm4.ux_stm32_config.h.27.198ac9bedc33e24a434a3c88e78e3b60
+                           .group:00000000 wm4.ux_dcd_stm32.h.61.7532a11257f6138b1ed1bb924bf825b2
+
+UNDEFINED SYMBOLS
+HAL_PCD_EP_Open

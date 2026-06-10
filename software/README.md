@@ -6,18 +6,17 @@ This folder contains the ML pipelines used in this project, split into separate 
 
 ```text
 software/
-├── classifier/         # Gesture classification pipeline
-├── keypoints/          # Hand keypoint extraction pipeline
+├── ball_detection/     # Ball detection pipeline
+├── classifier/         # Hand Gesture classification pipeline
 ├── utils/              # Shared modules (config/checkpoint/run)
-├── tools/              # Project tools and notebooks
-├── requirements.txt
-└── webcam_classify.py
+├── tools/              # Dataset notebooks + RGB->grayscale helper
+└── requirements.txt
 ```
 
 ## Model Tracks
 
-- Classifier details: see classifier/README.md
-- Keypoints details: see keypoints/README.md
+- Ball Detection details: see [ball_detection/README.md](ball_detection/README.md)
+- Classifier details: see [classifier/README.md](classifier/README.md)
 
 ## Setup
 
@@ -31,14 +30,20 @@ pip install -r requirements.txt
 
 ## Quick Commands
 
-Train classifier:
+Train the classifier:
 
 ```bash
 python classifier/main.py --name baseline128
+```
+
+Train the ball detector:
+
+```bash
+python -m ball_detection.train --config ball_detection/configs/ball_styolo_nano.yaml --name ball_nano --device auto
 ```
 
 ## Notes
 
 - Keep model-specific code inside each model folder.
 - Put reusable code only in utils/.
-- Keep output folders model-local (classifier/runs/, later keypoints/runs/).
+- Keep output folders model-local (`classifier/runs/`, `ball_detection/runs/`).

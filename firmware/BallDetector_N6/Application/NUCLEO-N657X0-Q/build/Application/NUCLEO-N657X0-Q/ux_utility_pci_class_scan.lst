@@ -1,0 +1,369 @@
+ARM GAS  /tmp/claude-1000/ccsJb5SF.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_utility_pci_class_scan.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c"
+  25              		.section	.text._ux_utility_pci_class_scan,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_utility_pci_class_scan
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_utility_pci_class_scan:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**                                                                       */ 
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /** USBX Component                                                        */ 
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**   Utility                                                             */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /* Include necessary system files.  */
+ARM GAS  /tmp/claude-1000/ccsJb5SF.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** #define UX_SOURCE_CODE
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** #include "ux_api.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**************************************************************************/ 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  FUNCTION                                               RELEASE        */ 
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    _ux_utility_pci_class_scan                          PORTABLE C      */ 
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                           6.1          */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  AUTHOR                                                                */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  DESCRIPTION                                                           */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    This function scans the PCI bus from a certain position for a       */ 
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    specific PCI class.                                                 */ 
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  INPUT                                                                 */ 
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    pci_class                             PCI class requested           */ 
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    bus_number                            PCI bus number                */ 
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    device_number                         Device number                 */ 
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    function_number                       Function number               */ 
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    current_bus_number                    Current bus number            */ 
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    current_device_number                 Current device number         */ 
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    current_function_number               Current function number       */ 
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  OUTPUT                                                                */ 
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    32-bit value                                                        */ 
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  CALLS                                                                 */ 
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    _ux_utility_pci_read                  PCI read utility              */ 
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  CALLED BY                                                             */ 
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    USBX Components                                                     */ 
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  RELEASE HISTORY                                                       */ 
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*    DATE              NAME                      DESCRIPTION             */ 
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */ 
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s),          */
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                            resulting in version 6.1    */
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /*                                                                        */
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** /**************************************************************************/
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** ULONG  _ux_utility_pci_class_scan(ULONG pci_class, ULONG bus_number, ULONG device_number, 
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                    ULONG function_number, ULONG *current_bus_number,
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                    ULONG *current_device_number, ULONG *current_function_number)
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** {
+  35              		.loc 1 80 1 view -0
+ARM GAS  /tmp/claude-1000/ccsJb5SF.s 			page 3
+
+
+  36              		.cfi_startproc
+  37              		@ args = 12, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  39              		.loc 1 80 1 is_stmt 0 view .LVU1
+  40 0000 2DE9F341 		push	{r0, r1, r4, r5, r6, r7, r8, lr}
+  41              		.cfi_def_cfa_offset 32
+  42              		.cfi_offset 4, -24
+  43              		.cfi_offset 5, -20
+  44              		.cfi_offset 6, -16
+  45              		.cfi_offset 7, -12
+  46              		.cfi_offset 8, -8
+  47              		.cfi_offset 14, -4
+  48 0004 0746     		mov	r7, r0
+  49 0006 0C46     		mov	r4, r1
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** ULONG   bus_number_index;
+  50              		.loc 1 82 1 is_stmt 1 view .LVU2
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** ULONG   device_number_index;
+  51              		.loc 1 83 1 view .LVU3
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** ULONG   function_number_index;
+  52              		.loc 1 84 1 view .LVU4
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** ULONG   value;
+  53              		.loc 1 85 1 view .LVU5
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** ULONG   current_pci_class;
+  54              		.loc 1 86 1 view .LVU6
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     /* Scan all bus.  */
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     for (bus_number_index = bus_number; bus_number_index <= UX_PCI_NB_BUS; bus_number_index++)
+  55              		.loc 1 90 5 view .LVU7
+  56              	.LVL1:
+  57              	.L2:
+  58              		.loc 1 90 58 discriminator 1 view .LVU8
+  59 0008 FF2C     		cmp	r4, #255
+  60 000a 24D9     		bls	.L9
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     {
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****         /* Scan all devices.  */
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****         for(device_number_index = device_number;device_number_index <= UX_PCI_NB_DEVICE; device_num
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****         {
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****             /* Scan all functions.  */
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****             for(function_number_index = function_number; function_number_index <= UX_PCI_NB_FUNCTIO
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****             {
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 /* Reset all PCI address for next loop.  */
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 function_number = 0;
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 device_number =   0;
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 bus_number =      0;
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 /* Read the PCI class bus/device/function.  */
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 value =  _ux_utility_pci_read(bus_number_index, device_number_index, function_numbe
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                                     UX_PCI_CFG_REVISION,32);
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 /* Isolate the class code which is in the upper 3 bytes.  */
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 current_pci_class =  (value >> 8) & 0x00ffffff;
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+ARM GAS  /tmp/claude-1000/ccsJb5SF.s 			page 4
+
+
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 /* Do we have a match with the demanded class?  */
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 if(current_pci_class == pci_class)
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 {
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     /* Return the position of this device on the PCI */
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     *current_bus_number =       bus_number_index;
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     *current_device_number =    device_number_index;
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     *current_function_number =  function_number_index;
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     /* Return success!  */
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     return(UX_SUCCESS);
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 }
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****             }
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****         }
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     }
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     /* Return an error since we didn't find anything.  */
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     return(UX_ERROR);
+  61              		.loc 1 130 11 is_stmt 0 view .LVU9
+  62 000c FF20     		movs	r0, #255
+  63 000e 11E0     		b	.L1
+  64              	.LVL2:
+  65              	.L5:
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 device_number =   0;
+  66              		.loc 1 102 17 is_stmt 1 view .LVU10
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 bus_number =      0;
+  67              		.loc 1 103 17 view .LVU11
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  68              		.loc 1 104 17 view .LVU12
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                                     UX_PCI_CFG_REVISION,32);
+  69              		.loc 1 107 17 view .LVU13
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                                     UX_PCI_CFG_REVISION,32);
+  70              		.loc 1 107 26 is_stmt 0 view .LVU14
+  71 0010 0823     		movs	r3, #8
+  72 0012 3246     		mov	r2, r6
+  73 0014 2946     		mov	r1, r5
+  74 0016 2046     		mov	r0, r4
+  75 0018 CDF80080 		str	r8, [sp]
+  76 001c FFF7FEFF 		bl	_ux_utility_pci_read
+  77              	.LVL3:
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  78              		.loc 1 111 17 is_stmt 1 view .LVU15
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 {
+  79              		.loc 1 114 17 view .LVU16
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 {
+  80              		.loc 1 114 19 is_stmt 0 view .LVU17
+  81 0020 B7EB102F 		cmp	r7, r0, lsr #8
+  82 0024 09D1     		bne	.L3
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     *current_device_number =    device_number_index;
+  83              		.loc 1 118 21 is_stmt 1 view .LVU18
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 }
+  84              		.loc 1 123 27 is_stmt 0 view .LVU19
+  85 0026 0020     		movs	r0, #0
+  86              	.LVL4:
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     *current_device_number =    device_number_index;
+  87              		.loc 1 118 41 view .LVU20
+  88 0028 089B     		ldr	r3, [sp, #32]
+ARM GAS  /tmp/claude-1000/ccsJb5SF.s 			page 5
+
+
+  89 002a 1C60     		str	r4, [r3]
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     *current_function_number =  function_number_index;
+  90              		.loc 1 119 21 is_stmt 1 view .LVU21
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                     *current_function_number =  function_number_index;
+  91              		.loc 1 119 44 is_stmt 0 view .LVU22
+  92 002c 099B     		ldr	r3, [sp, #36]
+  93 002e 1D60     		str	r5, [r3]
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  94              		.loc 1 120 21 is_stmt 1 view .LVU23
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** 
+  95              		.loc 1 120 46 is_stmt 0 view .LVU24
+  96 0030 0A9B     		ldr	r3, [sp, #40]
+  97 0032 1E60     		str	r6, [r3]
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 }
+  98              		.loc 1 123 21 is_stmt 1 view .LVU25
+  99              	.LVL5:
+ 100              	.L1:
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c **** }
+ 101              		.loc 1 131 1 is_stmt 0 view .LVU26
+ 102 0034 02B0     		add	sp, sp, #8
+ 103              		.cfi_remember_state
+ 104              		.cfi_def_cfa_offset 24
+ 105              		@ sp needed
+ 106 0036 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 107              	.LVL6:
+ 108              	.L3:
+ 109              		.cfi_restore_state
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****             {
+ 110              		.loc 1 98 125 is_stmt 1 discriminator 2 view .LVU27
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 device_number =   0;
+ 111              		.loc 1 102 33 is_stmt 0 discriminator 2 view .LVU28
+ 112 003a 0023     		movs	r3, #0
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                 bus_number =      0;
+ 113              		.loc 1 103 31 discriminator 2 view .LVU29
+ 114 003c 1A46     		mov	r2, r3
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****             {
+ 115              		.loc 1 98 125 discriminator 2 view .LVU30
+ 116 003e 0136     		adds	r6, r6, #1
+ 117              	.LVL7:
+ 118              	.L6:
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****             {
+ 119              		.loc 1 98 80 is_stmt 1 discriminator 1 view .LVU31
+ 120 0040 072E     		cmp	r6, #7
+ 121 0042 E5D9     		bls	.L5
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****         {
+ 122              		.loc 1 94 109 discriminator 2 view .LVU32
+ 123 0044 0135     		adds	r5, r5, #1
+ 124              	.LVL8:
+ 125              	.L7:
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****         {
+ 126              		.loc 1 94 69 discriminator 1 view .LVU33
+ 127 0046 202D     		cmp	r5, #32
+ 128 0048 01D9     		bls	.L8
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     {
+ 129              		.loc 1 90 92 discriminator 2 view .LVU34
+ 130 004a 0134     		adds	r4, r4, #1
+ 131              	.LVL9:
+ARM GAS  /tmp/claude-1000/ccsJb5SF.s 			page 6
+
+
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     {
+ 132              		.loc 1 90 92 is_stmt 0 discriminator 2 view .LVU35
+ 133 004c DCE7     		b	.L2
+ 134              	.L8:
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****     {
+ 135              		.loc 1 90 92 discriminator 2 view .LVU36
+ 136 004e 1E46     		mov	r6, r3
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****                                     UX_PCI_CFG_REVISION,32);
+ 137              		.loc 1 107 26 view .LVU37
+ 138 0050 4FF02008 		mov	r8, #32
+ 139 0054 F4E7     		b	.L6
+ 140              	.LVL10:
+ 141              	.L9:
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_pci_class_scan.c ****         {
+ 142              		.loc 1 94 33 view .LVU38
+ 143 0056 1546     		mov	r5, r2
+ 144 0058 F5E7     		b	.L7
+ 145              		.cfi_endproc
+ 146              	.LFE3:
+ 148              		.text
+ 149              	.Letext0:
+ 150              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 151              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_utility.h"
+ARM GAS  /tmp/claude-1000/ccsJb5SF.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_utility_pci_class_scan.c
+/tmp/claude-1000/ccsJb5SF.s:26     .text._ux_utility_pci_class_scan:00000000 $t
+/tmp/claude-1000/ccsJb5SF.s:32     .text._ux_utility_pci_class_scan:00000000 _ux_utility_pci_class_scan
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+
+UNDEFINED SYMBOLS
+_ux_utility_pci_read

@@ -1,3 +1,0 @@
-../Core/Src/classifier_app.c:69:13:uart_send_str	1
-../Core/Src/classifier_app.c:143:6:classifier_init	5
-../Core/Src/classifier_app.c:161:6:classifier_process	5

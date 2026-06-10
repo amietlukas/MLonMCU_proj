@@ -1,0 +1,1333 @@
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"uart_protocol.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "Src/uart_protocol.c"
+  25              		.section	.text.tx,"ax",%progbits
+  26              		.align	1
+  27              		.syntax unified
+  28              		.thumb
+  29              		.thumb_func
+  31              	tx:
+  32              	.LVL0:
+  33              	.LFB864:
+   1:Src/uart_protocol.c **** /* UART framing for BallDetector_N6 benchmark mode. See uart_protocol.h and
+   2:Src/uart_protocol.c ****  * firmware/Host/protocol_balldetector_n6.md. Blocking HAL transfers on the
+   3:Src/uart_protocol.c ****  * ST-LINK VCP USART (USART1 @ 921600). */
+   4:Src/uart_protocol.c **** 
+   5:Src/uart_protocol.c **** #include "uart_protocol.h"
+   6:Src/uart_protocol.c **** #include "main.h"          /* HAL + UART_HandleTypeDef */
+   7:Src/uart_protocol.c **** #include <string.h>
+   8:Src/uart_protocol.c **** 
+   9:Src/uart_protocol.c **** #define UART_TX_TIMEOUT_MS  1000u
+  10:Src/uart_protocol.c **** #define UART_RX_TIMEOUT_MS  2000u
+  11:Src/uart_protocol.c **** #define PROTO_MAX_BOXES     YOLO_MAX_DET
+  12:Src/uart_protocol.c **** 
+  13:Src/uart_protocol.c **** static const uint8_t PROTO_MAGIC[4] = {
+  14:Src/uart_protocol.c ****     PROTO_MAGIC_0, PROTO_MAGIC_1, PROTO_MAGIC_2, PROTO_MAGIC_3
+  15:Src/uart_protocol.c **** };
+  16:Src/uart_protocol.c **** static UART_HandleTypeDef *s_huart;
+  17:Src/uart_protocol.c **** 
+  18:Src/uart_protocol.c **** uint16_t proto_crc16_ccitt(const uint8_t *data, size_t len, uint16_t crc)
+  19:Src/uart_protocol.c **** {
+  20:Src/uart_protocol.c ****     for (size_t i = 0; i < len; ++i) {
+  21:Src/uart_protocol.c ****         crc ^= (uint16_t)data[i] << 8;
+  22:Src/uart_protocol.c ****         for (int b = 0; b < 8; ++b) {
+  23:Src/uart_protocol.c ****             crc = (crc & 0x8000u) ? (uint16_t)((crc << 1) ^ 0x1021u)
+  24:Src/uart_protocol.c ****                                   : (uint16_t)(crc << 1);
+  25:Src/uart_protocol.c ****         }
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 2
+
+
+  26:Src/uart_protocol.c ****     }
+  27:Src/uart_protocol.c ****     return crc;
+  28:Src/uart_protocol.c **** }
+  29:Src/uart_protocol.c **** 
+  30:Src/uart_protocol.c **** void proto_init(void *huart) { s_huart = (UART_HandleTypeDef *)huart; }
+  31:Src/uart_protocol.c **** 
+  32:Src/uart_protocol.c **** static void tx(const uint8_t *p, uint16_t n)
+  33:Src/uart_protocol.c **** {
+  34              		.loc 1 33 1 view -0
+  35              		.cfi_startproc
+  36              		@ args = 0, pretend = 0, frame = 0
+  37              		@ frame_needed = 0, uses_anonymous_args = 0
+  38              		@ link register save eliminated.
+  34:Src/uart_protocol.c ****     HAL_UART_Transmit(s_huart, (uint8_t *)p, n, UART_TX_TIMEOUT_MS);
+  39              		.loc 1 34 5 view .LVU1
+  33:Src/uart_protocol.c ****     HAL_UART_Transmit(s_huart, (uint8_t *)p, n, UART_TX_TIMEOUT_MS);
+  40              		.loc 1 33 1 is_stmt 0 view .LVU2
+  41 0000 0A46     		mov	r2, r1
+  42              		.loc 1 34 5 view .LVU3
+  43 0002 0146     		mov	r1, r0
+  44              	.LVL1:
+  45              		.loc 1 34 5 view .LVU4
+  46 0004 0248     		ldr	r0, .L2
+  47              	.LVL2:
+  48              		.loc 1 34 5 view .LVU5
+  49 0006 4FF47A73 		mov	r3, #1000
+  50 000a 0068     		ldr	r0, [r0]
+  51 000c FFF7FEBF 		b	HAL_UART_Transmit
+  52              	.LVL3:
+  53              	.L3:
+  54              		.loc 1 34 5 view .LVU6
+  55              		.align	2
+  56              	.L2:
+  57 0010 00000000 		.word	s_huart
+  58              		.cfi_endproc
+  59              	.LFE864:
+  61              		.section	.text.rx_exact.constprop.0,"ax",%progbits
+  62              		.align	1
+  63              		.syntax unified
+  64              		.thumb
+  65              		.thumb_func
+  67              	rx_exact.constprop.0:
+  68              	.LVL4:
+  69              	.LFB872:
+  35:Src/uart_protocol.c **** }
+  36:Src/uart_protocol.c **** 
+  37:Src/uart_protocol.c **** void proto_send_frame(uint8_t type, const uint8_t *payload, uint32_t len)
+  38:Src/uart_protocol.c **** {
+  39:Src/uart_protocol.c ****     uint8_t hdr[5] = { type, (uint8_t)len, (uint8_t)(len >> 8),
+  40:Src/uart_protocol.c ****                        (uint8_t)(len >> 16), (uint8_t)(len >> 24) };
+  41:Src/uart_protocol.c ****     uint16_t crc = proto_crc16_ccitt(hdr, sizeof(hdr), 0xFFFFu);
+  42:Src/uart_protocol.c ****     if (len) crc = proto_crc16_ccitt(payload, len, crc);
+  43:Src/uart_protocol.c ****     uint8_t crc_le[2] = { (uint8_t)crc, (uint8_t)(crc >> 8) };
+  44:Src/uart_protocol.c **** 
+  45:Src/uart_protocol.c ****     tx(PROTO_MAGIC, sizeof(PROTO_MAGIC));
+  46:Src/uart_protocol.c ****     tx(hdr, sizeof(hdr));
+  47:Src/uart_protocol.c ****     if (len) tx(payload, (uint16_t)len);
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 3
+
+
+  48:Src/uart_protocol.c ****     tx(crc_le, sizeof(crc_le));
+  49:Src/uart_protocol.c **** }
+  50:Src/uart_protocol.c **** 
+  51:Src/uart_protocol.c **** void proto_send_info(uint16_t fw_ver, uint16_t w, uint16_t h, uint8_t c, uint8_t n_out)
+  52:Src/uart_protocol.c **** {
+  53:Src/uart_protocol.c ****     uint8_t p[8] = { (uint8_t)fw_ver, (uint8_t)(fw_ver >> 8),
+  54:Src/uart_protocol.c ****                      (uint8_t)w, (uint8_t)(w >> 8),
+  55:Src/uart_protocol.c ****                      (uint8_t)h, (uint8_t)(h >> 8), c, n_out };
+  56:Src/uart_protocol.c ****     proto_send_frame(PROTO_T_INFO, p, sizeof(p));
+  57:Src/uart_protocol.c **** }
+  58:Src/uart_protocol.c **** 
+  59:Src/uart_protocol.c **** void proto_send_log(const char *msg)
+  60:Src/uart_protocol.c **** {
+  61:Src/uart_protocol.c ****     proto_send_frame(PROTO_T_LOG, (const uint8_t *)msg, (uint32_t)strlen(msg));
+  62:Src/uart_protocol.c **** }
+  63:Src/uart_protocol.c **** 
+  64:Src/uart_protocol.c **** void proto_send_infer_dec(uint32_t pre_us, uint32_t infer_us, uint32_t post_us,
+  65:Src/uart_protocol.c ****                           const yolo_box_t *boxes, uint16_t n)
+  66:Src/uart_protocol.c **** {
+  67:Src/uart_protocol.c ****     uint8_t p[14 + PROTO_MAX_BOXES * 20];
+  68:Src/uart_protocol.c ****     uint32_t off = 0;
+  69:Src/uart_protocol.c ****     memcpy(&p[off], &pre_us,   4); off += 4;
+  70:Src/uart_protocol.c ****     memcpy(&p[off], &infer_us, 4); off += 4;
+  71:Src/uart_protocol.c ****     memcpy(&p[off], &post_us,  4); off += 4;
+  72:Src/uart_protocol.c ****     memcpy(&p[off], &n,        2); off += 2;
+  73:Src/uart_protocol.c ****     for (uint16_t i = 0; i < n; ++i) {
+  74:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x1, 4);    off += 4;
+  75:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y1, 4);    off += 4;
+  76:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x2, 4);    off += 4;
+  77:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y2, 4);    off += 4;
+  78:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].score, 4); off += 4;
+  79:Src/uart_protocol.c ****     }
+  80:Src/uart_protocol.c ****     proto_send_frame(PROTO_T_INFER_DEC, p, off);
+  81:Src/uart_protocol.c **** }
+  82:Src/uart_protocol.c **** 
+  83:Src/uart_protocol.c **** static int rx_exact(uint8_t *buf, uint32_t n, uint32_t timeout_ms)
+  70              		.loc 1 83 12 is_stmt 1 view -0
+  71              		.cfi_startproc
+  72              		@ args = 0, pretend = 0, frame = 0
+  73              		@ frame_needed = 0, uses_anonymous_args = 0
+  84:Src/uart_protocol.c **** {
+  85:Src/uart_protocol.c ****     if (HAL_UART_Receive(s_huart, buf, (uint16_t)n, timeout_ms) == HAL_OK) {
+  74              		.loc 1 85 5 view .LVU8
+  83:Src/uart_protocol.c **** {
+  75              		.loc 1 83 12 is_stmt 0 view .LVU9
+  76 0000 10B5     		push	{r4, lr}
+  77              		.cfi_def_cfa_offset 8
+  78              		.cfi_offset 4, -8
+  79              		.cfi_offset 14, -4
+  80              		.loc 1 85 9 view .LVU10
+  81 0002 0A4C     		ldr	r4, .L7
+  82 0004 8AB2     		uxth	r2, r1
+  83 0006 4FF4FA63 		mov	r3, #2000
+  84 000a 0146     		mov	r1, r0
+  85              	.LVL5:
+  86              		.loc 1 85 9 view .LVU11
+  87 000c 2068     		ldr	r0, [r4]
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 4
+
+
+  88              	.LVL6:
+  89              		.loc 1 85 9 view .LVU12
+  90 000e FFF7FEFF 		bl	HAL_UART_Receive
+  91              	.LVL7:
+  92              		.loc 1 85 8 view .LVU13
+  93 0012 48B1     		cbz	r0, .L6
+  94              	.LBB4:
+  95              	.LBI4:
+  83:Src/uart_protocol.c **** {
+  96              		.loc 1 83 12 is_stmt 1 view .LVU14
+  97              	.LVL8:
+  98              	.LBB5:
+  86:Src/uart_protocol.c ****         return 1;
+  87:Src/uart_protocol.c ****     }
+  88:Src/uart_protocol.c ****     /* Clear overrun/framing/noise so one glitch on the unpaced image upload
+  89:Src/uart_protocol.c ****      * doesn't permanently wedge RX (the frame is abandoned + resynced via the
+  90:Src/uart_protocol.c ****      * magic hunt; the host's chunk-delay prevents most of these). */
+  91:Src/uart_protocol.c ****     __HAL_UART_CLEAR_OREFLAG(s_huart);
+  99              		.loc 1 91 5 view .LVU15
+ 100 0014 0822     		movs	r2, #8
+ 101 0016 2368     		ldr	r3, [r4]
+  92:Src/uart_protocol.c ****     __HAL_UART_CLEAR_FEFLAG(s_huart);
+  93:Src/uart_protocol.c ****     __HAL_UART_CLEAR_NEFLAG(s_huart);
+ 102              		.loc 1 93 5 is_stmt 0 view .LVU16
+ 103 0018 0020     		movs	r0, #0
+  91:Src/uart_protocol.c ****     __HAL_UART_CLEAR_FEFLAG(s_huart);
+ 104              		.loc 1 91 5 view .LVU17
+ 105 001a 1B68     		ldr	r3, [r3]
+ 106 001c 1A62     		str	r2, [r3, #32]
+  92:Src/uart_protocol.c ****     __HAL_UART_CLEAR_FEFLAG(s_huart);
+ 107              		.loc 1 92 5 is_stmt 1 view .LVU18
+ 108 001e 0222     		movs	r2, #2
+ 109 0020 1A62     		str	r2, [r3, #32]
+ 110              		.loc 1 93 5 view .LVU19
+ 111 0022 0422     		movs	r2, #4
+ 112 0024 1A62     		str	r2, [r3, #32]
+  94:Src/uart_protocol.c ****     return 0;
+ 113              		.loc 1 94 5 view .LVU20
+ 114              	.LVL9:
+ 115              	.L4:
+ 116              		.loc 1 94 5 is_stmt 0 view .LVU21
+ 117              	.LBE5:
+ 118              	.LBE4:
+  95:Src/uart_protocol.c **** }
+ 119              		.loc 1 95 1 view .LVU22
+ 120 0026 10BD     		pop	{r4, pc}
+ 121              	.L6:
+  86:Src/uart_protocol.c ****     }
+ 122              		.loc 1 86 16 view .LVU23
+ 123 0028 0120     		movs	r0, #1
+ 124 002a FCE7     		b	.L4
+ 125              	.L8:
+ 126              		.align	2
+ 127              	.L7:
+ 128 002c 00000000 		.word	s_huart
+ 129              		.cfi_endproc
+ 130              	.LFE872:
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 5
+
+
+ 132              		.section	.text.proto_crc16_ccitt,"ax",%progbits
+ 133              		.align	1
+ 134              		.global	proto_crc16_ccitt
+ 135              		.syntax unified
+ 136              		.thumb
+ 137              		.thumb_func
+ 139              	proto_crc16_ccitt:
+ 140              	.LVL10:
+ 141              	.LFB862:
+  19:Src/uart_protocol.c ****     for (size_t i = 0; i < len; ++i) {
+ 142              		.loc 1 19 1 is_stmt 1 view -0
+ 143              		.cfi_startproc
+ 144              		@ args = 0, pretend = 0, frame = 0
+ 145              		@ frame_needed = 0, uses_anonymous_args = 0
+  20:Src/uart_protocol.c ****         crc ^= (uint16_t)data[i] << 8;
+ 146              		.loc 1 20 5 view .LVU25
+ 147              	.LBB6:
+  20:Src/uart_protocol.c ****         crc ^= (uint16_t)data[i] << 8;
+ 148              		.loc 1 20 10 view .LVU26
+  20:Src/uart_protocol.c ****         crc ^= (uint16_t)data[i] << 8;
+ 149              		.loc 1 20 10 is_stmt 0 view .LVU27
+ 150 0000 0346     		mov	r3, r0
+ 151              	.LBE6:
+  19:Src/uart_protocol.c ****     for (size_t i = 0; i < len; ++i) {
+ 152              		.loc 1 19 1 view .LVU28
+ 153 0002 70B5     		push	{r4, r5, r6, lr}
+ 154              		.cfi_def_cfa_offset 16
+ 155              		.cfi_offset 4, -16
+ 156              		.cfi_offset 5, -12
+ 157              		.cfi_offset 6, -8
+ 158              		.cfi_offset 14, -4
+ 159 0004 0144     		add	r1, r1, r0
+ 160              	.LVL11:
+ 161              	.LBB10:
+ 162              	.LBB7:
+  23:Src/uart_protocol.c ****                                   : (uint16_t)(crc << 1);
+ 163              		.loc 1 23 17 view .LVU29
+ 164 0006 41F22105 		movw	r5, #4129
+ 165              	.LBE7:
+  20:Src/uart_protocol.c ****         crc ^= (uint16_t)data[i] << 8;
+ 166              		.loc 1 20 5 view .LVU30
+ 167 000a 1046     		mov	r0, r2
+ 168              	.LVL12:
+ 169              	.L10:
+  20:Src/uart_protocol.c ****         crc ^= (uint16_t)data[i] << 8;
+ 170              		.loc 1 20 26 is_stmt 1 discriminator 1 view .LVU31
+ 171 000c 8B42     		cmp	r3, r1
+ 172 000e 00D1     		bne	.L13
+ 173              	.LBE10:
+  27:Src/uart_protocol.c **** }
+ 174              		.loc 1 27 5 view .LVU32
+  28:Src/uart_protocol.c **** 
+ 175              		.loc 1 28 1 is_stmt 0 view .LVU33
+ 176 0010 70BD     		pop	{r4, r5, r6, pc}
+ 177              	.L13:
+ 178              	.LBB11:
+  21:Src/uart_protocol.c ****         for (int b = 0; b < 8; ++b) {
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 6
+
+
+ 179              		.loc 1 21 9 is_stmt 1 view .LVU34
+ 180              	.LBB8:
+  23:Src/uart_protocol.c ****                                   : (uint16_t)(crc << 1);
+ 181              		.loc 1 23 17 is_stmt 0 view .LVU35
+ 182 0012 0824     		movs	r4, #8
+ 183              	.LBE8:
+  21:Src/uart_protocol.c ****         for (int b = 0; b < 8; ++b) {
+ 184              		.loc 1 21 30 view .LVU36
+ 185 0014 13F8012B 		ldrb	r2, [r3], #1	@ zero_extendqisi2
+ 186              	.LVL13:
+  21:Src/uart_protocol.c ****         for (int b = 0; b < 8; ++b) {
+ 187              		.loc 1 21 13 view .LVU37
+ 188 0018 80EA0220 		eor	r0, r0, r2, lsl #8
+ 189              	.LVL14:
+  22:Src/uart_protocol.c ****             crc = (crc & 0x8000u) ? (uint16_t)((crc << 1) ^ 0x1021u)
+ 190              		.loc 1 22 9 is_stmt 1 view .LVU38
+ 191              	.LBB9:
+  22:Src/uart_protocol.c ****             crc = (crc & 0x8000u) ? (uint16_t)((crc << 1) ^ 0x1021u)
+ 192              		.loc 1 22 14 view .LVU39
+  22:Src/uart_protocol.c ****             crc = (crc & 0x8000u) ? (uint16_t)((crc << 1) ^ 0x1021u)
+ 193              		.loc 1 22 27 view .LVU40
+ 194              	.L12:
+  23:Src/uart_protocol.c ****                                   : (uint16_t)(crc << 1);
+ 195              		.loc 1 23 13 view .LVU41
+  23:Src/uart_protocol.c ****                                   : (uint16_t)(crc << 1);
+ 196              		.loc 1 23 53 is_stmt 0 view .LVU42
+ 197 001c 4200     		lsls	r2, r0, #1
+  23:Src/uart_protocol.c ****                                   : (uint16_t)(crc << 1);
+ 198              		.loc 1 23 35 view .LVU43
+ 199 001e 06B2     		sxth	r6, r0
+  23:Src/uart_protocol.c ****                                   : (uint16_t)(crc << 1);
+ 200              		.loc 1 23 53 view .LVU44
+ 201 0020 90B2     		uxth	r0, r2
+ 202              	.LVL15:
+  23:Src/uart_protocol.c ****                                   : (uint16_t)(crc << 1);
+ 203              		.loc 1 23 17 view .LVU45
+ 204 0022 002E     		cmp	r6, #0
+ 205 0024 80EA0502 		eor	r2, r0, r5
+ 206 0028 B8BF     		it	lt
+ 207 002a 1046     		movlt	r0, r2
+ 208              	.LVL16:
+  22:Src/uart_protocol.c ****             crc = (crc & 0x8000u) ? (uint16_t)((crc << 1) ^ 0x1021u)
+ 209              		.loc 1 22 32 is_stmt 1 view .LVU46
+  22:Src/uart_protocol.c ****             crc = (crc & 0x8000u) ? (uint16_t)((crc << 1) ^ 0x1021u)
+ 210              		.loc 1 22 27 view .LVU47
+ 211 002c 013C     		subs	r4, r4, #1
+ 212 002e F5D1     		bne	.L12
+ 213 0030 ECE7     		b	.L10
+ 214              	.LBE9:
+ 215              	.LBE11:
+ 216              		.cfi_endproc
+ 217              	.LFE862:
+ 219              		.section	.text.proto_init,"ax",%progbits
+ 220              		.align	1
+ 221              		.global	proto_init
+ 222              		.syntax unified
+ 223              		.thumb
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 7
+
+
+ 224              		.thumb_func
+ 226              	proto_init:
+ 227              	.LVL17:
+ 228              	.LFB863:
+  30:Src/uart_protocol.c **** 
+ 229              		.loc 1 30 30 view -0
+ 230              		.cfi_startproc
+ 231              		@ args = 0, pretend = 0, frame = 0
+ 232              		@ frame_needed = 0, uses_anonymous_args = 0
+ 233              		@ link register save eliminated.
+  30:Src/uart_protocol.c **** 
+ 234              		.loc 1 30 32 view .LVU49
+  30:Src/uart_protocol.c **** 
+ 235              		.loc 1 30 40 is_stmt 0 view .LVU50
+ 236 0000 014B     		ldr	r3, .L16
+ 237 0002 1860     		str	r0, [r3]
+  30:Src/uart_protocol.c **** 
+ 238              		.loc 1 30 71 view .LVU51
+ 239 0004 7047     		bx	lr
+ 240              	.L17:
+ 241 0006 00BF     		.align	2
+ 242              	.L16:
+ 243 0008 00000000 		.word	s_huart
+ 244              		.cfi_endproc
+ 245              	.LFE863:
+ 247              		.section	.text.proto_send_frame,"ax",%progbits
+ 248              		.align	1
+ 249              		.global	proto_send_frame
+ 250              		.syntax unified
+ 251              		.thumb
+ 252              		.thumb_func
+ 254              	proto_send_frame:
+ 255              	.LVL18:
+ 256              	.LFB865:
+  38:Src/uart_protocol.c ****     uint8_t hdr[5] = { type, (uint8_t)len, (uint8_t)(len >> 8),
+ 257              		.loc 1 38 1 is_stmt 1 view -0
+ 258              		.cfi_startproc
+ 259              		@ args = 0, pretend = 0, frame = 16
+ 260              		@ frame_needed = 0, uses_anonymous_args = 0
+  39:Src/uart_protocol.c ****                        (uint8_t)(len >> 16), (uint8_t)(len >> 24) };
+ 261              		.loc 1 39 5 view .LVU53
+  38:Src/uart_protocol.c ****     uint8_t hdr[5] = { type, (uint8_t)len, (uint8_t)(len >> 8),
+ 262              		.loc 1 38 1 is_stmt 0 view .LVU54
+ 263 0000 30B5     		push	{r4, r5, lr}
+ 264              		.cfi_def_cfa_offset 12
+ 265              		.cfi_offset 4, -12
+ 266              		.cfi_offset 5, -8
+ 267              		.cfi_offset 14, -4
+  39:Src/uart_protocol.c ****                        (uint8_t)(len >> 16), (uint8_t)(len >> 24) };
+ 268              		.loc 1 39 58 view .LVU55
+ 269 0002 130A     		lsrs	r3, r2, #8
+  38:Src/uart_protocol.c ****     uint8_t hdr[5] = { type, (uint8_t)len, (uint8_t)(len >> 8),
+ 270              		.loc 1 38 1 view .LVU56
+ 271 0004 85B0     		sub	sp, sp, #20
+ 272              		.cfi_def_cfa_offset 32
+  39:Src/uart_protocol.c ****                        (uint8_t)(len >> 16), (uint8_t)(len >> 24) };
+ 273              		.loc 1 39 44 view .LVU57
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 8
+
+
+ 274 0006 8DF80A30 		strb	r3, [sp, #10]
+  40:Src/uart_protocol.c ****     uint16_t crc = proto_crc16_ccitt(hdr, sizeof(hdr), 0xFFFFu);
+ 275              		.loc 1 40 38 view .LVU58
+ 276 000a 130C     		lsrs	r3, r2, #16
+  39:Src/uart_protocol.c ****                        (uint8_t)(len >> 16), (uint8_t)(len >> 24) };
+ 277              		.loc 1 39 13 view .LVU59
+ 278 000c 8DF80800 		strb	r0, [sp, #8]
+  39:Src/uart_protocol.c ****                        (uint8_t)(len >> 16), (uint8_t)(len >> 24) };
+ 279              		.loc 1 39 30 view .LVU60
+ 280 0010 8DF80920 		strb	r2, [sp, #9]
+  40:Src/uart_protocol.c ****     uint16_t crc = proto_crc16_ccitt(hdr, sizeof(hdr), 0xFFFFu);
+ 281              		.loc 1 40 24 view .LVU61
+ 282 0014 8DF80B30 		strb	r3, [sp, #11]
+  38:Src/uart_protocol.c ****     uint8_t hdr[5] = { type, (uint8_t)len, (uint8_t)(len >> 8),
+ 283              		.loc 1 38 1 view .LVU62
+ 284 0018 0D46     		mov	r5, r1
+  40:Src/uart_protocol.c ****     uint16_t crc = proto_crc16_ccitt(hdr, sizeof(hdr), 0xFFFFu);
+ 285              		.loc 1 40 60 view .LVU63
+ 286 001a 130E     		lsrs	r3, r2, #24
+  38:Src/uart_protocol.c ****     uint8_t hdr[5] = { type, (uint8_t)len, (uint8_t)(len >> 8),
+ 287              		.loc 1 38 1 view .LVU64
+ 288 001c 1446     		mov	r4, r2
+  41:Src/uart_protocol.c ****     if (len) crc = proto_crc16_ccitt(payload, len, crc);
+ 289              		.loc 1 41 20 view .LVU65
+ 290 001e 0521     		movs	r1, #5
+ 291              	.LVL19:
+  41:Src/uart_protocol.c ****     if (len) crc = proto_crc16_ccitt(payload, len, crc);
+ 292              		.loc 1 41 20 view .LVU66
+ 293 0020 4FF6FF72 		movw	r2, #65535
+ 294              	.LVL20:
+  41:Src/uart_protocol.c ****     if (len) crc = proto_crc16_ccitt(payload, len, crc);
+ 295              		.loc 1 41 20 view .LVU67
+ 296 0024 02A8     		add	r0, sp, #8
+ 297              	.LVL21:
+  40:Src/uart_protocol.c ****     uint16_t crc = proto_crc16_ccitt(hdr, sizeof(hdr), 0xFFFFu);
+ 298              		.loc 1 40 46 view .LVU68
+ 299 0026 8DF80C30 		strb	r3, [sp, #12]
+  41:Src/uart_protocol.c ****     if (len) crc = proto_crc16_ccitt(payload, len, crc);
+ 300              		.loc 1 41 5 is_stmt 1 view .LVU69
+  41:Src/uart_protocol.c ****     if (len) crc = proto_crc16_ccitt(payload, len, crc);
+ 301              		.loc 1 41 20 is_stmt 0 view .LVU70
+ 302 002a FFF7FEFF 		bl	proto_crc16_ccitt
+ 303              	.LVL22:
+  41:Src/uart_protocol.c ****     if (len) crc = proto_crc16_ccitt(payload, len, crc);
+ 304              		.loc 1 41 20 view .LVU71
+ 305 002e 0246     		mov	r2, r0
+ 306              	.LVL23:
+  42:Src/uart_protocol.c ****     uint8_t crc_le[2] = { (uint8_t)crc, (uint8_t)(crc >> 8) };
+ 307              		.loc 1 42 5 is_stmt 1 view .LVU72
+  42:Src/uart_protocol.c ****     uint8_t crc_le[2] = { (uint8_t)crc, (uint8_t)(crc >> 8) };
+ 308              		.loc 1 42 8 is_stmt 0 view .LVU73
+ 309 0030 24B1     		cbz	r4, .L19
+  42:Src/uart_protocol.c ****     uint8_t crc_le[2] = { (uint8_t)crc, (uint8_t)(crc >> 8) };
+ 310              		.loc 1 42 14 is_stmt 1 discriminator 1 view .LVU74
+  42:Src/uart_protocol.c ****     uint8_t crc_le[2] = { (uint8_t)crc, (uint8_t)(crc >> 8) };
+ 311              		.loc 1 42 20 is_stmt 0 discriminator 1 view .LVU75
+ 312 0032 2146     		mov	r1, r4
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 9
+
+
+ 313 0034 2846     		mov	r0, r5
+ 314              	.LVL24:
+  42:Src/uart_protocol.c ****     uint8_t crc_le[2] = { (uint8_t)crc, (uint8_t)(crc >> 8) };
+ 315              		.loc 1 42 20 discriminator 1 view .LVU76
+ 316 0036 FFF7FEFF 		bl	proto_crc16_ccitt
+ 317              	.LVL25:
+  42:Src/uart_protocol.c ****     uint8_t crc_le[2] = { (uint8_t)crc, (uint8_t)(crc >> 8) };
+ 318              		.loc 1 42 20 discriminator 1 view .LVU77
+ 319 003a 0246     		mov	r2, r0
+ 320              	.LVL26:
+ 321              	.L19:
+  43:Src/uart_protocol.c **** 
+ 322              		.loc 1 43 5 is_stmt 1 view .LVU78
+  45:Src/uart_protocol.c ****     tx(hdr, sizeof(hdr));
+ 323              		.loc 1 45 5 is_stmt 0 view .LVU79
+ 324 003c 0421     		movs	r1, #4
+ 325 003e 0A48     		ldr	r0, .L27
+  43:Src/uart_protocol.c **** 
+ 326              		.loc 1 43 13 view .LVU80
+ 327 0040 ADF80420 		strh	r2, [sp, #4]	@ movhi
+  45:Src/uart_protocol.c ****     tx(hdr, sizeof(hdr));
+ 328              		.loc 1 45 5 is_stmt 1 view .LVU81
+ 329 0044 FFF7FEFF 		bl	tx
+ 330              	.LVL27:
+  46:Src/uart_protocol.c ****     if (len) tx(payload, (uint16_t)len);
+ 331              		.loc 1 46 5 view .LVU82
+ 332 0048 0521     		movs	r1, #5
+ 333 004a 02A8     		add	r0, sp, #8
+ 334 004c FFF7FEFF 		bl	tx
+ 335              	.LVL28:
+  47:Src/uart_protocol.c ****     tx(crc_le, sizeof(crc_le));
+ 336              		.loc 1 47 5 view .LVU83
+  47:Src/uart_protocol.c ****     tx(crc_le, sizeof(crc_le));
+ 337              		.loc 1 47 8 is_stmt 0 view .LVU84
+ 338 0050 1CB1     		cbz	r4, .L20
+  47:Src/uart_protocol.c ****     tx(crc_le, sizeof(crc_le));
+ 339              		.loc 1 47 14 is_stmt 1 discriminator 1 view .LVU85
+ 340 0052 2846     		mov	r0, r5
+ 341 0054 A1B2     		uxth	r1, r4
+ 342 0056 FFF7FEFF 		bl	tx
+ 343              	.LVL29:
+ 344              	.L20:
+  48:Src/uart_protocol.c **** }
+ 345              		.loc 1 48 5 view .LVU86
+ 346 005a 0221     		movs	r1, #2
+ 347 005c 01A8     		add	r0, sp, #4
+ 348 005e FFF7FEFF 		bl	tx
+ 349              	.LVL30:
+  49:Src/uart_protocol.c **** 
+ 350              		.loc 1 49 1 is_stmt 0 view .LVU87
+ 351 0062 05B0     		add	sp, sp, #20
+ 352              		.cfi_def_cfa_offset 12
+ 353              		@ sp needed
+ 354 0064 30BD     		pop	{r4, r5, pc}
+ 355              	.LVL31:
+ 356              	.L28:
+  49:Src/uart_protocol.c **** 
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 10
+
+
+ 357              		.loc 1 49 1 view .LVU88
+ 358 0066 00BF     		.align	2
+ 359              	.L27:
+ 360 0068 00000000 		.word	PROTO_MAGIC
+ 361              		.cfi_endproc
+ 362              	.LFE865:
+ 364              		.section	.text.proto_send_info,"ax",%progbits
+ 365              		.align	1
+ 366              		.global	proto_send_info
+ 367              		.syntax unified
+ 368              		.thumb
+ 369              		.thumb_func
+ 371              	proto_send_info:
+ 372              	.LVL32:
+ 373              	.LFB866:
+  52:Src/uart_protocol.c ****     uint8_t p[8] = { (uint8_t)fw_ver, (uint8_t)(fw_ver >> 8),
+ 374              		.loc 1 52 1 is_stmt 1 view -0
+ 375              		.cfi_startproc
+ 376              		@ args = 4, pretend = 0, frame = 8
+ 377              		@ frame_needed = 0, uses_anonymous_args = 0
+  53:Src/uart_protocol.c ****                      (uint8_t)w, (uint8_t)(w >> 8),
+ 378              		.loc 1 53 5 view .LVU90
+  52:Src/uart_protocol.c ****     uint8_t p[8] = { (uint8_t)fw_ver, (uint8_t)(fw_ver >> 8),
+ 379              		.loc 1 52 1 is_stmt 0 view .LVU91
+ 380 0000 07B5     		push	{r0, r1, r2, lr}
+ 381              		.cfi_def_cfa_offset 16
+ 382              		.cfi_offset 14, -4
+  53:Src/uart_protocol.c ****                      (uint8_t)w, (uint8_t)(w >> 8),
+ 383              		.loc 1 53 13 view .LVU92
+ 384 0002 8DF80630 		strb	r3, [sp, #6]
+ 385 0006 9DF81030 		ldrb	r3, [sp, #16]	@ zero_extendqisi2
+ 386              	.LVL33:
+  53:Src/uart_protocol.c ****                      (uint8_t)w, (uint8_t)(w >> 8),
+ 387              		.loc 1 53 13 view .LVU93
+ 388 000a ADF80000 		strh	r0, [sp]	@ movhi
+ 389 000e ADF80210 		strh	r1, [sp, #2]	@ movhi
+ 390 0012 ADF80420 		strh	r2, [sp, #4]	@ movhi
+  56:Src/uart_protocol.c **** }
+ 391              		.loc 1 56 5 view .LVU94
+ 392 0016 6946     		mov	r1, sp
+ 393              	.LVL34:
+  56:Src/uart_protocol.c **** }
+ 394              		.loc 1 56 5 view .LVU95
+ 395 0018 0822     		movs	r2, #8
+ 396              	.LVL35:
+  56:Src/uart_protocol.c **** }
+ 397              		.loc 1 56 5 view .LVU96
+ 398 001a 0220     		movs	r0, #2
+ 399              	.LVL36:
+  53:Src/uart_protocol.c ****                      (uint8_t)w, (uint8_t)(w >> 8),
+ 400              		.loc 1 53 13 view .LVU97
+ 401 001c 8DF80730 		strb	r3, [sp, #7]
+  56:Src/uart_protocol.c **** }
+ 402              		.loc 1 56 5 is_stmt 1 view .LVU98
+ 403 0020 FFF7FEFF 		bl	proto_send_frame
+ 404              	.LVL37:
+  57:Src/uart_protocol.c **** 
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 11
+
+
+ 405              		.loc 1 57 1 is_stmt 0 view .LVU99
+ 406 0024 03B0     		add	sp, sp, #12
+ 407              		.cfi_def_cfa_offset 4
+ 408              		@ sp needed
+ 409 0026 5DF804FB 		ldr	pc, [sp], #4
+  57:Src/uart_protocol.c **** 
+ 410              		.loc 1 57 1 view .LVU100
+ 411              		.cfi_endproc
+ 412              	.LFE866:
+ 414              		.section	.text.proto_send_log,"ax",%progbits
+ 415              		.align	1
+ 416              		.global	proto_send_log
+ 417              		.syntax unified
+ 418              		.thumb
+ 419              		.thumb_func
+ 421              	proto_send_log:
+ 422              	.LVL38:
+ 423              	.LFB867:
+  60:Src/uart_protocol.c ****     proto_send_frame(PROTO_T_LOG, (const uint8_t *)msg, (uint32_t)strlen(msg));
+ 424              		.loc 1 60 1 is_stmt 1 view -0
+ 425              		.cfi_startproc
+ 426              		@ args = 0, pretend = 0, frame = 0
+ 427              		@ frame_needed = 0, uses_anonymous_args = 0
+  61:Src/uart_protocol.c **** }
+ 428              		.loc 1 61 5 view .LVU102
+  60:Src/uart_protocol.c ****     proto_send_frame(PROTO_T_LOG, (const uint8_t *)msg, (uint32_t)strlen(msg));
+ 429              		.loc 1 60 1 is_stmt 0 view .LVU103
+ 430 0000 10B5     		push	{r4, lr}
+ 431              		.cfi_def_cfa_offset 8
+ 432              		.cfi_offset 4, -8
+ 433              		.cfi_offset 14, -4
+  60:Src/uart_protocol.c ****     proto_send_frame(PROTO_T_LOG, (const uint8_t *)msg, (uint32_t)strlen(msg));
+ 434              		.loc 1 60 1 view .LVU104
+ 435 0002 0446     		mov	r4, r0
+  61:Src/uart_protocol.c **** }
+ 436              		.loc 1 61 67 view .LVU105
+ 437 0004 FFF7FEFF 		bl	strlen
+ 438              	.LVL39:
+  61:Src/uart_protocol.c **** }
+ 439              		.loc 1 61 5 view .LVU106
+ 440 0008 2146     		mov	r1, r4
+  62:Src/uart_protocol.c **** 
+ 441              		.loc 1 62 1 view .LVU107
+ 442 000a BDE81040 		pop	{r4, lr}
+ 443              		.cfi_restore 14
+ 444              		.cfi_restore 4
+ 445              		.cfi_def_cfa_offset 0
+ 446              	.LVL40:
+  61:Src/uart_protocol.c **** }
+ 447              		.loc 1 61 67 view .LVU108
+ 448 000e 0246     		mov	r2, r0
+  61:Src/uart_protocol.c **** }
+ 449              		.loc 1 61 5 view .LVU109
+ 450 0010 FE20     		movs	r0, #254
+ 451 0012 FFF7FEBF 		b	proto_send_frame
+ 452              	.LVL41:
+  61:Src/uart_protocol.c **** }
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 12
+
+
+ 453              		.loc 1 61 5 view .LVU110
+ 454              		.cfi_endproc
+ 455              	.LFE867:
+ 457              		.section	.text.proto_send_infer_dec,"ax",%progbits
+ 458              		.align	1
+ 459              		.global	proto_send_infer_dec
+ 460              		.syntax unified
+ 461              		.thumb
+ 462              		.thumb_func
+ 464              	proto_send_infer_dec:
+ 465              	.LVL42:
+ 466              	.LFB868:
+  66:Src/uart_protocol.c ****     uint8_t p[14 + PROTO_MAX_BOXES * 20];
+ 467              		.loc 1 66 1 is_stmt 1 view -0
+ 468              		.cfi_startproc
+ 469              		@ args = 4, pretend = 0, frame = 176
+ 470              		@ frame_needed = 0, uses_anonymous_args = 0
+  67:Src/uart_protocol.c ****     uint32_t off = 0;
+ 471              		.loc 1 67 5 view .LVU112
+  68:Src/uart_protocol.c ****     memcpy(&p[off], &pre_us,   4); off += 4;
+ 472              		.loc 1 68 5 view .LVU113
+  69:Src/uart_protocol.c ****     memcpy(&p[off], &infer_us, 4); off += 4;
+ 473              		.loc 1 69 5 view .LVU114
+  66:Src/uart_protocol.c ****     uint8_t p[14 + PROTO_MAX_BOXES * 20];
+ 474              		.loc 1 66 1 is_stmt 0 view .LVU115
+ 475 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 476              		.cfi_def_cfa_offset 20
+ 477              		.cfi_offset 4, -20
+ 478              		.cfi_offset 5, -16
+ 479              		.cfi_offset 6, -12
+ 480              		.cfi_offset 7, -8
+ 481              		.cfi_offset 14, -4
+ 482              	.LBB12:
+  73:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x1, 4);    off += 4;
+ 483              		.loc 1 73 5 view .LVU116
+ 484 0002 0025     		movs	r5, #0
+ 485              	.LBE12:
+  66:Src/uart_protocol.c ****     uint8_t p[14 + PROTO_MAX_BOXES * 20];
+ 486              		.loc 1 66 1 view .LVU117
+ 487 0004 ADB0     		sub	sp, sp, #180
+ 488              		.cfi_def_cfa_offset 200
+  66:Src/uart_protocol.c ****     uint8_t p[14 + PROTO_MAX_BOXES * 20];
+ 489              		.loc 1 66 1 view .LVU118
+ 490 0006 BDF8C840 		ldrh	r4, [sp, #200]
+  71:Src/uart_protocol.c ****     memcpy(&p[off], &n,        2); off += 2;
+ 491              		.loc 1 71 5 view .LVU119
+ 492 000a 0292     		str	r2, [sp, #8]
+ 493 000c AC42     		cmp	r4, r5
+ 494 000e 04F10102 		add	r2, r4, #1
+ 495              	.LVL43:
+  71:Src/uart_protocol.c ****     memcpy(&p[off], &n,        2); off += 2;
+ 496              		.loc 1 71 5 view .LVU120
+ 497 0012 4FF01406 		mov	r6, #20
+ 498 0016 08BF     		it	eq
+ 499 0018 0122     		moveq	r2, #1
+  70:Src/uart_protocol.c ****     memcpy(&p[off], &post_us,  4); off += 4;
+ 500              		.loc 1 70 5 view .LVU121
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 13
+
+
+ 501 001a CDE90001 		strd	r0, r1, [sp]
+  70:Src/uart_protocol.c ****     memcpy(&p[off], &post_us,  4); off += 4;
+ 502              		.loc 1 70 36 is_stmt 1 view .LVU122
+ 503              	.LVL44:
+  71:Src/uart_protocol.c ****     memcpy(&p[off], &n,        2); off += 2;
+ 504              		.loc 1 71 5 view .LVU123
+  71:Src/uart_protocol.c ****     memcpy(&p[off], &n,        2); off += 2;
+ 505              		.loc 1 71 36 view .LVU124
+  72:Src/uart_protocol.c ****     for (uint16_t i = 0; i < n; ++i) {
+ 506              		.loc 1 72 5 view .LVU125
+ 507 001e ADF80C40 		strh	r4, [sp, #12]	@ movhi
+  72:Src/uart_protocol.c ****     for (uint16_t i = 0; i < n; ++i) {
+ 508              		.loc 1 72 36 view .LVU126
+ 509              	.LVL45:
+  73:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x1, 4);    off += 4;
+ 510              		.loc 1 73 5 view .LVU127
+ 511              	.LBB13:
+  73:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x1, 4);    off += 4;
+ 512              		.loc 1 73 10 view .LVU128
+  73:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x1, 4);    off += 4;
+ 513              		.loc 1 73 10 is_stmt 0 view .LVU129
+ 514 0022 0DF10E01 		add	r1, sp, #14
+ 515              	.LVL46:
+ 516              	.L32:
+  73:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x1, 4);    off += 4;
+ 517              		.loc 1 73 28 is_stmt 1 discriminator 1 view .LVU130
+ 518 0026 013A     		subs	r2, r2, #1
+ 519 0028 08D1     		bne	.L33
+ 520              	.LBE13:
+  80:Src/uart_protocol.c **** }
+ 521              		.loc 1 80 5 view .LVU131
+ 522 002a 06FB04F2 		mul	r2, r6, r4
+ 523 002e 6946     		mov	r1, sp
+ 524              	.LVL47:
+  80:Src/uart_protocol.c **** }
+ 525              		.loc 1 80 5 is_stmt 0 view .LVU132
+ 526 0030 2120     		movs	r0, #33
+ 527 0032 0E32     		adds	r2, r2, #14
+ 528 0034 FFF7FEFF 		bl	proto_send_frame
+ 529              	.LVL48:
+  81:Src/uart_protocol.c **** 
+ 530              		.loc 1 81 1 view .LVU133
+ 531 0038 2DB0     		add	sp, sp, #180
+ 532              		.cfi_remember_state
+ 533              		.cfi_def_cfa_offset 20
+ 534              		@ sp needed
+ 535 003a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 536              	.LVL49:
+ 537              	.L33:
+ 538              		.cfi_restore_state
+ 539              	.LBB14:
+  74:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y1, 4);    off += 4;
+ 540              		.loc 1 74 9 is_stmt 1 discriminator 3 view .LVU134
+  74:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y1, 4);    off += 4;
+ 541              		.loc 1 74 31 is_stmt 0 discriminator 3 view .LVU135
+ 542 003c 06FB05F7 		mul	r7, r6, r5
+ 543 0040 D819     		adds	r0, r3, r7
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 14
+
+
+  74:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y1, 4);    off += 4;
+ 544              		.loc 1 74 9 discriminator 3 view .LVU136
+ 545 0042 DF59     		ldr	r7, [r3, r7]	@ unaligned
+ 546 0044 0135     		adds	r5, r5, #1
+ 547              	.LVL50:
+  74:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y1, 4);    off += 4;
+ 548              		.loc 1 74 9 discriminator 3 view .LVU137
+ 549 0046 0F60     		str	r7, [r1]	@ unaligned
+  74:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y1, 4);    off += 4;
+ 550              		.loc 1 74 46 is_stmt 1 discriminator 3 view .LVU138
+ 551              	.LVL51:
+  75:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x2, 4);    off += 4;
+ 552              		.loc 1 75 9 discriminator 3 view .LVU139
+ 553 0048 4768     		ldr	r7, [r0, #4]	@ unaligned
+ 554 004a 1431     		adds	r1, r1, #20
+ 555              	.LVL52:
+  75:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x2, 4);    off += 4;
+ 556              		.loc 1 75 9 is_stmt 0 discriminator 3 view .LVU140
+ 557 004c 41F8107C 		str	r7, [r1, #-16]	@ unaligned
+  75:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x2, 4);    off += 4;
+ 558              		.loc 1 75 46 is_stmt 1 discriminator 3 view .LVU141
+ 559              	.LVL53:
+  76:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y2, 4);    off += 4;
+ 560              		.loc 1 76 9 discriminator 3 view .LVU142
+ 561 0050 8768     		ldr	r7, [r0, #8]	@ unaligned
+ 562 0052 41F80C7C 		str	r7, [r1, #-12]	@ unaligned
+  76:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].y2, 4);    off += 4;
+ 563              		.loc 1 76 46 discriminator 3 view .LVU143
+  77:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].score, 4); off += 4;
+ 564              		.loc 1 77 9 discriminator 3 view .LVU144
+ 565 0056 C768     		ldr	r7, [r0, #12]	@ unaligned
+  78:Src/uart_protocol.c ****     }
+ 566              		.loc 1 78 9 is_stmt 0 discriminator 3 view .LVU145
+ 567 0058 0069     		ldr	r0, [r0, #16]	@ unaligned
+  77:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].score, 4); off += 4;
+ 568              		.loc 1 77 9 discriminator 3 view .LVU146
+ 569 005a 41F8087C 		str	r7, [r1, #-8]	@ unaligned
+  77:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].score, 4); off += 4;
+ 570              		.loc 1 77 46 is_stmt 1 discriminator 3 view .LVU147
+  78:Src/uart_protocol.c ****     }
+ 571              		.loc 1 78 9 discriminator 3 view .LVU148
+ 572 005e 41F8040C 		str	r0, [r1, #-4]	@ unaligned
+  78:Src/uart_protocol.c ****     }
+ 573              		.loc 1 78 46 discriminator 3 view .LVU149
+  73:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x1, 4);    off += 4;
+ 574              		.loc 1 73 33 discriminator 3 view .LVU150
+ 575              	.LVL54:
+  73:Src/uart_protocol.c ****         memcpy(&p[off], &boxes[i].x1, 4);    off += 4;
+ 576              		.loc 1 73 33 is_stmt 0 discriminator 3 view .LVU151
+ 577 0062 E0E7     		b	.L32
+ 578              	.LBE14:
+ 579              		.cfi_endproc
+ 580              	.LFE868:
+ 582              		.section	.text.proto_recv_frame,"ax",%progbits
+ 583              		.align	1
+ 584              		.global	proto_recv_frame
+ 585              		.syntax unified
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 15
+
+
+ 586              		.thumb
+ 587              		.thumb_func
+ 589              	proto_recv_frame:
+ 590              	.LVL55:
+ 591              	.LFB870:
+  96:Src/uart_protocol.c **** 
+  97:Src/uart_protocol.c **** int proto_recv_frame(uint8_t *type, uint8_t *payload, uint32_t cap, uint32_t *len)
+  98:Src/uart_protocol.c **** {
+ 592              		.loc 1 98 1 is_stmt 1 view -0
+ 593              		.cfi_startproc
+ 594              		@ args = 0, pretend = 0, frame = 24
+ 595              		@ frame_needed = 0, uses_anonymous_args = 0
+  99:Src/uart_protocol.c ****     uint8_t win[4] = {0}, b;
+ 596              		.loc 1 99 5 view .LVU153
+ 100:Src/uart_protocol.c ****     int matched = 0;
+ 597              		.loc 1 100 5 view .LVU154
+ 101:Src/uart_protocol.c ****     for (int tries = 0; tries < 65536 && !matched; ++tries) {
+ 598              		.loc 1 101 5 view .LVU155
+ 599              	.LBB15:
+ 600              		.loc 1 101 10 view .LVU156
+ 601              		.loc 1 101 39 view .LVU157
+ 602              	.LBE15:
+  98:Src/uart_protocol.c ****     uint8_t win[4] = {0}, b;
+ 603              		.loc 1 98 1 is_stmt 0 view .LVU158
+ 604 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 605              		.cfi_def_cfa_offset 36
+ 606              		.cfi_offset 4, -36
+ 607              		.cfi_offset 5, -32
+ 608              		.cfi_offset 6, -28
+ 609              		.cfi_offset 7, -24
+ 610              		.cfi_offset 8, -20
+ 611              		.cfi_offset 9, -16
+ 612              		.cfi_offset 10, -12
+ 613              		.cfi_offset 11, -8
+ 614              		.cfi_offset 14, -4
+  99:Src/uart_protocol.c ****     int matched = 0;
+ 615              		.loc 1 99 13 view .LVU159
+ 616 0004 4FF00008 		mov	r8, #0
+  98:Src/uart_protocol.c ****     uint8_t win[4] = {0}, b;
+ 617              		.loc 1 98 1 view .LVU160
+ 618 0008 1D46     		mov	r5, r3
+ 619 000a 0646     		mov	r6, r0
+ 620 000c 0F46     		mov	r7, r1
+ 621 000e 9146     		mov	r9, r2
+ 622              	.LBB16:
+ 102:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 103:Src/uart_protocol.c ****         win[0] = win[1]; win[1] = win[2]; win[2] = win[3]; win[3] = b;
+ 623              		.loc 1 103 67 view .LVU161
+ 624 0010 4FF48033 		mov	r3, #65536
+ 625              	.LVL56:
+ 626              		.loc 1 103 67 view .LVU162
+ 627              	.LBE16:
+  99:Src/uart_protocol.c ****     int matched = 0;
+ 628              		.loc 1 99 13 view .LVU163
+ 629 0014 C246     		mov	r10, r8
+ 630 0016 C346     		mov	fp, r8
+  98:Src/uart_protocol.c ****     uint8_t win[4] = {0}, b;
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 16
+
+
+ 631              		.loc 1 98 1 view .LVU164
+ 632 0018 87B0     		sub	sp, sp, #28
+ 633              		.cfi_def_cfa_offset 64
+ 634              	.LVL57:
+ 635              	.L41:
+ 636              	.LBB17:
+ 102:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 637              		.loc 1 102 14 view .LVU165
+ 638 001a 0121     		movs	r1, #1
+ 639 001c 0DF10B00 		add	r0, sp, #11
+ 640 0020 0193     		str	r3, [sp, #4]
+ 641              	.LVL58:
+ 102:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 642              		.loc 1 102 9 is_stmt 1 view .LVU166
+ 102:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 643              		.loc 1 102 14 is_stmt 0 view .LVU167
+ 644 0022 FFF7FEFF 		bl	rx_exact.constprop.0
+ 645              	.LVL59:
+ 102:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 646              		.loc 1 102 12 view .LVU168
+ 647 0026 019B     		ldr	r3, [sp, #4]
+ 648 0028 30B9     		cbnz	r0, .L37
+ 649              	.LVL60:
+ 650              	.L43:
+ 102:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 651              		.loc 1 102 58 view .LVU169
+ 652 002a 0020     		movs	r0, #0
+ 653              	.L36:
+ 654              	.LBE17:
+ 104:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 105:Src/uart_protocol.c ****                    win[2] == PROTO_MAGIC_2 && win[3] == PROTO_MAGIC_3);
+ 106:Src/uart_protocol.c ****     }
+ 107:Src/uart_protocol.c ****     if (!matched) return 0;
+ 108:Src/uart_protocol.c **** 
+ 109:Src/uart_protocol.c ****     uint8_t hdr[5];
+ 110:Src/uart_protocol.c ****     if (!rx_exact(hdr, sizeof(hdr), UART_RX_TIMEOUT_MS)) return 0;
+ 111:Src/uart_protocol.c ****     uint32_t plen = (uint32_t)hdr[1] | ((uint32_t)hdr[2] << 8) |
+ 112:Src/uart_protocol.c ****                     ((uint32_t)hdr[3] << 16) | ((uint32_t)hdr[4] << 24);
+ 113:Src/uart_protocol.c ****     if (plen > cap) return -1;
+ 114:Src/uart_protocol.c ****     if (plen && !rx_exact(payload, plen, UART_RX_TIMEOUT_MS)) return 0;
+ 115:Src/uart_protocol.c **** 
+ 116:Src/uart_protocol.c ****     uint8_t crc_bytes[2];
+ 117:Src/uart_protocol.c ****     if (!rx_exact(crc_bytes, sizeof(crc_bytes), UART_RX_TIMEOUT_MS)) return 0;
+ 118:Src/uart_protocol.c ****     uint16_t crc_recv = (uint16_t)crc_bytes[0] | ((uint16_t)crc_bytes[1] << 8);
+ 119:Src/uart_protocol.c ****     uint16_t crc_calc = proto_crc16_ccitt(hdr, sizeof(hdr), 0xFFFFu);
+ 120:Src/uart_protocol.c ****     if (plen) crc_calc = proto_crc16_ccitt(payload, plen, crc_calc);
+ 121:Src/uart_protocol.c ****     if (crc_recv != crc_calc) return -1;
+ 122:Src/uart_protocol.c **** 
+ 123:Src/uart_protocol.c ****     *type = hdr[0];
+ 124:Src/uart_protocol.c ****     *len  = plen;
+ 125:Src/uart_protocol.c ****     return 1;
+ 126:Src/uart_protocol.c **** }
+ 655              		.loc 1 126 1 view .LVU170
+ 656 002c 07B0     		add	sp, sp, #28
+ 657              		.cfi_remember_state
+ 658              		.cfi_def_cfa_offset 36
+ 659              		@ sp needed
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 17
+
+
+ 660 002e BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 661              	.LVL61:
+ 662              	.L53:
+ 663              		.cfi_restore_state
+ 664              	.LBB18:
+ 665              		.loc 1 126 1 view .LVU171
+ 666 0032 D346     		mov	fp, r10
+ 667              	.LVL62:
+ 103:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 668              		.loc 1 103 67 view .LVU172
+ 669 0034 9246     		mov	r10, r2
+ 670              	.LVL63:
+ 103:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 671              		.loc 1 103 67 view .LVU173
+ 672 0036 F0E7     		b	.L41
+ 673              	.LVL64:
+ 674              	.L37:
+ 103:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 675              		.loc 1 103 9 is_stmt 1 view .LVU174
+ 103:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 676              		.loc 1 103 26 view .LVU175
+ 103:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 677              		.loc 1 103 43 view .LVU176
+ 103:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 678              		.loc 1 103 60 view .LVU177
+ 105:Src/uart_protocol.c ****     }
+ 679              		.loc 1 105 44 is_stmt 0 view .LVU178
+ 680 0038 B8F1AA0F 		cmp	r8, #170
+ 103:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 681              		.loc 1 103 67 view .LVU179
+ 682 003c 9DF80B20 		ldrb	r2, [sp, #11]	@ zero_extendqisi2
+ 683              	.LVL65:
+ 104:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 684              		.loc 1 104 9 is_stmt 1 view .LVU180
+ 105:Src/uart_protocol.c ****     }
+ 685              		.loc 1 105 44 is_stmt 0 view .LVU181
+ 686 0040 1CD1     		bne	.L51
+ 104:Src/uart_protocol.c ****         matched = (win[0] == PROTO_MAGIC_0 && win[1] == PROTO_MAGIC_1 &&
+ 687              		.loc 1 104 44 view .LVU182
+ 688 0042 BBF1550F 		cmp	fp, #85
+ 689 0046 19D1     		bne	.L51
+ 105:Src/uart_protocol.c ****     }
+ 690              		.loc 1 105 44 discriminator 1 view .LVU183
+ 691 0048 A2F15A01 		sub	r1, r2, #90
+ 692 004c 4C42     		rsbs	r4, r1, #0
+ 693 004e 4C41     		adcs	r4, r4, r1
+ 694 0050 BAF1A50F 		cmp	r10, #165
+ 695 0054 18BF     		it	ne
+ 696 0056 0024     		movne	r4, #0
+ 697              	.L39:
+ 698              	.LVL66:
+ 101:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 699              		.loc 1 101 52 is_stmt 1 discriminator 2 view .LVU184
+ 101:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 700              		.loc 1 101 39 discriminator 2 view .LVU185
+ 701 0058 013B     		subs	r3, r3, #1
+ 702              	.LVL67:
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 18
+
+
+ 101:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 703              		.loc 1 101 39 is_stmt 0 discriminator 2 view .LVU186
+ 704 005a 11D0     		beq	.L40
+ 705 005c D846     		mov	r8, fp
+ 706              	.LVL68:
+ 101:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 707              		.loc 1 101 39 discriminator 3 view .LVU187
+ 708 005e 002C     		cmp	r4, #0
+ 709 0060 E7D0     		beq	.L53
+ 710              	.L42:
+ 101:Src/uart_protocol.c ****         if (!rx_exact(&b, 1, UART_RX_TIMEOUT_MS)) return 0;
+ 711              		.loc 1 101 39 discriminator 3 view .LVU188
+ 712              	.LBE18:
+ 109:Src/uart_protocol.c ****     if (!rx_exact(hdr, sizeof(hdr), UART_RX_TIMEOUT_MS)) return 0;
+ 713              		.loc 1 109 5 is_stmt 1 view .LVU189
+ 110:Src/uart_protocol.c ****     uint32_t plen = (uint32_t)hdr[1] | ((uint32_t)hdr[2] << 8) |
+ 714              		.loc 1 110 5 view .LVU190
+ 110:Src/uart_protocol.c ****     uint32_t plen = (uint32_t)hdr[1] | ((uint32_t)hdr[2] << 8) |
+ 715              		.loc 1 110 10 is_stmt 0 view .LVU191
+ 716 0062 0521     		movs	r1, #5
+ 717 0064 04A8     		add	r0, sp, #16
+ 718 0066 FFF7FEFF 		bl	rx_exact.constprop.0
+ 719              	.LVL69:
+ 110:Src/uart_protocol.c ****     uint32_t plen = (uint32_t)hdr[1] | ((uint32_t)hdr[2] << 8) |
+ 720              		.loc 1 110 8 view .LVU192
+ 721 006a 0028     		cmp	r0, #0
+ 722 006c DDD0     		beq	.L43
+ 111:Src/uart_protocol.c ****                     ((uint32_t)hdr[3] << 16) | ((uint32_t)hdr[4] << 24);
+ 723              		.loc 1 111 5 is_stmt 1 view .LVU193
+ 111:Src/uart_protocol.c ****                     ((uint32_t)hdr[3] << 16) | ((uint32_t)hdr[4] << 24);
+ 724              		.loc 1 111 14 is_stmt 0 view .LVU194
+ 725 006e DDF81140 		ldr	r4, [sp, #17]	@ unaligned
+ 726              	.LVL70:
+ 113:Src/uart_protocol.c ****     if (plen && !rx_exact(payload, plen, UART_RX_TIMEOUT_MS)) return 0;
+ 727              		.loc 1 113 5 is_stmt 1 view .LVU195
+ 113:Src/uart_protocol.c ****     if (plen && !rx_exact(payload, plen, UART_RX_TIMEOUT_MS)) return 0;
+ 728              		.loc 1 113 8 is_stmt 0 view .LVU196
+ 729 0072 4C45     		cmp	r4, r9
+ 730 0074 07D9     		bls	.L44
+ 731              	.LVL71:
+ 732              	.L49:
+ 113:Src/uart_protocol.c ****     if (plen && !rx_exact(payload, plen, UART_RX_TIMEOUT_MS)) return 0;
+ 733              		.loc 1 113 28 view .LVU197
+ 734 0076 4FF0FF30 		mov	r0, #-1
+ 735 007a D7E7     		b	.L36
+ 736              	.LVL72:
+ 737              	.L51:
+ 738              	.LBB19:
+ 105:Src/uart_protocol.c ****     }
+ 739              		.loc 1 105 44 view .LVU198
+ 740 007c 0024     		movs	r4, #0
+ 741 007e EBE7     		b	.L39
+ 742              	.LVL73:
+ 743              	.L40:
+ 105:Src/uart_protocol.c ****     }
+ 744              		.loc 1 105 44 view .LVU199
+ 745              	.LBE19:
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 19
+
+
+ 107:Src/uart_protocol.c **** 
+ 746              		.loc 1 107 5 is_stmt 1 view .LVU200
+ 107:Src/uart_protocol.c **** 
+ 747              		.loc 1 107 8 is_stmt 0 view .LVU201
+ 748 0080 002C     		cmp	r4, #0
+ 749 0082 D2D0     		beq	.L43
+ 750 0084 EDE7     		b	.L42
+ 751              	.LVL74:
+ 752              	.L44:
+ 114:Src/uart_protocol.c **** 
+ 753              		.loc 1 114 5 is_stmt 1 view .LVU202
+ 114:Src/uart_protocol.c **** 
+ 754              		.loc 1 114 8 is_stmt 0 view .LVU203
+ 755 0086 E4B9     		cbnz	r4, .L45
+ 756              	.LVL75:
+ 757              	.L47:
+ 116:Src/uart_protocol.c ****     if (!rx_exact(crc_bytes, sizeof(crc_bytes), UART_RX_TIMEOUT_MS)) return 0;
+ 758              		.loc 1 116 5 is_stmt 1 view .LVU204
+ 117:Src/uart_protocol.c ****     uint16_t crc_recv = (uint16_t)crc_bytes[0] | ((uint16_t)crc_bytes[1] << 8);
+ 759              		.loc 1 117 5 view .LVU205
+ 117:Src/uart_protocol.c ****     uint16_t crc_recv = (uint16_t)crc_bytes[0] | ((uint16_t)crc_bytes[1] << 8);
+ 760              		.loc 1 117 10 is_stmt 0 view .LVU206
+ 761 0088 0221     		movs	r1, #2
+ 762 008a 03A8     		add	r0, sp, #12
+ 763 008c FFF7FEFF 		bl	rx_exact.constprop.0
+ 764              	.LVL76:
+ 117:Src/uart_protocol.c ****     uint16_t crc_recv = (uint16_t)crc_bytes[0] | ((uint16_t)crc_bytes[1] << 8);
+ 765              		.loc 1 117 8 view .LVU207
+ 766 0090 0028     		cmp	r0, #0
+ 767 0092 CAD0     		beq	.L43
+ 118:Src/uart_protocol.c ****     uint16_t crc_calc = proto_crc16_ccitt(hdr, sizeof(hdr), 0xFFFFu);
+ 768              		.loc 1 118 5 is_stmt 1 view .LVU208
+ 119:Src/uart_protocol.c ****     if (plen) crc_calc = proto_crc16_ccitt(payload, plen, crc_calc);
+ 769              		.loc 1 119 25 is_stmt 0 view .LVU209
+ 770 0094 4FF6FF72 		movw	r2, #65535
+ 771 0098 0521     		movs	r1, #5
+ 772 009a 04A8     		add	r0, sp, #16
+ 773 009c FFF7FEFF 		bl	proto_crc16_ccitt
+ 774              	.LVL77:
+ 775 00a0 BDF80C80 		ldrh	r8, [sp, #12]
+ 776              	.LVL78:
+ 119:Src/uart_protocol.c ****     if (plen) crc_calc = proto_crc16_ccitt(payload, plen, crc_calc);
+ 777              		.loc 1 119 5 is_stmt 1 view .LVU210
+ 119:Src/uart_protocol.c ****     if (plen) crc_calc = proto_crc16_ccitt(payload, plen, crc_calc);
+ 778              		.loc 1 119 25 is_stmt 0 view .LVU211
+ 779 00a4 0246     		mov	r2, r0
+ 780              	.LVL79:
+ 120:Src/uart_protocol.c ****     if (crc_recv != crc_calc) return -1;
+ 781              		.loc 1 120 5 is_stmt 1 view .LVU212
+ 120:Src/uart_protocol.c ****     if (crc_recv != crc_calc) return -1;
+ 782              		.loc 1 120 8 is_stmt 0 view .LVU213
+ 783 00a6 24B1     		cbz	r4, .L48
+ 120:Src/uart_protocol.c ****     if (crc_recv != crc_calc) return -1;
+ 784              		.loc 1 120 15 is_stmt 1 discriminator 1 view .LVU214
+ 120:Src/uart_protocol.c ****     if (crc_recv != crc_calc) return -1;
+ 785              		.loc 1 120 26 is_stmt 0 discriminator 1 view .LVU215
+ 786 00a8 2146     		mov	r1, r4
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 20
+
+
+ 787 00aa 3846     		mov	r0, r7
+ 788 00ac FFF7FEFF 		bl	proto_crc16_ccitt
+ 789              	.LVL80:
+ 120:Src/uart_protocol.c ****     if (crc_recv != crc_calc) return -1;
+ 790              		.loc 1 120 26 discriminator 1 view .LVU216
+ 791 00b0 0246     		mov	r2, r0
+ 792              	.LVL81:
+ 793              	.L48:
+ 121:Src/uart_protocol.c **** 
+ 794              		.loc 1 121 5 is_stmt 1 view .LVU217
+ 121:Src/uart_protocol.c **** 
+ 795              		.loc 1 121 8 is_stmt 0 view .LVU218
+ 796 00b2 9045     		cmp	r8, r2
+ 797 00b4 DFD1     		bne	.L49
+ 123:Src/uart_protocol.c ****     *len  = plen;
+ 798              		.loc 1 123 5 is_stmt 1 view .LVU219
+ 123:Src/uart_protocol.c ****     *len  = plen;
+ 799              		.loc 1 123 11 is_stmt 0 view .LVU220
+ 800 00b6 9DF81030 		ldrb	r3, [sp, #16]	@ zero_extendqisi2
+ 125:Src/uart_protocol.c **** }
+ 801              		.loc 1 125 12 view .LVU221
+ 802 00ba 0120     		movs	r0, #1
+ 123:Src/uart_protocol.c ****     *len  = plen;
+ 803              		.loc 1 123 11 view .LVU222
+ 804 00bc 3370     		strb	r3, [r6]
+ 124:Src/uart_protocol.c ****     return 1;
+ 805              		.loc 1 124 5 is_stmt 1 view .LVU223
+ 124:Src/uart_protocol.c ****     return 1;
+ 806              		.loc 1 124 11 is_stmt 0 view .LVU224
+ 807 00be 2C60     		str	r4, [r5]
+ 125:Src/uart_protocol.c **** }
+ 808              		.loc 1 125 5 is_stmt 1 view .LVU225
+ 809              	.LVL82:
+ 125:Src/uart_protocol.c **** }
+ 810              		.loc 1 125 12 is_stmt 0 view .LVU226
+ 811 00c0 B4E7     		b	.L36
+ 812              	.LVL83:
+ 813              	.L45:
+ 114:Src/uart_protocol.c **** 
+ 814              		.loc 1 114 18 discriminator 1 view .LVU227
+ 815 00c2 2146     		mov	r1, r4
+ 816 00c4 3846     		mov	r0, r7
+ 817 00c6 FFF7FEFF 		bl	rx_exact.constprop.0
+ 818              	.LVL84:
+ 114:Src/uart_protocol.c **** 
+ 819              		.loc 1 114 14 discriminator 1 view .LVU228
+ 820 00ca 0028     		cmp	r0, #0
+ 821 00cc DCD1     		bne	.L47
+ 822 00ce ACE7     		b	.L43
+ 823              		.cfi_endproc
+ 824              	.LFE870:
+ 826              		.section	.bss.s_huart,"aw",%nobits
+ 827              		.align	2
+ 830              	s_huart:
+ 831 0000 00000000 		.space	4
+ 832              		.section	.rodata.PROTO_MAGIC,"a"
+ 835              	PROTO_MAGIC:
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 21
+
+
+ 836 0000 AA55A55A 		.ascii	"\252U\245Z"
+ 837              		.text
+ 838              	.Letext0:
+ 839              		.file 2 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 840              		.file 3 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 841              		.file 4 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 842              		.file 5 "Inc/yolo_postproc.h"
+ 843              		.file 6 "../../STM32Cube_FW_N6/Drivers/CMSIS/Device/ST/STM32N6xx/Include/stm32n657xx.h"
+ 844              		.file 7 "Inc/uart_protocol.h"
+ 845              		.file 8 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_def.h"
+ 846              		.file 9 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_dma.h"
+ 847              		.file 10 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_dma_ex.h"
+ 848              		.file 11 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_uart.h"
+ 849              		.file 12 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 22
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 uart_protocol.c
+/tmp/claude-1000/cc3YtdAK.s:26     .text.tx:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:31     .text.tx:00000000 tx
+/tmp/claude-1000/cc3YtdAK.s:57     .text.tx:00000010 $d
+/tmp/claude-1000/cc3YtdAK.s:830    .bss.s_huart:00000000 s_huart
+/tmp/claude-1000/cc3YtdAK.s:62     .text.rx_exact.constprop.0:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:67     .text.rx_exact.constprop.0:00000000 rx_exact.constprop.0
+/tmp/claude-1000/cc3YtdAK.s:128    .text.rx_exact.constprop.0:0000002c $d
+/tmp/claude-1000/cc3YtdAK.s:133    .text.proto_crc16_ccitt:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:139    .text.proto_crc16_ccitt:00000000 proto_crc16_ccitt
+/tmp/claude-1000/cc3YtdAK.s:220    .text.proto_init:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:226    .text.proto_init:00000000 proto_init
+/tmp/claude-1000/cc3YtdAK.s:243    .text.proto_init:00000008 $d
+/tmp/claude-1000/cc3YtdAK.s:248    .text.proto_send_frame:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:254    .text.proto_send_frame:00000000 proto_send_frame
+/tmp/claude-1000/cc3YtdAK.s:360    .text.proto_send_frame:00000068 $d
+/tmp/claude-1000/cc3YtdAK.s:835    .rodata.PROTO_MAGIC:00000000 PROTO_MAGIC
+/tmp/claude-1000/cc3YtdAK.s:365    .text.proto_send_info:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:371    .text.proto_send_info:00000000 proto_send_info
+/tmp/claude-1000/cc3YtdAK.s:415    .text.proto_send_log:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:421    .text.proto_send_log:00000000 proto_send_log
+/tmp/claude-1000/cc3YtdAK.s:458    .text.proto_send_infer_dec:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:464    .text.proto_send_infer_dec:00000000 proto_send_infer_dec
+/tmp/claude-1000/cc3YtdAK.s:583    .text.proto_recv_frame:00000000 $t
+/tmp/claude-1000/cc3YtdAK.s:589    .text.proto_recv_frame:00000000 proto_recv_frame
+/tmp/claude-1000/cc3YtdAK.s:827    .bss.s_huart:00000000 $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.features.h.33.3e67abe6fb64142d4f6fa9496796153c
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.stddef.h.39.3e0425629195acf083c9561151306b4d
+                           .group:00000000 wm4.yolo_postproc.h.22.672a49fd69a16bcf7d2b12f67adee39c
+                           .group:00000000 wm4.uart_protocol.h.18.09a9e8dc2d27c21fa82131c70fbf6a18
+                           .group:00000000 wm4.stm32n6xx_hal_conf.h.21.a3ee9875a8d50695591dfaa6b0d72c91
+                           .group:00000000 wm4.arm_cmse.h.103.a0d15a79c4c9a67da8d5831704d7248e
+                           .group:00000000 wm4.stm32n6xx.h.34.c523a1ffdf274a69e8802892c6776332
+                           .group:00000000 wm4.stm32n657xx.h.26.acd272cb67318cc1a4791ce2f0720ca6
+                           .group:00000000 wm4.cmsis_version.h.30.d128735bf87720f7436b74fefeb5043c
+                           .group:00000000 wm4.core_cm55.h.67.25006a3ce7048d64bcddd2996d5fac93
+                           .group:00000000 wm4.arm_acle.h.28.ce8f475a5cc50333e54ae4adeb8c0298
+                           .group:00000000 wm4.cmsis_gcc.h.39.eba7438bc45fd1a6e6376b63ffe44436
+                           .group:00000000 wm4.cmsis_gcc_m.h.24.e590ec51aeda3a1242400351d73f5dce
+                           .group:00000000 wm4.core_cm55.h.213.0528f46a674315ef8d35c4477e230358
+                           .group:00000000 wm4.armv8m_mpu.h.24.bf28cc25bee30a7ff9d2f7a44a5e2230
+                           .group:00000000 wm4.armv8m_pmu.h.24.6ded195d2625055391fd378c0e1d2519
+                           .group:00000000 wm4.core_cm55.h.4477.396e822ef855bcfb932819ad48de1c4c
+                           .group:00000000 wm4.armv7m_cachel1.h.24.936dd92d6e204a8d0b17d5e4ea4a356e
+                           .group:00000000 wm4.stm32n657xx.h.575.78d331c417ec710388ced647138f735f
+                           .group:00000000 wm4.stm32n6xx.h.116.b4247d9785590e7c5ec9234ffb2153bf
+                           .group:00000000 wm4.stm32_hal_legacy.h.22.e62aae2fd3ae33360b6781c8a72e5b18
+                           .group:00000000 wm4.newlib.h.7.f9f25f80f86429f653675286e7973cb9
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+ARM GAS  /tmp/claude-1000/cc3YtdAK.s 			page 23
+
+
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.math.h.13.35ad80917fddb38312d53499dad31194
+                           .group:00000000 wm4.stm32n6xx_hal_def.h.63.3a8f01490e8852464e9fcb69092e9c75
+                           .group:00000000 wm4.stm32n6xx_ll_bus.h.38.2366a295ee4cdb04833997d3787fcd2d
+                           .group:00000000 wm4.stm32n6xx_ll_rcc.h.21.656bd5637db608589ad16ea57d39430c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.194.69b522b1afdf59a82d05a1f71efe03c7
+                           .group:00000000 wm4.stm32n6xx_hal_rcc_ex.h.21.cc6be0a7d168882a1a6f470236ba784c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.4361.4b490a4a19722e68c21f88cb8a774a30
+                           .group:00000000 wm4.stm32n6xx_hal_gpio.h.21.89d54af663b98eb8fc098192053f7eeb
+                           .group:00000000 wm4.stm32n6xx_hal_gpio_ex.h.22.f7e795fb05a69a19b87d946b47c8db8b
+                           .group:00000000 wm4.stm32n6xx_hal_rif.h.21.33f2c553a8a3fc14dca8c470b213ab19
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.21.61e48c5c2e8d25d22177834b232fe45c
+                           .group:00000000 wm4.stm32n6xx_hal_dma_ex.h.21.82f854ecdb6a463b06d0b4e5c217c368
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.1020.87e2180c009560b617c1f8208140c950
+                           .group:00000000 wm4.stm32n6xx_hal_cortex.h.21.f493623cc58f9454ab4eae41e395c5cc
+                           .group:00000000 wm4.stm32n6xx_hal_bsec.h.21.1ee89319140541f82434908b4267aa30
+                           .group:00000000 wm4.stm32n6xx_hal_dcmipp.h.21.e2b87dce83d7d722d696a597f6ac56bf
+                           .group:00000000 wm4.stm32n6xx_hal_dma2d.h.21.75c8d46cdbb72970123b3f34ae2043d7
+                           .group:00000000 wm4.stm32n6xx_hal_exti.h.21.e0efb23591051684dc14f1f2431c6aab
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.21.3f483626ff64c5bf027265bb2e1d1331
+                           .group:00000000 wm4.stm32n6xx_hal_i2c_ex.h.21.79e9196c22282cdaf6b4047893638c45
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.741.1084702632703acc669e4282b3043372
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.21.ae1eb09930e7e550e48e418ac5849e4d
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.1002.b13ede7fc94ed5ad1c6768a157d2149a
+                           .group:00000000 wm4.stm32n6xx_ll_usb.h.21.daaf86158046f2cf02166c495d637480
+                           .group:00000000 wm4.stm32n6xx_hal_pcd.h.155.27040aac6844effe2af8c180caf1dd2e
+                           .group:00000000 wm4.stm32n6xx_hal_pwr.h.21.cdb73e4869c3fed3fc84f901ec0e5f0a
+                           .group:00000000 wm4.stm32n6xx_hal_pwr_ex.h.21.1a673224a58b0c1e5fad8eeda6514208
+                           .group:00000000 wm4.stm32n6xx_hal_ramcfg.h.21.a62dfbb4d2c14e9a8c634a215e37bd3d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.21.9f810303326e2d91749800e9911f8e4d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.906.8ad9375f39dce09dc0a4db0025ee7a76
+                           .group:00000000 wm4.stm32n6xx_hal_tim.h.21.839dd2b2a70382fb2c44f8f293a84d5f
+                           .group:00000000 wm4.stm32n6xx_hal_tim_ex.h.21.e372d5ac63c13441211ea4ecbd353150
+                           .group:00000000 wm4.stm32n6xx_hal_uart.h.21.230f549bfa0d5ebfd77bfb311b2aca15
+                           .group:00000000 wm4.stm32n6xx_hal_uart_ex.h.21.a0d5511e1d0703b7b5278c8f5472b96d
+                           .group:00000000 wm4.stm32n6xx_hal_xspi.h.21.7fd922d3bdb871475cf18436a68935bb
+                           .group:00000000 wm4.stm32n6xx_hal_cacheaxi.h.21.7c3375b7903ec42376e4883320997f74
+                           .group:00000000 wm4.stm32n6xx_hal.h.81.e79d59262ba173c33cf1d69281830d15
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+
+UNDEFINED SYMBOLS
+HAL_UART_Transmit
+HAL_UART_Receive
+strlen

@@ -1,0 +1,1236 @@
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"app_camerapipeline.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "Src/app_camerapipeline.c"
+  25              		.section	.rodata.CameraPipeline_Init.str1.1,"aMS",%progbits,1
+  26              	.LC0:
+  27 0000 72657420 		.ascii	"ret == CMW_ERROR_NONE\000"
+  27      3D3D2043 
+  27      4D575F45 
+  27      52524F52 
+  27      5F4E4F4E 
+  28              	.LC1:
+  29 0016 5372632F 		.ascii	"Src/app_camerapipeline.c\000"
+  29      6170705F 
+  29      63616D65 
+  29      72617069 
+  29      70656C69 
+  30              	.LC2:
+  31 002f 72657420 		.ascii	"ret == HAL_OK\000"
+  31      3D3D2048 
+  31      414C5F4F 
+  31      4B00
+  32              	.LC3:
+  33 003d 64636D69 		.ascii	"dcmipp_conf.output_width * dcmipp_conf.output_bpp ="
+  33      70705F63 
+  33      6F6E662E 
+  33      6F757470 
+  33      75745F77 
+  34 0070 3D207069 		.ascii	"= pitch\000"
+  34      74636800 
+  35              		.section	.text.CameraPipeline_Init,"ax",%progbits
+  36              		.align	1
+  37              		.global	CameraPipeline_Init
+  38              		.syntax unified
+  39              		.thumb
+  40              		.thumb_func
+  42              	CameraPipeline_Init:
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 2
+
+
+  43              	.LVL0:
+  44              	.LFB3412:
+   1:Src/app_camerapipeline.c ****  /**
+   2:Src/app_camerapipeline.c ****  ******************************************************************************
+   3:Src/app_camerapipeline.c ****  * @file    app_camerapipeline.c
+   4:Src/app_camerapipeline.c ****  * @author  GPM Application Team
+   5:Src/app_camerapipeline.c ****  *
+   6:Src/app_camerapipeline.c ****  ******************************************************************************
+   7:Src/app_camerapipeline.c ****  * @attention
+   8:Src/app_camerapipeline.c ****  *
+   9:Src/app_camerapipeline.c ****  * Copyright (c) 2023 STMicroelectronics.
+  10:Src/app_camerapipeline.c ****  * All rights reserved.
+  11:Src/app_camerapipeline.c ****  *
+  12:Src/app_camerapipeline.c ****  * This software is licensed under terms that can be found in the LICENSE file
+  13:Src/app_camerapipeline.c ****  * in the root directory of this software component.
+  14:Src/app_camerapipeline.c ****  * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:Src/app_camerapipeline.c ****  *
+  16:Src/app_camerapipeline.c ****  ******************************************************************************
+  17:Src/app_camerapipeline.c ****  */
+  18:Src/app_camerapipeline.c **** 
+  19:Src/app_camerapipeline.c **** #include <assert.h>
+  20:Src/app_camerapipeline.c **** #include "cmw_camera.h"
+  21:Src/app_camerapipeline.c **** #include "app_camerapipeline.h"
+  22:Src/app_camerapipeline.c **** #include "app_config.h"
+  23:Src/app_camerapipeline.c **** #include "crop_img.h"
+  24:Src/app_camerapipeline.c **** #if APP_UVC
+  25:Src/app_camerapipeline.c **** #include "scrl.h"
+  26:Src/app_camerapipeline.c **** #endif
+  27:Src/app_camerapipeline.c **** #include "main.h"
+  28:Src/app_camerapipeline.c **** #include "stai_network.h"
+  29:Src/app_camerapipeline.c **** 
+  30:Src/app_camerapipeline.c **** 
+  31:Src/app_camerapipeline.c **** /* Leave the driver use the default resolution */
+  32:Src/app_camerapipeline.c **** #define CAMERA_WIDTH 0
+  33:Src/app_camerapipeline.c **** #define CAMERA_HEIGHT 0
+  34:Src/app_camerapipeline.c **** 
+  35:Src/app_camerapipeline.c **** extern int32_t cameraFrameReceived;
+  36:Src/app_camerapipeline.c **** 
+  37:Src/app_camerapipeline.c **** #if APP_UVC
+  38:Src/app_camerapipeline.c **** static void DCMIPP_PipeInitDisplay(CMW_CameraInit_t *camConf, uint32_t *layers_width[2], uint32_t *
+  39:Src/app_camerapipeline.c **** {
+  40:Src/app_camerapipeline.c ****   CMW_Aspect_Ratio_Mode_t aspect_ratio;
+  41:Src/app_camerapipeline.c ****   CMW_DCMIPP_Conf_t dcmipp_conf = {0};
+  42:Src/app_camerapipeline.c ****   int ret;
+  43:Src/app_camerapipeline.c **** 
+  44:Src/app_camerapipeline.c ****   if (ASPECT_RATIO_MODE == ASPECT_RATIO_CROP)
+  45:Src/app_camerapipeline.c ****   {
+  46:Src/app_camerapipeline.c ****     aspect_ratio = CMW_Aspect_ratio_crop;
+  47:Src/app_camerapipeline.c ****   }
+  48:Src/app_camerapipeline.c ****   else if (ASPECT_RATIO_MODE == ASPECT_RATIO_FIT)
+  49:Src/app_camerapipeline.c ****   {
+  50:Src/app_camerapipeline.c ****     aspect_ratio = CMW_Aspect_ratio_fit;
+  51:Src/app_camerapipeline.c ****   }
+  52:Src/app_camerapipeline.c ****   else if (ASPECT_RATIO_MODE == ASPECT_RATIO_FULLSCREEN)
+  53:Src/app_camerapipeline.c ****   {
+  54:Src/app_camerapipeline.c ****     aspect_ratio = CMW_Aspect_ratio_fullscreen;
+  55:Src/app_camerapipeline.c ****   }
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 3
+
+
+  56:Src/app_camerapipeline.c **** 
+  57:Src/app_camerapipeline.c ****   int lcd_bg_width;
+  58:Src/app_camerapipeline.c ****   int lcd_bg_height;
+  59:Src/app_camerapipeline.c **** 
+  60:Src/app_camerapipeline.c ****   lcd_bg_height = (camConf->height <= SCREEN_HEIGHT) ? camConf->height : SCREEN_HEIGHT;
+  61:Src/app_camerapipeline.c **** 
+  62:Src/app_camerapipeline.c **** #if ASPECT_RATIO_MODE == ASPECT_RATIO_FULLSCREEN
+  63:Src/app_camerapipeline.c ****   lcd_bg_width = (((camConf->width*lcd_bg_height)/camConf->height) - ((camConf->width*lcd_bg_height
+  64:Src/app_camerapipeline.c **** #else
+  65:Src/app_camerapipeline.c ****   lcd_bg_width = (camConf->height <= SCREEN_HEIGHT) ? camConf->height : SCREEN_HEIGHT;
+  66:Src/app_camerapipeline.c **** #endif
+  67:Src/app_camerapipeline.c **** 
+  68:Src/app_camerapipeline.c ****   *layers_width[0] = lcd_bg_width;
+  69:Src/app_camerapipeline.c ****   *layers_height[0] = lcd_bg_height;
+  70:Src/app_camerapipeline.c ****   *layers_width[1] = lcd_bg_width;
+  71:Src/app_camerapipeline.c ****   *layers_height[1] = lcd_bg_height;
+  72:Src/app_camerapipeline.c **** 
+  73:Src/app_camerapipeline.c ****   dcmipp_conf.output_width = lcd_bg_width;
+  74:Src/app_camerapipeline.c ****   dcmipp_conf.output_height = lcd_bg_height;
+  75:Src/app_camerapipeline.c ****   dcmipp_conf.output_format = DCMIPP_PIXEL_PACKER_FORMAT_RGB565_1;
+  76:Src/app_camerapipeline.c ****   dcmipp_conf.output_bpp = 2;
+  77:Src/app_camerapipeline.c ****   dcmipp_conf.mode = aspect_ratio;
+  78:Src/app_camerapipeline.c ****   dcmipp_conf.enable_gamma_conversion = 0;
+  79:Src/app_camerapipeline.c ****   uint32_t pitch;
+  80:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_SetPipeConfig(DCMIPP_PIPE1, &dcmipp_conf, &pitch);
+  81:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+  82:Src/app_camerapipeline.c ****   assert(dcmipp_conf.output_width * dcmipp_conf.output_bpp == pitch);
+  83:Src/app_camerapipeline.c **** }
+  84:Src/app_camerapipeline.c **** #endif /* APP_UVC */
+  85:Src/app_camerapipeline.c **** 
+  86:Src/app_camerapipeline.c **** static void DCMIPP_PipeInitNn(uint32_t *pitch)
+  87:Src/app_camerapipeline.c **** {
+  88:Src/app_camerapipeline.c ****   CMW_Aspect_Ratio_Mode_t aspect_ratio;
+  89:Src/app_camerapipeline.c ****   CMW_DCMIPP_Conf_t dcmipp_conf;
+  90:Src/app_camerapipeline.c ****   int ret;
+  91:Src/app_camerapipeline.c **** 
+  92:Src/app_camerapipeline.c ****   if (ASPECT_RATIO_MODE == ASPECT_RATIO_CROP)
+  93:Src/app_camerapipeline.c ****   {
+  94:Src/app_camerapipeline.c ****     aspect_ratio = CMW_Aspect_ratio_crop;
+  95:Src/app_camerapipeline.c ****   }
+  96:Src/app_camerapipeline.c ****   else if (ASPECT_RATIO_MODE == ASPECT_RATIO_FIT)
+  97:Src/app_camerapipeline.c ****   {
+  98:Src/app_camerapipeline.c ****     aspect_ratio = CMW_Aspect_ratio_fit;
+  99:Src/app_camerapipeline.c ****   }
+ 100:Src/app_camerapipeline.c ****   else if (ASPECT_RATIO_MODE == ASPECT_RATIO_FULLSCREEN)
+ 101:Src/app_camerapipeline.c ****   {
+ 102:Src/app_camerapipeline.c ****     aspect_ratio = CMW_Aspect_ratio_fit;
+ 103:Src/app_camerapipeline.c ****   }
+ 104:Src/app_camerapipeline.c **** 
+ 105:Src/app_camerapipeline.c **** #if NN_ROTATE_90
+ 106:Src/app_camerapipeline.c ****   /* Camera is mounted 90deg rotated: capture in the sensor's native 3:4
+ 107:Src/app_camerapipeline.c ****    * orientation (model HEIGHT x WIDTH) and rotate 90deg CCW in software (see
+ 108:Src/app_camerapipeline.c ****    * rotate_ccw_hwc_to_chw). Crop (not fit/stretch) keeps the 4:3 sensor's
+ 109:Src/app_camerapipeline.c ****    * aspect so balls stay round; main.c rotates this into the 4:3 NN input. */
+ 110:Src/app_camerapipeline.c ****   dcmipp_conf.output_width = STAI_NETWORK_IN_1_HEIGHT;   /* 288 */
+ 111:Src/app_camerapipeline.c ****   dcmipp_conf.output_height = STAI_NETWORK_IN_1_WIDTH;   /* 384 */
+ 112:Src/app_camerapipeline.c ****   dcmipp_conf.mode = CMW_Aspect_ratio_crop;
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 4
+
+
+ 113:Src/app_camerapipeline.c ****   (void)aspect_ratio;
+ 114:Src/app_camerapipeline.c **** #else
+ 115:Src/app_camerapipeline.c ****   dcmipp_conf.output_width = STAI_NETWORK_IN_1_WIDTH;
+ 116:Src/app_camerapipeline.c ****   dcmipp_conf.output_height = STAI_NETWORK_IN_1_HEIGHT;
+ 117:Src/app_camerapipeline.c ****   dcmipp_conf.mode = aspect_ratio;
+ 118:Src/app_camerapipeline.c **** #endif
+ 119:Src/app_camerapipeline.c ****   dcmipp_conf.output_format = DCMIPP_PIXEL_PACKER_FORMAT_RGB888_YUV444_1;
+ 120:Src/app_camerapipeline.c ****   dcmipp_conf.output_bpp = STAI_NETWORK_IN_1_CHANNEL;
+ 121:Src/app_camerapipeline.c ****   dcmipp_conf.enable_swap = COLOR_MODE;
+ 122:Src/app_camerapipeline.c ****   dcmipp_conf.enable_gamma_conversion = 0;
+ 123:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_SetPipeConfig(DCMIPP_PIPE2, &dcmipp_conf, pitch);
+ 124:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+ 125:Src/app_camerapipeline.c **** }
+ 126:Src/app_camerapipeline.c **** 
+ 127:Src/app_camerapipeline.c **** /**
+ 128:Src/app_camerapipeline.c **** * @brief Init the camera and the 2 DCMIPP pipes
+ 129:Src/app_camerapipeline.c **** * @param lcd_bg_width display width
+ 130:Src/app_camerapipeline.c **** * @param lcd_bg_height display height
+ 131:Src/app_camerapipeline.c **** * @param pitch_nn output pitch computed by the CMW
+ 132:Src/app_camerapipeline.c **** */
+ 133:Src/app_camerapipeline.c **** void CameraPipeline_Init(uint32_t *layers_width[2], uint32_t *layers_height[2], uint32_t *pitch_nn)
+ 134:Src/app_camerapipeline.c **** {
+  45              		.loc 1 134 1 view -0
+  46              		.cfi_startproc
+  47              		@ args = 0, pretend = 0, frame = 64
+  48              		@ frame_needed = 0, uses_anonymous_args = 0
+ 135:Src/app_camerapipeline.c ****   int ret;
+  49              		.loc 1 135 3 view .LVU1
+ 136:Src/app_camerapipeline.c ****   CMW_CameraInit_t cam_conf;
+  50              		.loc 1 136 3 view .LVU2
+ 137:Src/app_camerapipeline.c **** 
+ 138:Src/app_camerapipeline.c ****   cam_conf.width = CAMERA_WIDTH;
+  51              		.loc 1 138 3 view .LVU3
+ 134:Src/app_camerapipeline.c ****   int ret;
+  52              		.loc 1 134 1 is_stmt 0 view .LVU4
+  53 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  54              		.cfi_def_cfa_offset 20
+  55              		.cfi_offset 4, -20
+  56              		.cfi_offset 5, -16
+  57              		.cfi_offset 6, -12
+  58              		.cfi_offset 7, -8
+  59              		.cfi_offset 14, -4
+ 139:Src/app_camerapipeline.c ****   cam_conf.height = CAMERA_HEIGHT;
+ 140:Src/app_camerapipeline.c ****   cam_conf.fps = CAMERA_FPS;
+  60              		.loc 1 140 16 view .LVU5
+  61 0002 1E23     		movs	r3, #30
+ 134:Src/app_camerapipeline.c ****   int ret;
+  62              		.loc 1 134 1 view .LVU6
+  63 0004 0E46     		mov	r6, r1
+ 138:Src/app_camerapipeline.c ****   cam_conf.height = CAMERA_HEIGHT;
+  64              		.loc 1 138 18 view .LVU7
+  65 0006 0021     		movs	r1, #0
+  66              	.LVL1:
+ 134:Src/app_camerapipeline.c ****   int ret;
+  67              		.loc 1 134 1 view .LVU8
+  68 0008 91B0     		sub	sp, sp, #68
+  69              		.cfi_def_cfa_offset 88
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 5
+
+
+ 134:Src/app_camerapipeline.c ****   int ret;
+  70              		.loc 1 134 1 view .LVU9
+  71 000a 0746     		mov	r7, r0
+ 141:Src/app_camerapipeline.c ****   cam_conf.mirror_flip = CAMERA_FLIP;
+ 142:Src/app_camerapipeline.c **** 
+ 143:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_Init(&cam_conf, NULL);
+  72              		.loc 1 143 9 view .LVU10
+  73 000c 01A8     		add	r0, sp, #4
+  74              	.LVL2:
+ 134:Src/app_camerapipeline.c ****   int ret;
+  75              		.loc 1 134 1 view .LVU11
+  76 000e 1546     		mov	r5, r2
+ 139:Src/app_camerapipeline.c ****   cam_conf.fps = CAMERA_FPS;
+  77              		.loc 1 139 19 view .LVU12
+  78 0010 CDE90111 		strd	r1, r1, [sp, #4]
+ 140:Src/app_camerapipeline.c ****   cam_conf.mirror_flip = CAMERA_FLIP;
+  79              		.loc 1 140 3 is_stmt 1 view .LVU13
+ 141:Src/app_camerapipeline.c **** 
+  80              		.loc 1 141 24 is_stmt 0 view .LVU14
+  81 0014 CDE90331 		strd	r3, r1, [sp, #12]
+  82              		.loc 1 143 3 is_stmt 1 view .LVU15
+  83              		.loc 1 143 9 is_stmt 0 view .LVU16
+  84 0018 FFF7FEFF 		bl	CMW_CAMERA_Init
+  85              	.LVL3:
+ 144:Src/app_camerapipeline.c ****   assert(ret == CMW_ERROR_NONE);
+  86              		.loc 1 144 3 is_stmt 1 view .LVU17
+  87 001c 0446     		mov	r4, r0
+  88 001e 28B1     		cbz	r0, .L2
+  89              		.loc 1 144 3 is_stmt 0 discriminator 1 view .LVU18
+  90 0020 9021     		movs	r1, #144
+  91 0022 294B     		ldr	r3, .L7
+  92 0024 294A     		ldr	r2, .L7+4
+  93              	.LVL4:
+  94              	.L6:
+  95              	.LBB6:
+  96              	.LBB7:
+  81:Src/app_camerapipeline.c ****   assert(dcmipp_conf.output_width * dcmipp_conf.output_bpp == pitch);
+  97              		.loc 1 81 3 view .LVU19
+  98 0026 2A48     		ldr	r0, .L7+8
+  99 0028 FFF7FEFF 		bl	__assert_func
+ 100              	.LVL5:
+ 101              	.L2:
+  81:Src/app_camerapipeline.c ****   assert(dcmipp_conf.output_width * dcmipp_conf.output_bpp == pitch);
+ 102              		.loc 1 81 3 view .LVU20
+ 103              	.LBE7:
+ 104              	.LBE6:
+ 145:Src/app_camerapipeline.c **** #if APP_UVC
+ 146:Src/app_camerapipeline.c ****   DCMIPP_PipeInitDisplay(&cam_conf, layers_width, layers_height);
+ 105              		.loc 1 146 3 is_stmt 1 view .LVU21
+ 106              	.LBB9:
+ 107              	.LBI6:
+  38:Src/app_camerapipeline.c **** {
+ 108              		.loc 1 38 13 view .LVU22
+ 109              	.LBB8:
+  40:Src/app_camerapipeline.c ****   CMW_DCMIPP_Conf_t dcmipp_conf = {0};
+ 110              		.loc 1 40 3 view .LVU23
+  41:Src/app_camerapipeline.c ****   int ret;
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 6
+
+
+ 111              		.loc 1 41 3 view .LVU24
+  41:Src/app_camerapipeline.c ****   int ret;
+ 112              		.loc 1 41 21 is_stmt 0 view .LVU25
+ 113 002c 0146     		mov	r1, r0
+ 114 002e 1C22     		movs	r2, #28
+ 115 0030 09A8     		add	r0, sp, #36
+ 116              	.LVL6:
+  41:Src/app_camerapipeline.c ****   int ret;
+ 117              		.loc 1 41 21 view .LVU26
+ 118 0032 FFF7FEFF 		bl	memset
+ 119              	.LVL7:
+  42:Src/app_camerapipeline.c **** 
+ 120              		.loc 1 42 3 is_stmt 1 view .LVU27
+  44:Src/app_camerapipeline.c ****   {
+ 121              		.loc 1 44 3 view .LVU28
+  48:Src/app_camerapipeline.c ****   {
+ 122              		.loc 1 48 8 view .LVU29
+  52:Src/app_camerapipeline.c ****   {
+ 123              		.loc 1 52 8 view .LVU30
+  54:Src/app_camerapipeline.c ****   }
+ 124              		.loc 1 54 5 view .LVU31
+  57:Src/app_camerapipeline.c ****   int lcd_bg_height;
+ 125              		.loc 1 57 3 view .LVU32
+  58:Src/app_camerapipeline.c **** 
+ 126              		.loc 1 58 3 view .LVU33
+  60:Src/app_camerapipeline.c **** 
+ 127              		.loc 1 60 3 view .LVU34
+  60:Src/app_camerapipeline.c **** 
+ 128              		.loc 1 60 27 is_stmt 0 view .LVU35
+ 129 0036 0299     		ldr	r1, [sp, #8]
+  63:Src/app_camerapipeline.c **** #else
+ 130              		.loc 1 63 86 view .LVU36
+ 131 0038 019B     		ldr	r3, [sp, #4]
+  60:Src/app_camerapipeline.c **** 
+ 132              		.loc 1 60 72 view .LVU37
+ 133 003a B1F5907F 		cmp	r1, #288
+ 134 003e 0A46     		mov	r2, r1
+ 135 0040 28BF     		it	cs
+ 136 0042 4FF49072 		movcs	r2, #288
+ 137              	.LVL8:
+  63:Src/app_camerapipeline.c **** #else
+ 138              		.loc 1 63 3 is_stmt 1 view .LVU38
+  63:Src/app_camerapipeline.c **** #else
+ 139              		.loc 1 63 86 is_stmt 0 view .LVU39
+ 140 0046 5343     		muls	r3, r2, r3
+  63:Src/app_camerapipeline.c **** #else
+ 141              		.loc 1 63 101 view .LVU40
+ 142 0048 B3FBF1F3 		udiv	r3, r3, r1
+  68:Src/app_camerapipeline.c ****   *layers_height[0] = lcd_bg_height;
+ 143              		.loc 1 68 20 view .LVU41
+ 144 004c 3968     		ldr	r1, [r7]
+ 145 004e 23F00F03 		bic	r3, r3, #15
+ 146              	.LVL9:
+  68:Src/app_camerapipeline.c ****   *layers_height[0] = lcd_bg_height;
+ 147              		.loc 1 68 3 is_stmt 1 view .LVU42
+  68:Src/app_camerapipeline.c ****   *layers_height[0] = lcd_bg_height;
+ 148              		.loc 1 68 20 is_stmt 0 view .LVU43
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 7
+
+
+ 149 0052 0B60     		str	r3, [r1]
+  69:Src/app_camerapipeline.c ****   *layers_width[1] = lcd_bg_width;
+ 150              		.loc 1 69 3 is_stmt 1 view .LVU44
+  69:Src/app_camerapipeline.c ****   *layers_width[1] = lcd_bg_width;
+ 151              		.loc 1 69 21 is_stmt 0 view .LVU45
+ 152 0054 3168     		ldr	r1, [r6]
+ 153 0056 0A60     		str	r2, [r1]
+  70:Src/app_camerapipeline.c ****   *layers_height[1] = lcd_bg_height;
+ 154              		.loc 1 70 3 is_stmt 1 view .LVU46
+  70:Src/app_camerapipeline.c ****   *layers_height[1] = lcd_bg_height;
+ 155              		.loc 1 70 20 is_stmt 0 view .LVU47
+ 156 0058 7968     		ldr	r1, [r7, #4]
+  76:Src/app_camerapipeline.c ****   dcmipp_conf.mode = aspect_ratio;
+ 157              		.loc 1 76 26 view .LVU48
+ 158 005a 0127     		movs	r7, #1
+ 159              	.LVL10:
+  70:Src/app_camerapipeline.c ****   *layers_height[1] = lcd_bg_height;
+ 160              		.loc 1 70 20 view .LVU49
+ 161 005c 0B60     		str	r3, [r1]
+  71:Src/app_camerapipeline.c **** 
+ 162              		.loc 1 71 3 is_stmt 1 view .LVU50
+  71:Src/app_camerapipeline.c **** 
+ 163              		.loc 1 71 21 is_stmt 0 view .LVU51
+ 164 005e 7168     		ldr	r1, [r6, #4]
+  76:Src/app_camerapipeline.c ****   dcmipp_conf.mode = aspect_ratio;
+ 165              		.loc 1 76 26 view .LVU52
+ 166 0060 0226     		movs	r6, #2
+ 167              	.LVL11:
+  71:Src/app_camerapipeline.c **** 
+ 168              		.loc 1 71 21 view .LVU53
+ 169 0062 0A60     		str	r2, [r1]
+  73:Src/app_camerapipeline.c ****   dcmipp_conf.output_height = lcd_bg_height;
+ 170              		.loc 1 73 3 is_stmt 1 view .LVU54
+  80:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+ 171              		.loc 1 80 9 is_stmt 0 view .LVU55
+ 172 0064 3846     		mov	r0, r7
+  74:Src/app_camerapipeline.c ****   dcmipp_conf.output_format = DCMIPP_PIXEL_PACKER_FORMAT_RGB565_1;
+ 173              		.loc 1 74 29 view .LVU56
+ 174 0066 CDE90532 		strd	r3, r2, [sp, #20]
+  75:Src/app_camerapipeline.c ****   dcmipp_conf.output_bpp = 2;
+ 175              		.loc 1 75 3 is_stmt 1 view .LVU57
+  80:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+ 176              		.loc 1 80 9 is_stmt 0 view .LVU58
+ 177 006a 05A9     		add	r1, sp, #20
+ 178 006c 6A46     		mov	r2, sp
+ 179              	.LVL12:
+  76:Src/app_camerapipeline.c ****   dcmipp_conf.mode = aspect_ratio;
+ 180              		.loc 1 76 26 view .LVU59
+ 181 006e CDE90776 		strd	r7, r6, [sp, #28]
+  77:Src/app_camerapipeline.c ****   dcmipp_conf.enable_gamma_conversion = 0;
+ 182              		.loc 1 77 3 is_stmt 1 view .LVU60
+  78:Src/app_camerapipeline.c ****   uint32_t pitch;
+ 183              		.loc 1 78 39 is_stmt 0 view .LVU61
+ 184 0072 CDE90A46 		strd	r4, r6, [sp, #40]
+  79:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_SetPipeConfig(DCMIPP_PIPE1, &dcmipp_conf, &pitch);
+ 185              		.loc 1 79 3 is_stmt 1 view .LVU62
+  80:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 8
+
+
+ 186              		.loc 1 80 3 view .LVU63
+  80:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+ 187              		.loc 1 80 9 is_stmt 0 view .LVU64
+ 188 0076 FFF7FEFF 		bl	CMW_CAMERA_SetPipeConfig
+ 189              	.LVL13:
+  81:Src/app_camerapipeline.c ****   assert(dcmipp_conf.output_width * dcmipp_conf.output_bpp == pitch);
+ 190              		.loc 1 81 3 is_stmt 1 view .LVU65
+ 191 007a 18B1     		cbz	r0, .L3
+ 192 007c 5121     		movs	r1, #81
+ 193 007e 154B     		ldr	r3, .L7+12
+ 194 0080 154A     		ldr	r2, .L7+16
+ 195 0082 D0E7     		b	.L6
+ 196              	.L3:
+  82:Src/app_camerapipeline.c **** }
+ 197              		.loc 1 82 3 view .LVU66
+ 198 0084 089A     		ldr	r2, [sp, #32]
+ 199 0086 059B     		ldr	r3, [sp, #20]
+ 200 0088 5343     		muls	r3, r2, r3
+ 201 008a 009A     		ldr	r2, [sp]
+ 202 008c 9342     		cmp	r3, r2
+ 203 008e 03D0     		beq	.L4
+ 204 0090 5221     		movs	r1, #82
+ 205 0092 124B     		ldr	r3, .L7+20
+ 206 0094 104A     		ldr	r2, .L7+16
+ 207 0096 C6E7     		b	.L6
+ 208              	.L4:
+ 209              	.LVL14:
+  82:Src/app_camerapipeline.c **** }
+ 210              		.loc 1 82 3 is_stmt 0 view .LVU67
+ 211              	.LBE8:
+ 212              	.LBE9:
+ 147:Src/app_camerapipeline.c **** #else
+ 148:Src/app_camerapipeline.c ****   (void)layers_width;
+ 149:Src/app_camerapipeline.c ****   (void)layers_height;
+ 150:Src/app_camerapipeline.c **** #endif
+ 151:Src/app_camerapipeline.c ****   DCMIPP_PipeInitNn(pitch_nn);
+ 213              		.loc 1 151 3 is_stmt 1 view .LVU68
+ 214              	.LBB10:
+ 215              	.LBI10:
+  86:Src/app_camerapipeline.c **** {
+ 216              		.loc 1 86 13 view .LVU69
+ 217              	.LBB11:
+  88:Src/app_camerapipeline.c ****   CMW_DCMIPP_Conf_t dcmipp_conf;
+ 218              		.loc 1 88 3 view .LVU70
+  89:Src/app_camerapipeline.c ****   int ret;
+ 219              		.loc 1 89 3 view .LVU71
+  90:Src/app_camerapipeline.c **** 
+ 220              		.loc 1 90 3 view .LVU72
+  92:Src/app_camerapipeline.c ****   {
+ 221              		.loc 1 92 3 view .LVU73
+  96:Src/app_camerapipeline.c ****   {
+ 222              		.loc 1 96 8 view .LVU74
+ 100:Src/app_camerapipeline.c ****   {
+ 223              		.loc 1 100 8 view .LVU75
+ 102:Src/app_camerapipeline.c ****   }
+ 224              		.loc 1 102 5 view .LVU76
+ 110:Src/app_camerapipeline.c ****   dcmipp_conf.output_height = STAI_NETWORK_IN_1_WIDTH;   /* 384 */
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 9
+
+
+ 225              		.loc 1 110 3 view .LVU77
+ 111:Src/app_camerapipeline.c ****   dcmipp_conf.mode = CMW_Aspect_ratio_crop;
+ 226              		.loc 1 111 29 is_stmt 0 view .LVU78
+ 227 0098 4FF49072 		mov	r2, #288
+ 228 009c 4FF4C073 		mov	r3, #384
+ 229 00a0 CDE90523 		strd	r2, r3, [sp, #20]
+ 112:Src/app_camerapipeline.c ****   (void)aspect_ratio;
+ 230              		.loc 1 112 3 is_stmt 1 view .LVU79
+ 120:Src/app_camerapipeline.c ****   dcmipp_conf.enable_swap = COLOR_MODE;
+ 231              		.loc 1 120 26 is_stmt 0 view .LVU80
+ 232 00a4 0323     		movs	r3, #3
+ 112:Src/app_camerapipeline.c ****   (void)aspect_ratio;
+ 233              		.loc 1 112 20 view .LVU81
+ 234 00a6 0B90     		str	r0, [sp, #44]
+ 113:Src/app_camerapipeline.c **** #else
+ 235              		.loc 1 113 3 is_stmt 1 view .LVU82
+ 119:Src/app_camerapipeline.c ****   dcmipp_conf.output_bpp = STAI_NETWORK_IN_1_CHANNEL;
+ 236              		.loc 1 119 3 view .LVU83
+ 119:Src/app_camerapipeline.c ****   dcmipp_conf.output_bpp = STAI_NETWORK_IN_1_CHANNEL;
+ 237              		.loc 1 119 29 is_stmt 0 view .LVU84
+ 238 00a8 0790     		str	r0, [sp, #28]
+ 120:Src/app_camerapipeline.c ****   dcmipp_conf.enable_swap = COLOR_MODE;
+ 239              		.loc 1 120 3 is_stmt 1 view .LVU85
+ 122:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_SetPipeConfig(DCMIPP_PIPE2, &dcmipp_conf, pitch);
+ 240              		.loc 1 122 39 is_stmt 0 view .LVU86
+ 241 00aa 0A90     		str	r0, [sp, #40]
+ 123:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+ 242              		.loc 1 123 9 view .LVU87
+ 243 00ac 2A46     		mov	r2, r5
+ 244 00ae 3046     		mov	r0, r6
+ 245 00b0 05A9     		add	r1, sp, #20
+ 121:Src/app_camerapipeline.c ****   dcmipp_conf.enable_gamma_conversion = 0;
+ 246              		.loc 1 121 27 view .LVU88
+ 247 00b2 CDE90837 		strd	r3, r7, [sp, #32]
+ 122:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_SetPipeConfig(DCMIPP_PIPE2, &dcmipp_conf, pitch);
+ 248              		.loc 1 122 3 is_stmt 1 view .LVU89
+ 123:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+ 249              		.loc 1 123 3 view .LVU90
+ 123:Src/app_camerapipeline.c ****   assert(ret == HAL_OK);
+ 250              		.loc 1 123 9 is_stmt 0 view .LVU91
+ 251 00b6 FFF7FEFF 		bl	CMW_CAMERA_SetPipeConfig
+ 252              	.LVL15:
+ 124:Src/app_camerapipeline.c **** }
+ 253              		.loc 1 124 3 is_stmt 1 view .LVU92
+ 254 00ba 18B1     		cbz	r0, .L1
+ 255 00bc 7C21     		movs	r1, #124
+ 256 00be 054B     		ldr	r3, .L7+12
+ 257 00c0 074A     		ldr	r2, .L7+24
+ 258 00c2 B0E7     		b	.L6
+ 259              	.L1:
+ 260              	.LBE11:
+ 261              	.LBE10:
+ 152:Src/app_camerapipeline.c **** }
+ 262              		.loc 1 152 1 is_stmt 0 view .LVU93
+ 263 00c4 11B0     		add	sp, sp, #68
+ 264              		.cfi_def_cfa_offset 20
+ 265              		@ sp needed
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 10
+
+
+ 266 00c6 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 267              	.LVL16:
+ 268              	.L8:
+ 269              		.loc 1 152 1 view .LVU94
+ 270              		.align	2
+ 271              	.L7:
+ 272 00c8 00000000 		.word	.LC0
+ 273 00cc 00000000 		.word	__func__.8
+ 274 00d0 16000000 		.word	.LC1
+ 275 00d4 2F000000 		.word	.LC2
+ 276 00d8 00000000 		.word	__func__.7
+ 277 00dc 3D000000 		.word	.LC3
+ 278 00e0 00000000 		.word	__func__.6
+ 279              		.cfi_endproc
+ 280              	.LFE3412:
+ 282              		.section	.text.CameraPipeline_DeInit,"ax",%progbits
+ 283              		.align	1
+ 284              		.global	CameraPipeline_DeInit
+ 285              		.syntax unified
+ 286              		.thumb
+ 287              		.thumb_func
+ 289              	CameraPipeline_DeInit:
+ 290              	.LFB3413:
+ 153:Src/app_camerapipeline.c **** 
+ 154:Src/app_camerapipeline.c **** void CameraPipeline_DeInit(void)
+ 155:Src/app_camerapipeline.c **** {
+ 291              		.loc 1 155 1 is_stmt 1 view -0
+ 292              		.cfi_startproc
+ 293              		@ args = 0, pretend = 0, frame = 0
+ 294              		@ frame_needed = 0, uses_anonymous_args = 0
+ 156:Src/app_camerapipeline.c ****   int ret;
+ 295              		.loc 1 156 3 view .LVU96
+ 157:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_DeInit();
+ 296              		.loc 1 157 3 view .LVU97
+ 155:Src/app_camerapipeline.c ****   int ret;
+ 297              		.loc 1 155 1 is_stmt 0 view .LVU98
+ 298 0000 08B5     		push	{r3, lr}
+ 299              		.cfi_def_cfa_offset 8
+ 300              		.cfi_offset 3, -8
+ 301              		.cfi_offset 14, -4
+ 302              		.loc 1 157 9 view .LVU99
+ 303 0002 FFF7FEFF 		bl	CMW_CAMERA_DeInit
+ 304              	.LVL17:
+ 158:Src/app_camerapipeline.c ****   assert(ret == CMW_ERROR_NONE);
+ 305              		.loc 1 158 3 is_stmt 1 view .LVU100
+ 306 0006 28B1     		cbz	r0, .L9
+ 307              		.loc 1 158 3 is_stmt 0 discriminator 1 view .LVU101
+ 308 0008 9E21     		movs	r1, #158
+ 309 000a 034B     		ldr	r3, .L11
+ 310 000c 034A     		ldr	r2, .L11+4
+ 311 000e 0448     		ldr	r0, .L11+8
+ 312              	.LVL18:
+ 313              		.loc 1 158 3 discriminator 1 view .LVU102
+ 314 0010 FFF7FEFF 		bl	__assert_func
+ 315              	.LVL19:
+ 316              	.L9:
+ 159:Src/app_camerapipeline.c **** }
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 11
+
+
+ 317              		.loc 1 159 1 view .LVU103
+ 318 0014 08BD     		pop	{r3, pc}
+ 319              	.L12:
+ 320 0016 00BF     		.align	2
+ 321              	.L11:
+ 322 0018 00000000 		.word	.LC0
+ 323 001c 00000000 		.word	__func__.5
+ 324 0020 16000000 		.word	.LC1
+ 325              		.cfi_endproc
+ 326              	.LFE3413:
+ 328              		.section	.text.CameraPipeline_DisplayPipe_Start,"ax",%progbits
+ 329              		.align	1
+ 330              		.global	CameraPipeline_DisplayPipe_Start
+ 331              		.syntax unified
+ 332              		.thumb
+ 333              		.thumb_func
+ 335              	CameraPipeline_DisplayPipe_Start:
+ 336              	.LVL20:
+ 337              	.LFB3414:
+ 160:Src/app_camerapipeline.c **** 
+ 161:Src/app_camerapipeline.c **** void CameraPipeline_DisplayPipe_Start(uint8_t *display_pipe_dst, uint32_t cam_mode)
+ 162:Src/app_camerapipeline.c **** {
+ 338              		.loc 1 162 1 is_stmt 1 view -0
+ 339              		.cfi_startproc
+ 340              		@ args = 0, pretend = 0, frame = 0
+ 341              		@ frame_needed = 0, uses_anonymous_args = 0
+ 163:Src/app_camerapipeline.c ****   int ret;
+ 342              		.loc 1 163 3 view .LVU105
+ 164:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_Start(DCMIPP_PIPE1, display_pipe_dst, cam_mode);
+ 343              		.loc 1 164 3 view .LVU106
+ 162:Src/app_camerapipeline.c ****   int ret;
+ 344              		.loc 1 162 1 is_stmt 0 view .LVU107
+ 345 0000 0A46     		mov	r2, r1
+ 346 0002 08B5     		push	{r3, lr}
+ 347              		.cfi_def_cfa_offset 8
+ 348              		.cfi_offset 3, -8
+ 349              		.cfi_offset 14, -4
+ 350              		.loc 1 164 9 view .LVU108
+ 351 0004 0146     		mov	r1, r0
+ 352              	.LVL21:
+ 353              		.loc 1 164 9 view .LVU109
+ 354 0006 0120     		movs	r0, #1
+ 355              	.LVL22:
+ 356              		.loc 1 164 9 view .LVU110
+ 357 0008 FFF7FEFF 		bl	CMW_CAMERA_Start
+ 358              	.LVL23:
+ 165:Src/app_camerapipeline.c ****   assert(ret == CMW_ERROR_NONE);
+ 359              		.loc 1 165 3 is_stmt 1 view .LVU111
+ 360 000c 28B1     		cbz	r0, .L13
+ 361              		.loc 1 165 3 is_stmt 0 discriminator 1 view .LVU112
+ 362 000e A521     		movs	r1, #165
+ 363 0010 024B     		ldr	r3, .L15
+ 364 0012 034A     		ldr	r2, .L15+4
+ 365 0014 0348     		ldr	r0, .L15+8
+ 366              	.LVL24:
+ 367              		.loc 1 165 3 discriminator 1 view .LVU113
+ 368 0016 FFF7FEFF 		bl	__assert_func
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 12
+
+
+ 369              	.LVL25:
+ 370              	.L13:
+ 166:Src/app_camerapipeline.c **** }
+ 371              		.loc 1 166 1 view .LVU114
+ 372 001a 08BD     		pop	{r3, pc}
+ 373              	.L16:
+ 374              		.align	2
+ 375              	.L15:
+ 376 001c 00000000 		.word	.LC0
+ 377 0020 00000000 		.word	__func__.4
+ 378 0024 16000000 		.word	.LC1
+ 379              		.cfi_endproc
+ 380              	.LFE3414:
+ 382              		.section	.text.CameraPipeline_NNPipe_Start,"ax",%progbits
+ 383              		.align	1
+ 384              		.global	CameraPipeline_NNPipe_Start
+ 385              		.syntax unified
+ 386              		.thumb
+ 387              		.thumb_func
+ 389              	CameraPipeline_NNPipe_Start:
+ 390              	.LVL26:
+ 391              	.LFB3415:
+ 167:Src/app_camerapipeline.c **** 
+ 168:Src/app_camerapipeline.c **** void CameraPipeline_NNPipe_Start(uint8_t *nn_pipe_dst, uint32_t cam_mode)
+ 169:Src/app_camerapipeline.c **** {
+ 392              		.loc 1 169 1 is_stmt 1 view -0
+ 393              		.cfi_startproc
+ 394              		@ args = 0, pretend = 0, frame = 0
+ 395              		@ frame_needed = 0, uses_anonymous_args = 0
+ 170:Src/app_camerapipeline.c ****   int ret;
+ 396              		.loc 1 170 3 view .LVU116
+ 171:Src/app_camerapipeline.c **** 
+ 172:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_Start(DCMIPP_PIPE2, nn_pipe_dst, cam_mode);
+ 397              		.loc 1 172 3 view .LVU117
+ 169:Src/app_camerapipeline.c ****   int ret;
+ 398              		.loc 1 169 1 is_stmt 0 view .LVU118
+ 399 0000 0A46     		mov	r2, r1
+ 400 0002 08B5     		push	{r3, lr}
+ 401              		.cfi_def_cfa_offset 8
+ 402              		.cfi_offset 3, -8
+ 403              		.cfi_offset 14, -4
+ 404              		.loc 1 172 9 view .LVU119
+ 405 0004 0146     		mov	r1, r0
+ 406              	.LVL27:
+ 407              		.loc 1 172 9 view .LVU120
+ 408 0006 0220     		movs	r0, #2
+ 409              	.LVL28:
+ 410              		.loc 1 172 9 view .LVU121
+ 411 0008 FFF7FEFF 		bl	CMW_CAMERA_Start
+ 412              	.LVL29:
+ 173:Src/app_camerapipeline.c ****   assert(ret == CMW_ERROR_NONE);
+ 413              		.loc 1 173 3 is_stmt 1 view .LVU122
+ 414 000c 28B1     		cbz	r0, .L17
+ 415              		.loc 1 173 3 is_stmt 0 discriminator 1 view .LVU123
+ 416 000e AD21     		movs	r1, #173
+ 417 0010 024B     		ldr	r3, .L19
+ 418 0012 034A     		ldr	r2, .L19+4
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 13
+
+
+ 419 0014 0348     		ldr	r0, .L19+8
+ 420              	.LVL30:
+ 421              		.loc 1 173 3 discriminator 1 view .LVU124
+ 422 0016 FFF7FEFF 		bl	__assert_func
+ 423              	.LVL31:
+ 424              	.L17:
+ 174:Src/app_camerapipeline.c **** }
+ 425              		.loc 1 174 1 view .LVU125
+ 426 001a 08BD     		pop	{r3, pc}
+ 427              	.L20:
+ 428              		.align	2
+ 429              	.L19:
+ 430 001c 00000000 		.word	.LC0
+ 431 0020 00000000 		.word	__func__.3
+ 432 0024 16000000 		.word	.LC1
+ 433              		.cfi_endproc
+ 434              	.LFE3415:
+ 436              		.section	.text.CameraPipeline_DisplayPipe_Stop,"ax",%progbits
+ 437              		.align	1
+ 438              		.global	CameraPipeline_DisplayPipe_Stop
+ 439              		.syntax unified
+ 440              		.thumb
+ 441              		.thumb_func
+ 443              	CameraPipeline_DisplayPipe_Stop:
+ 444              	.LFB3416:
+ 175:Src/app_camerapipeline.c **** 
+ 176:Src/app_camerapipeline.c **** void CameraPipeline_DisplayPipe_Stop()
+ 177:Src/app_camerapipeline.c **** {
+ 445              		.loc 1 177 1 is_stmt 1 view -0
+ 446              		.cfi_startproc
+ 447              		@ args = 0, pretend = 0, frame = 0
+ 448              		@ frame_needed = 0, uses_anonymous_args = 0
+ 178:Src/app_camerapipeline.c ****   int ret;
+ 449              		.loc 1 178 3 view .LVU127
+ 179:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_Suspend(DCMIPP_PIPE1);
+ 450              		.loc 1 179 3 view .LVU128
+ 177:Src/app_camerapipeline.c ****   int ret;
+ 451              		.loc 1 177 1 is_stmt 0 view .LVU129
+ 452 0000 08B5     		push	{r3, lr}
+ 453              		.cfi_def_cfa_offset 8
+ 454              		.cfi_offset 3, -8
+ 455              		.cfi_offset 14, -4
+ 456              		.loc 1 179 9 view .LVU130
+ 457 0002 0120     		movs	r0, #1
+ 458 0004 FFF7FEFF 		bl	CMW_CAMERA_Suspend
+ 459              	.LVL32:
+ 180:Src/app_camerapipeline.c ****   assert(ret == CMW_ERROR_NONE);
+ 460              		.loc 1 180 3 is_stmt 1 view .LVU131
+ 461 0008 28B1     		cbz	r0, .L21
+ 462              		.loc 1 180 3 is_stmt 0 discriminator 1 view .LVU132
+ 463 000a B421     		movs	r1, #180
+ 464 000c 024B     		ldr	r3, .L23
+ 465 000e 034A     		ldr	r2, .L23+4
+ 466 0010 0348     		ldr	r0, .L23+8
+ 467              	.LVL33:
+ 468              		.loc 1 180 3 discriminator 1 view .LVU133
+ 469 0012 FFF7FEFF 		bl	__assert_func
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 14
+
+
+ 470              	.LVL34:
+ 471              	.L21:
+ 181:Src/app_camerapipeline.c **** }
+ 472              		.loc 1 181 1 view .LVU134
+ 473 0016 08BD     		pop	{r3, pc}
+ 474              	.L24:
+ 475              		.align	2
+ 476              	.L23:
+ 477 0018 00000000 		.word	.LC0
+ 478 001c 00000000 		.word	__func__.2
+ 479 0020 16000000 		.word	.LC1
+ 480              		.cfi_endproc
+ 481              	.LFE3416:
+ 483              		.section	.text.CameraPipeline_IspUpdate,"ax",%progbits
+ 484              		.align	1
+ 485              		.global	CameraPipeline_IspUpdate
+ 486              		.syntax unified
+ 487              		.thumb
+ 488              		.thumb_func
+ 490              	CameraPipeline_IspUpdate:
+ 491              	.LFB3417:
+ 182:Src/app_camerapipeline.c **** 
+ 183:Src/app_camerapipeline.c **** void CameraPipeline_IspUpdate(void)
+ 184:Src/app_camerapipeline.c **** {
+ 492              		.loc 1 184 1 is_stmt 1 view -0
+ 493              		.cfi_startproc
+ 494              		@ args = 0, pretend = 0, frame = 0
+ 495              		@ frame_needed = 0, uses_anonymous_args = 0
+ 185:Src/app_camerapipeline.c ****   int ret = CMW_ERROR_NONE;
+ 496              		.loc 1 185 3 view .LVU136
+ 497              	.LVL35:
+ 186:Src/app_camerapipeline.c ****   ret = CMW_CAMERA_Run();
+ 498              		.loc 1 186 3 view .LVU137
+ 184:Src/app_camerapipeline.c ****   int ret = CMW_ERROR_NONE;
+ 499              		.loc 1 184 1 is_stmt 0 view .LVU138
+ 500 0000 08B5     		push	{r3, lr}
+ 501              		.cfi_def_cfa_offset 8
+ 502              		.cfi_offset 3, -8
+ 503              		.cfi_offset 14, -4
+ 504              		.loc 1 186 9 view .LVU139
+ 505 0002 FFF7FEFF 		bl	CMW_CAMERA_Run
+ 506              	.LVL36:
+ 187:Src/app_camerapipeline.c ****   assert(ret == CMW_ERROR_NONE);
+ 507              		.loc 1 187 3 is_stmt 1 view .LVU140
+ 508 0006 28B1     		cbz	r0, .L25
+ 509              		.loc 1 187 3 is_stmt 0 discriminator 1 view .LVU141
+ 510 0008 BB21     		movs	r1, #187
+ 511 000a 034B     		ldr	r3, .L27
+ 512 000c 034A     		ldr	r2, .L27+4
+ 513 000e 0448     		ldr	r0, .L27+8
+ 514              	.LVL37:
+ 515              		.loc 1 187 3 discriminator 1 view .LVU142
+ 516 0010 FFF7FEFF 		bl	__assert_func
+ 517              	.LVL38:
+ 518              	.L25:
+ 188:Src/app_camerapipeline.c **** }
+ 519              		.loc 1 188 1 view .LVU143
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 15
+
+
+ 520 0014 08BD     		pop	{r3, pc}
+ 521              	.L28:
+ 522 0016 00BF     		.align	2
+ 523              	.L27:
+ 524 0018 00000000 		.word	.LC0
+ 525 001c 00000000 		.word	__func__.1
+ 526 0020 16000000 		.word	.LC1
+ 527              		.cfi_endproc
+ 528              	.LFE3417:
+ 530              		.section	.rodata.CMW_CAMERA_PIPE_FrameEventCallback.str1.1,"aMS",%progbits,1
+ 531              	.LC4:
+ 532 0000 72657420 		.ascii	"ret == 0\000"
+ 532      3D3D2030 
+ 532      00
+ 533              		.section	.text.CMW_CAMERA_PIPE_FrameEventCallback,"ax",%progbits
+ 534              		.align	1
+ 535              		.global	CMW_CAMERA_PIPE_FrameEventCallback
+ 536              		.syntax unified
+ 537              		.thumb
+ 538              		.thumb_func
+ 540              	CMW_CAMERA_PIPE_FrameEventCallback:
+ 541              	.LVL39:
+ 542              	.LFB3418:
+ 189:Src/app_camerapipeline.c **** 
+ 190:Src/app_camerapipeline.c **** /**
+ 191:Src/app_camerapipeline.c ****   * @brief  Frame event callback
+ 192:Src/app_camerapipeline.c ****   * @param  hdcmipp pointer to the DCMIPP handle
+ 193:Src/app_camerapipeline.c ****   * @retval None
+ 194:Src/app_camerapipeline.c ****   */
+ 195:Src/app_camerapipeline.c **** int CMW_CAMERA_PIPE_FrameEventCallback(uint32_t pipe)
+ 196:Src/app_camerapipeline.c **** {
+ 543              		.loc 1 196 1 is_stmt 1 view -0
+ 544              		.cfi_startproc
+ 545              		@ args = 0, pretend = 0, frame = 0
+ 546              		@ frame_needed = 0, uses_anonymous_args = 0
+ 197:Src/app_camerapipeline.c ****   switch (pipe)
+ 547              		.loc 1 197 3 view .LVU145
+ 548 0000 0228     		cmp	r0, #2
+ 196:Src/app_camerapipeline.c ****   switch (pipe)
+ 549              		.loc 1 196 1 is_stmt 0 view .LVU146
+ 550 0002 08B5     		push	{r3, lr}
+ 551              		.cfi_def_cfa_offset 8
+ 552              		.cfi_offset 3, -8
+ 553              		.cfi_offset 14, -4
+ 554              		.loc 1 197 3 view .LVU147
+ 555 0004 0CD1     		bne	.L30
+ 198:Src/app_camerapipeline.c ****   {
+ 199:Src/app_camerapipeline.c ****     case DCMIPP_PIPE2 :
+ 200:Src/app_camerapipeline.c ****       cameraFrameReceived++;
+ 556              		.loc 1 200 7 is_stmt 1 view .LVU148
+ 557              		.loc 1 200 26 is_stmt 0 view .LVU149
+ 558 0006 074A     		ldr	r2, .L34
+ 559 0008 1368     		ldr	r3, [r2]
+ 560 000a 0133     		adds	r3, r3, #1
+ 561 000c 1360     		str	r3, [r2]
+ 562              	.LBB12:
+ 201:Src/app_camerapipeline.c **** 
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 16
+
+
+ 202:Src/app_camerapipeline.c **** #if APP_UVC
+ 203:Src/app_camerapipeline.c ****       {
+ 204:Src/app_camerapipeline.c ****         int ret = SRCL_Update();
+ 563              		.loc 1 204 9 is_stmt 1 view .LVU150
+ 564              		.loc 1 204 19 is_stmt 0 view .LVU151
+ 565 000e FFF7FEFF 		bl	SRCL_Update
+ 566              	.LVL40:
+ 205:Src/app_camerapipeline.c ****         assert(ret == 0);
+ 567              		.loc 1 205 9 is_stmt 1 view .LVU152
+ 568 0012 28B1     		cbz	r0, .L30
+ 569              		.loc 1 205 9 is_stmt 0 discriminator 1 view .LVU153
+ 570 0014 CD21     		movs	r1, #205
+ 571 0016 044B     		ldr	r3, .L34+4
+ 572 0018 044A     		ldr	r2, .L34+8
+ 573 001a 0548     		ldr	r0, .L34+12
+ 574              	.LVL41:
+ 575              		.loc 1 205 9 discriminator 1 view .LVU154
+ 576 001c FFF7FEFF 		bl	__assert_func
+ 577              	.LVL42:
+ 578              	.L30:
+ 579              		.loc 1 205 9 discriminator 1 view .LVU155
+ 580              	.LBE12:
+ 206:Src/app_camerapipeline.c ****       }
+ 207:Src/app_camerapipeline.c **** #endif
+ 208:Src/app_camerapipeline.c ****       break;
+ 209:Src/app_camerapipeline.c ****   }
+ 210:Src/app_camerapipeline.c ****   return 0;
+ 581              		.loc 1 210 3 is_stmt 1 view .LVU156
+ 211:Src/app_camerapipeline.c **** }
+ 582              		.loc 1 211 1 is_stmt 0 view .LVU157
+ 583 0020 0020     		movs	r0, #0
+ 584 0022 08BD     		pop	{r3, pc}
+ 585              	.L35:
+ 586              		.align	2
+ 587              	.L34:
+ 588 0024 00000000 		.word	cameraFrameReceived
+ 589 0028 00000000 		.word	.LC4
+ 590 002c 00000000 		.word	__func__.0
+ 591 0030 16000000 		.word	.LC1
+ 592              		.cfi_endproc
+ 593              	.LFE3418:
+ 595              		.section	.text.CMW_CAMERA_PIPE_ErrorCallback,"ax",%progbits
+ 596              		.align	1
+ 597              		.global	CMW_CAMERA_PIPE_ErrorCallback
+ 598              		.syntax unified
+ 599              		.thumb
+ 600              		.thumb_func
+ 602              	CMW_CAMERA_PIPE_ErrorCallback:
+ 603              	.LVL43:
+ 604              	.LFB3419:
+ 212:Src/app_camerapipeline.c **** 
+ 213:Src/app_camerapipeline.c **** void CMW_CAMERA_PIPE_ErrorCallback(uint32_t pipe)
+ 214:Src/app_camerapipeline.c **** {
+ 605              		.loc 1 214 1 is_stmt 1 view -0
+ 606              		.cfi_startproc
+ 607              		@ args = 0, pretend = 0, frame = 0
+ 608              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 17
+
+
+ 609              		@ link register save eliminated.
+ 215:Src/app_camerapipeline.c ****   /* FIXME : Need to tune sensor/ipplug so we can remove this implementation */
+ 216:Src/app_camerapipeline.c **** }
+ 610              		.loc 1 216 1 view .LVU159
+ 611 0000 7047     		bx	lr
+ 612              		.cfi_endproc
+ 613              	.LFE3419:
+ 615              		.section	.rodata.__func__.0,"a"
+ 618              	__func__.0:
+ 619 0000 434D575F 		.ascii	"CMW_CAMERA_PIPE_FrameEventCallback\000"
+ 619      43414D45 
+ 619      52415F50 
+ 619      4950455F 
+ 619      4672616D 
+ 620              		.section	.rodata.__func__.1,"a"
+ 623              	__func__.1:
+ 624 0000 43616D65 		.ascii	"CameraPipeline_IspUpdate\000"
+ 624      72615069 
+ 624      70656C69 
+ 624      6E655F49 
+ 624      73705570 
+ 625              		.section	.rodata.__func__.2,"a"
+ 628              	__func__.2:
+ 629 0000 43616D65 		.ascii	"CameraPipeline_DisplayPipe_Stop\000"
+ 629      72615069 
+ 629      70656C69 
+ 629      6E655F44 
+ 629      6973706C 
+ 630              		.section	.rodata.__func__.3,"a"
+ 633              	__func__.3:
+ 634 0000 43616D65 		.ascii	"CameraPipeline_NNPipe_Start\000"
+ 634      72615069 
+ 634      70656C69 
+ 634      6E655F4E 
+ 634      4E506970 
+ 635              		.section	.rodata.__func__.4,"a"
+ 638              	__func__.4:
+ 639 0000 43616D65 		.ascii	"CameraPipeline_DisplayPipe_Start\000"
+ 639      72615069 
+ 639      70656C69 
+ 639      6E655F44 
+ 639      6973706C 
+ 640              		.section	.rodata.__func__.5,"a"
+ 643              	__func__.5:
+ 644 0000 43616D65 		.ascii	"CameraPipeline_DeInit\000"
+ 644      72615069 
+ 644      70656C69 
+ 644      6E655F44 
+ 644      65496E69 
+ 645              		.section	.rodata.__func__.6,"a"
+ 648              	__func__.6:
+ 649 0000 44434D49 		.ascii	"DCMIPP_PipeInitNn\000"
+ 649      50505F50 
+ 649      69706549 
+ 649      6E69744E 
+ 649      6E00
+ 650              		.section	.rodata.__func__.7,"a"
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 18
+
+
+ 653              	__func__.7:
+ 654 0000 44434D49 		.ascii	"DCMIPP_PipeInitDisplay\000"
+ 654      50505F50 
+ 654      69706549 
+ 654      6E697444 
+ 654      6973706C 
+ 655              		.section	.rodata.__func__.8,"a"
+ 658              	__func__.8:
+ 659 0000 43616D65 		.ascii	"CameraPipeline_Init\000"
+ 659      72615069 
+ 659      70656C69 
+ 659      6E655F49 
+ 659      6E697400 
+ 660              		.text
+ 661              	.Letext0:
+ 662              		.file 2 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 663              		.file 3 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 664              		.file 4 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_def.h"
+ 665              		.file 5 "../../Middlewares/stm32-mw-camera/cmw_camera.h"
+ 666              		.file 6 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 667              		.file 7 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 668              		.file 8 "Inc/app_config.h"
+ 669              		.file 9 "../../Middlewares/screenl/Inc/scrl.h"
+ 670              		.file 10 "<built-in>"
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 19
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 app_camerapipeline.c
+/tmp/claude-1000/ccaS8NTF.s:36     .text.CameraPipeline_Init:00000000 $t
+/tmp/claude-1000/ccaS8NTF.s:42     .text.CameraPipeline_Init:00000000 CameraPipeline_Init
+/tmp/claude-1000/ccaS8NTF.s:272    .text.CameraPipeline_Init:000000c8 $d
+/tmp/claude-1000/ccaS8NTF.s:658    .rodata.__func__.8:00000000 __func__.8
+/tmp/claude-1000/ccaS8NTF.s:653    .rodata.__func__.7:00000000 __func__.7
+/tmp/claude-1000/ccaS8NTF.s:648    .rodata.__func__.6:00000000 __func__.6
+/tmp/claude-1000/ccaS8NTF.s:283    .text.CameraPipeline_DeInit:00000000 $t
+/tmp/claude-1000/ccaS8NTF.s:289    .text.CameraPipeline_DeInit:00000000 CameraPipeline_DeInit
+/tmp/claude-1000/ccaS8NTF.s:322    .text.CameraPipeline_DeInit:00000018 $d
+/tmp/claude-1000/ccaS8NTF.s:643    .rodata.__func__.5:00000000 __func__.5
+/tmp/claude-1000/ccaS8NTF.s:329    .text.CameraPipeline_DisplayPipe_Start:00000000 $t
+/tmp/claude-1000/ccaS8NTF.s:335    .text.CameraPipeline_DisplayPipe_Start:00000000 CameraPipeline_DisplayPipe_Start
+/tmp/claude-1000/ccaS8NTF.s:376    .text.CameraPipeline_DisplayPipe_Start:0000001c $d
+/tmp/claude-1000/ccaS8NTF.s:638    .rodata.__func__.4:00000000 __func__.4
+/tmp/claude-1000/ccaS8NTF.s:383    .text.CameraPipeline_NNPipe_Start:00000000 $t
+/tmp/claude-1000/ccaS8NTF.s:389    .text.CameraPipeline_NNPipe_Start:00000000 CameraPipeline_NNPipe_Start
+/tmp/claude-1000/ccaS8NTF.s:430    .text.CameraPipeline_NNPipe_Start:0000001c $d
+/tmp/claude-1000/ccaS8NTF.s:633    .rodata.__func__.3:00000000 __func__.3
+/tmp/claude-1000/ccaS8NTF.s:437    .text.CameraPipeline_DisplayPipe_Stop:00000000 $t
+/tmp/claude-1000/ccaS8NTF.s:443    .text.CameraPipeline_DisplayPipe_Stop:00000000 CameraPipeline_DisplayPipe_Stop
+/tmp/claude-1000/ccaS8NTF.s:477    .text.CameraPipeline_DisplayPipe_Stop:00000018 $d
+/tmp/claude-1000/ccaS8NTF.s:628    .rodata.__func__.2:00000000 __func__.2
+/tmp/claude-1000/ccaS8NTF.s:484    .text.CameraPipeline_IspUpdate:00000000 $t
+/tmp/claude-1000/ccaS8NTF.s:490    .text.CameraPipeline_IspUpdate:00000000 CameraPipeline_IspUpdate
+/tmp/claude-1000/ccaS8NTF.s:524    .text.CameraPipeline_IspUpdate:00000018 $d
+/tmp/claude-1000/ccaS8NTF.s:623    .rodata.__func__.1:00000000 __func__.1
+/tmp/claude-1000/ccaS8NTF.s:534    .text.CMW_CAMERA_PIPE_FrameEventCallback:00000000 $t
+/tmp/claude-1000/ccaS8NTF.s:540    .text.CMW_CAMERA_PIPE_FrameEventCallback:00000000 CMW_CAMERA_PIPE_FrameEventCallback
+/tmp/claude-1000/ccaS8NTF.s:588    .text.CMW_CAMERA_PIPE_FrameEventCallback:00000024 $d
+/tmp/claude-1000/ccaS8NTF.s:618    .rodata.__func__.0:00000000 __func__.0
+/tmp/claude-1000/ccaS8NTF.s:596    .text.CMW_CAMERA_PIPE_ErrorCallback:00000000 $t
+/tmp/claude-1000/ccaS8NTF.s:602    .text.CMW_CAMERA_PIPE_ErrorCallback:00000000 CMW_CAMERA_PIPE_ErrorCallback
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.assert.h.11.db24e541f16414db224bf986d21017e2
+                           .group:00000000 wm4.cmw_errno.h.21.91021ac9b2627a1ce6b8517d105715d1
+                           .group:00000000 wm4.stm32n6xx_hal_conf.h.21.a3ee9875a8d50695591dfaa6b0d72c91
+                           .group:00000000 wm4.stddef.h.39.3e0425629195acf083c9561151306b4d
+                           .group:00000000 wm4.arm_cmse.h.103.a0d15a79c4c9a67da8d5831704d7248e
+                           .group:00000000 wm4.stm32n6xx.h.34.c523a1ffdf274a69e8802892c6776332
+                           .group:00000000 wm4.stm32n657xx.h.26.acd272cb67318cc1a4791ce2f0720ca6
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.cmsis_version.h.30.d128735bf87720f7436b74fefeb5043c
+                           .group:00000000 wm4.core_cm55.h.67.25006a3ce7048d64bcddd2996d5fac93
+                           .group:00000000 wm4.arm_acle.h.28.ce8f475a5cc50333e54ae4adeb8c0298
+                           .group:00000000 wm4.cmsis_gcc.h.39.eba7438bc45fd1a6e6376b63ffe44436
+                           .group:00000000 wm4.cmsis_gcc_m.h.24.e590ec51aeda3a1242400351d73f5dce
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 20
+
+
+                           .group:00000000 wm4.core_cm55.h.213.0528f46a674315ef8d35c4477e230358
+                           .group:00000000 wm4.armv8m_mpu.h.24.bf28cc25bee30a7ff9d2f7a44a5e2230
+                           .group:00000000 wm4.armv8m_pmu.h.24.6ded195d2625055391fd378c0e1d2519
+                           .group:00000000 wm4.core_cm55.h.4477.396e822ef855bcfb932819ad48de1c4c
+                           .group:00000000 wm4.armv7m_cachel1.h.24.936dd92d6e204a8d0b17d5e4ea4a356e
+                           .group:00000000 wm4.stm32n657xx.h.575.78d331c417ec710388ced647138f735f
+                           .group:00000000 wm4.stm32n6xx.h.116.b4247d9785590e7c5ec9234ffb2153bf
+                           .group:00000000 wm4.stm32_hal_legacy.h.22.e62aae2fd3ae33360b6781c8a72e5b18
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.math.h.13.35ad80917fddb38312d53499dad31194
+                           .group:00000000 wm4.stm32n6xx_hal_def.h.63.3a8f01490e8852464e9fcb69092e9c75
+                           .group:00000000 wm4.stm32n6xx_ll_bus.h.38.2366a295ee4cdb04833997d3787fcd2d
+                           .group:00000000 wm4.stm32n6xx_ll_rcc.h.21.656bd5637db608589ad16ea57d39430c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.194.69b522b1afdf59a82d05a1f71efe03c7
+                           .group:00000000 wm4.stm32n6xx_hal_rcc_ex.h.21.cc6be0a7d168882a1a6f470236ba784c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.4361.4b490a4a19722e68c21f88cb8a774a30
+                           .group:00000000 wm4.stm32n6xx_hal_gpio.h.21.89d54af663b98eb8fc098192053f7eeb
+                           .group:00000000 wm4.stm32n6xx_hal_gpio_ex.h.22.f7e795fb05a69a19b87d946b47c8db8b
+                           .group:00000000 wm4.stm32n6xx_hal_rif.h.21.33f2c553a8a3fc14dca8c470b213ab19
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.21.61e48c5c2e8d25d22177834b232fe45c
+                           .group:00000000 wm4.stm32n6xx_hal_dma_ex.h.21.82f854ecdb6a463b06d0b4e5c217c368
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.1020.87e2180c009560b617c1f8208140c950
+                           .group:00000000 wm4.stm32n6xx_hal_cortex.h.21.f493623cc58f9454ab4eae41e395c5cc
+                           .group:00000000 wm4.stm32n6xx_hal_bsec.h.21.1ee89319140541f82434908b4267aa30
+                           .group:00000000 wm4.stm32n6xx_hal_dcmipp.h.21.e2b87dce83d7d722d696a597f6ac56bf
+                           .group:00000000 wm4.stm32n6xx_hal_dma2d.h.21.75c8d46cdbb72970123b3f34ae2043d7
+                           .group:00000000 wm4.stm32n6xx_hal_exti.h.21.e0efb23591051684dc14f1f2431c6aab
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.21.3f483626ff64c5bf027265bb2e1d1331
+                           .group:00000000 wm4.stm32n6xx_hal_i2c_ex.h.21.79e9196c22282cdaf6b4047893638c45
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.741.1084702632703acc669e4282b3043372
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.21.ae1eb09930e7e550e48e418ac5849e4d
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.1002.b13ede7fc94ed5ad1c6768a157d2149a
+                           .group:00000000 wm4.stm32n6xx_ll_usb.h.21.daaf86158046f2cf02166c495d637480
+                           .group:00000000 wm4.stm32n6xx_hal_pcd.h.155.27040aac6844effe2af8c180caf1dd2e
+                           .group:00000000 wm4.stm32n6xx_hal_pwr.h.21.cdb73e4869c3fed3fc84f901ec0e5f0a
+                           .group:00000000 wm4.stm32n6xx_hal_pwr_ex.h.21.1a673224a58b0c1e5fad8eeda6514208
+                           .group:00000000 wm4.stm32n6xx_hal_ramcfg.h.21.a62dfbb4d2c14e9a8c634a215e37bd3d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.21.9f810303326e2d91749800e9911f8e4d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.906.8ad9375f39dce09dc0a4db0025ee7a76
+                           .group:00000000 wm4.stm32n6xx_hal_tim.h.21.839dd2b2a70382fb2c44f8f293a84d5f
+                           .group:00000000 wm4.stm32n6xx_hal_tim_ex.h.21.e372d5ac63c13441211ea4ecbd353150
+                           .group:00000000 wm4.stm32n6xx_hal_uart.h.21.230f549bfa0d5ebfd77bfb311b2aca15
+                           .group:00000000 wm4.stm32n6xx_hal_uart_ex.h.21.a0d5511e1d0703b7b5278c8f5472b96d
+                           .group:00000000 wm4.stm32n6xx_hal_xspi.h.21.7fd922d3bdb871475cf18436a68935bb
+                           .group:00000000 wm4.stm32n6xx_hal_cacheaxi.h.21.7c3375b7903ec42376e4883320997f74
+                           .group:00000000 wm4.stm32n6xx_hal.h.81.e79d59262ba173c33cf1d69281830d15
+                           .group:00000000 wm4.stm32n6xx_nucleo_conf.h.20.200b0b3108b1362907dbad2a40df61f5
+                           .group:00000000 wm4.stm32n6xx_nucleo_errno.h.21.96498538641bae975d7607076c1d9a31
+                           .group:00000000 wm4.stm32n6xx_nucleo_bus.h.62.4441a5384a0bcfcb880efc1de47a30cc
+                           .group:00000000 wm4.cmw_camera_conf.h.36.db7e420209cb357369d1b2f95a753d36
+                           .group:00000000 wm4.isp_conf.h.21.f38432dbfef47e2ce2a64e60ef6a2d79
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 21
+
+
+                           .group:00000000 wm4.stdio.h.27.3fc80220048df77954e38daec3bb9670
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4.stdio.h.47.dc31ec4674d7bcb103c9f08809549f45
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.stdlib.h.13.4ed386f5c1a80d71e72172885d946ef2
+                           .group:00000000 wm4.alloca.h.8.dfc0c703c47ec3e69746825b17d9e66d
+                           .group:00000000 wm4.stdlib.h.56.f4862cfbf4363a1db01842d5bdf72c18
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4.stdbool.h.29.4a1c88fe569adb8d03217dd16982ca34
+                           .group:00000000 wm4.isp_core.h.110.8c4344a3506ac8fadc31ee17c3f6f7d7
+                           .group:00000000 wm4.cmw_camera.h.33.3e21b0797a1f24d8d61aeb33a948c5cd
+                           .group:00000000 wm4.app_camerapipeline.h.19.b48eccbcb9c936951d9dd014ba2c664f
+                           .group:00000000 wm4.arm_math_types.h.28.9e71aea5cdf6aebdd83091bf39b4832a
+                           .group:00000000 wm4.float.h.29.0e9d9baf95ec39f9555dc80c6e28186b
+                           .group:00000000 wm4.syslimits.h.34.de5cbd310098bc5895998b6bde577ed2
+                           .group:00000000 wm4.limits.h.9.70fb0ada6f71b16202a66baaa6d8ea70
+                           .group:00000000 wm4.limits.h.60.56a1ae353e2028a24298ec6463b8b593
+                           .group:00000000 wm4.arm_math_types.h.116.3e44bd031718f65bdb345972ddc8cf86
+                           .group:00000000 wm4.arm_mve.h.38.47b22bbd301ce82bc6dafd1a387f65a3
+                           .group:00000000 wm4.arm_math_types.h.605.32c5d7843b3dcaa8f5174feea7de7445
+                           .group:00000000 wm4.arm_math_memory.h.28.3ee75b06517df8378241b72d6c61e5b0
+                           .group:00000000 wm4.none.h.185.db055cca83e83f96d8d0bb450fbdf4bb
+                           .group:00000000 wm4.utils.h.41.820d6032ed1c0d7dd5bd2ed80938ee65
+                           .group:00000000 wm4.fast_math_functions.h.28.aa389abd5521cfceab0e76a6af3dd2e2
+                           .group:00000000 wm4.matrix_functions.h.28.8fc8488c73b2d6f328b0946db3460102
+                           .group:00000000 wm4.controller_functions.h.28.388735b97ccd96442b0ac9e554629f36
+                           .group:00000000 wm4.filtering_functions.h.46.6cf1424fb1f86d5f9958d208b83340a1
+                           .group:00000000 wm4.app_config.h.24.0bb2e12eb82ec57f137ce78e2dc5eace
+                           .group:00000000 wm4.ll_aton_config.h.20.6c93c36cdcfd4d0d33ea92e3d64119d1
+                           .group:00000000 wm4.ll_aton_attributes.h.20.d1fce4a2519a8c4442db76dcb52b420f
+                           .group:00000000 wm4.ll_aton_cipher.h.20.e98fdae11c912f4036a83cedb835e14e
+                           .group:00000000 wm4.assert.h.11.d99a111e320bc5106fc4046225782672
+                           .group:00000000 wm4.errno.h.2.ba016d646105af6cad23be83630b6a3f
+                           .group:00000000 wm4.errno.h.9.ae5ea2b0ff9ea6e39e585807e35200d3
+                           .group:00000000 wm4.ll_aton_util.h.34.9098eaa90d3d72b819973556e3e5fe44
+                           .group:00000000 wm4.ll_aton_platform.h.20.e40ce16ff2467e1c64672462d7602934
+                           .group:00000000 wm4.inttypes.h.14.b28deb26920e51e0da310220ef0f9003
+                           .group:00000000 wm4.inttypes.h.28.684aa7736e7ecc9a6ffc44acc61c7a90
+                           .group:00000000 wm4.ATONidxs.h.26.0509aab23d8759e302dd89a3f1c4c4e6
+                           .group:00000000 wm4.ATON.h.31.92b067719450db0ca8cb669a46fd6466
+                           .group:00000000 wm4.ll_aton_rcompat.h.22.1cafe33611009fe26ae71004f793a6f2
+                           .group:00000000 wm4.ll_aton_platform.h.274.1a2262b76be334681d90d658c6589c73
+                           .group:00000000 wm4.ll_aton_osal.h.33.1085fc39e65ab5e8b6946b14f10d6aa3
+                           .group:00000000 wm4.ll_aton_rt_user_api.h.71.52957347efa02883c6e8b1a7f756d297
+                           .group:00000000 wm4.stai.h.24.dd99e5ee425e9f8852d8fc0bbed62839
+                           .group:00000000 wm4.stai_debug.h.37.4be079c70c66033549ba26b63a31db94
+                           .group:00000000 wm4.ll_aton_stai_internal.h.35.4ede4d59178f196dca4b635c5600498b
+                           .group:00000000 wm4.stai_network.h.57.d0767633ecd00c03a929ca151ec45d7e
+
+UNDEFINED SYMBOLS
+CMW_CAMERA_Init
+__assert_func
+memset
+CMW_CAMERA_SetPipeConfig
+ARM GAS  /tmp/claude-1000/ccaS8NTF.s 			page 22
+
+
+CMW_CAMERA_DeInit
+CMW_CAMERA_Start
+CMW_CAMERA_Suspend
+CMW_CAMERA_Run
+SRCL_Update
+cameraFrameReceived

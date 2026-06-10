@@ -1,0 +1,205 @@
+ARM GAS  /tmp/claude-1000/ccjEUKuL.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_device_stack_transfer_all_request_abort.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_re
+  25              		.section	.text._ux_device_stack_transfer_all_request_abort,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_device_stack_transfer_all_request_abort
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_device_stack_transfer_all_request_abort:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**                                                                       */ 
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /** USBX Component                                                        */ 
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**   Device Stack                                                        */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** #define UX_SOURCE_CODE
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+ARM GAS  /tmp/claude-1000/ccjEUKuL.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /* Include necessary system files.  */
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** #include "ux_api.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** #include "ux_device_stack.h"
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**************************************************************************/
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  FUNCTION                                               RELEASE        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    _ux_device_stack_transfer_all_request_abort         PORTABLE C      */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                           6.1          */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  AUTHOR                                                                */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  DESCRIPTION                                                           */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    This function cancels all the transfer requests attached to an      */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    endpoint. The endpoint is not reset and its toggle state is left    */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    the same.                                                           */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  INPUT                                                                 */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    transfer_request                      Pointer to transfer request   */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    completion_code                       Completion code               */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  OUTPUT                                                                */
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    Completion Status                                                   */ 
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  CALLS                                                                 */ 
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */ 
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    _ux_device_stack_transfer_abort       Transfer abort                */ 
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */ 
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  CALLED BY                                                             */ 
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */ 
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    Device Stack                                                        */
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */ 
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  RELEASE HISTORY                                                       */ 
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */ 
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*    DATE              NAME                      DESCRIPTION             */ 
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */ 
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s),          */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                            resulting in version 6.1    */
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /*                                                                        */
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** /**************************************************************************/
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** UINT  _ux_device_stack_transfer_all_request_abort(UX_SLAVE_ENDPOINT *endpoint, ULONG completion_cod
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** {
+  35              		.loc 1 75 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** UX_SLAVE_TRANSFER       *transfer_request;    
+ARM GAS  /tmp/claude-1000/ccjEUKuL.s 			page 3
+
+
+  39              		.loc 1 77 1 view .LVU1
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     /* If trace is enabled, insert this event into the trace buffer.  */
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     UX_TRACE_IN_LINE_INSERT(UX_TRACE_DEVICE_STACK_TRANSFER_ALL_REQUEST_ABORT, endpoint, completion_
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     /* Get the transfer request for this endpoint.  */
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     transfer_request =  &endpoint -> ux_slave_endpoint_transfer_request;
+  40              		.loc 1 83 5 view .LVU2
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     /* Abort this request.  */
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     _ux_device_stack_transfer_abort(transfer_request, completion_code);
+  41              		.loc 1 86 5 view .LVU3
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  42              		.loc 1 75 1 is_stmt 0 view .LVU4
+  43 0000 08B5     		push	{r3, lr}
+  44              		.cfi_def_cfa_offset 8
+  45              		.cfi_offset 3, -8
+  46              		.cfi_offset 14, -4
+  47              		.loc 1 86 5 view .LVU5
+  48 0002 2030     		adds	r0, r0, #32
+  49              	.LVL1:
+  50              		.loc 1 86 5 view .LVU6
+  51 0004 FFF7FEFF 		bl	_ux_device_stack_transfer_abort
+  52              	.LVL2:
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** 
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     /* Return successful completion.  */
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c ****     return(UX_SUCCESS);
+  53              		.loc 1 89 5 is_stmt 1 view .LVU7
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_transfer_all_request_abort.c **** }
+  54              		.loc 1 90 1 is_stmt 0 view .LVU8
+  55 0008 0020     		movs	r0, #0
+  56 000a 08BD     		pop	{r3, pc}
+  57              		.cfi_endproc
+  58              	.LFE3:
+  60              		.text
+  61              	.Letext0:
+  62              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+  63              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+  64              		.file 4 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_device_stack.h"
+ARM GAS  /tmp/claude-1000/ccjEUKuL.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_device_stack_transfer_all_request_abort.c
+/tmp/claude-1000/ccjEUKuL.s:26     .text._ux_device_stack_transfer_all_request_abort:00000000 $t
+/tmp/claude-1000/ccjEUKuL.s:32     .text._ux_device_stack_transfer_all_request_abort:00000000 _ux_device_stack_transfer_all_request_abort
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+
+UNDEFINED SYMBOLS
+_ux_device_stack_transfer_abort

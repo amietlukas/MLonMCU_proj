@@ -73,7 +73,6 @@ This guarantees per-batch source presence, but can oversample the smaller source
 
 - `software/ball_detection/configs/ball_styolo_nano.yaml` (multi-ball profile, `max_detections=3`)
 - `software/ball_detection/configs/ball_styolo_nano_simota.yaml` (same multi-ball profile with SimOTA-lite assignment)
-- `software/ball_detection/configs/ball_styolo_nano_oneball.yaml` (single-ball profile, top-1 without NMS)
 
 Key settings:
 
@@ -218,6 +217,16 @@ Optional split control is also available for export:
 
 - `--reuse-splits`
 - `--regenerate-splits`
+
+## Helper scripts
+
+- `requantize_only.py` — re-quantize an existing `fp32.onnx` to INT8 QDQ without
+  rebuilding the PyTorch model. Used for the BallDetector_N6 deployment, where a
+  pruned checkpoint can't be reloaded into a config-built model (topology
+  mismatch) but the exported ONNX still quantizes cleanly.
+- `predict_1000.py` — forward-pass 1000 sampled train+val images, log all metrics,
+  and write GT+prediction overlays for visual inspection.
+- `debug_check_assigner.py` — sanity-check the SimOTA-lite assignment (see below).
 
 ## Prediction bbox format
 

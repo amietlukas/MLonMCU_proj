@@ -1,0 +1,235 @@
+ARM GAS  /tmp/claude-1000/ccyLg17z.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_system_error_handler.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c"
+  25              		.section	.text._ux_system_error_handler,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_system_error_handler
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_system_error_handler:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**                                                                       */ 
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /** USBX Component                                                        */ 
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**   System                                                              */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /* Include necessary system files.  */
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+ARM GAS  /tmp/claude-1000/ccyLg17z.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** #define UX_SOURCE_CODE
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** #include "ux_api.h"
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** #ifndef UX_DISABLE_ERROR_HANDLER
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**************************************************************************/ 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  FUNCTION                                               RELEASE        */ 
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*    _ux_system_error_handler                            PORTABLE C      */ 
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                           6.1          */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  AUTHOR                                                                */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  DESCRIPTION                                                           */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*    This function saves the last critical error from USBX functions.    */ 
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*    It is mainly used for debugging purpose to trap where error occurred*/ 
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  INPUT                                                                 */ 
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*   error_code                                                           */ 
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  OUTPUT                                                                */ 
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*    None                                                                */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  CALLS                                                                 */ 
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*    None                                                                */
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  CALLED BY                                                             */ 
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*    Application                                                         */ 
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  RELEASE HISTORY                                                       */ 
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*    DATE              NAME                      DESCRIPTION             */ 
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */ 
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s),          */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                            resulting in version 6.1    */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /*                                                                        */
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** /**************************************************************************/
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** VOID   _ux_system_error_handler(UINT system_level, UINT system_context, UINT error_code)
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** {
+  35              		.loc 1 74 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  39              		@ link register save eliminated.
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     /* Save the last system error code.  */
+ARM GAS  /tmp/claude-1000/ccyLg17z.s 			page 3
+
+
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     _ux_system -> ux_system_last_error =  error_code;
+  40              		.loc 1 77 5 view .LVU1
+  41              		.loc 1 77 16 is_stmt 0 view .LVU2
+  42 0000 074B     		ldr	r3, .L3
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  43              		.loc 1 74 1 view .LVU3
+  44 0002 10B4     		push	{r4}
+  45              		.cfi_def_cfa_offset 4
+  46              		.cfi_offset 4, -4
+  47              		.loc 1 77 16 view .LVU4
+  48 0004 1B68     		ldr	r3, [r3]
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****  
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     /* Increment the total number of system errors.  */
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     _ux_system -> ux_system_error_count++;
+  49              		.loc 1 80 40 view .LVU5
+  50 0006 1C69     		ldr	r4, [r3, #16]
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****  
+  51              		.loc 1 77 40 view .LVU6
+  52 0008 DA60     		str	r2, [r3, #12]
+  53              		.loc 1 80 5 is_stmt 1 view .LVU7
+  54              		.loc 1 80 40 is_stmt 0 view .LVU8
+  55 000a 0134     		adds	r4, r4, #1
+  56 000c 1C61     		str	r4, [r3, #16]
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     /* Is there an application call back function to call ? */
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     if (_ux_system -> ux_system_error_callback_function != UX_NULL)
+  57              		.loc 1 83 5 is_stmt 1 view .LVU9
+  58              		.loc 1 83 20 is_stmt 0 view .LVU10
+  59 000e 5B69     		ldr	r3, [r3, #20]
+  60              		.loc 1 83 8 view .LVU11
+  61 0010 13B1     		cbz	r3, .L1
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     {    
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** 
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****         /* The callback function is defined, call it.  */
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****         _ux_system -> ux_system_error_callback_function(system_level, system_context, error_code);
+  62              		.loc 1 87 9 is_stmt 1 view .LVU12
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     }
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c **** }
+  63              		.loc 1 89 1 is_stmt 0 view .LVU13
+  64 0012 5DF8044B 		ldr	r4, [sp], #4
+  65              		.cfi_remember_state
+  66              		.cfi_restore 4
+  67              		.cfi_def_cfa_offset 0
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_system_error_handler.c ****     }
+  68              		.loc 1 87 9 view .LVU14
+  69 0016 1847     		bx	r3	@ indirect register sibling call
+  70              	.LVL1:
+  71              	.L1:
+  72              		.cfi_restore_state
+  73              		.loc 1 89 1 view .LVU15
+  74 0018 5DF8044B 		ldr	r4, [sp], #4
+  75              		.cfi_restore 4
+  76              		.cfi_def_cfa_offset 0
+  77 001c 7047     		bx	lr
+  78              	.L4:
+  79 001e 00BF     		.align	2
+  80              	.L3:
+ARM GAS  /tmp/claude-1000/ccyLg17z.s 			page 4
+
+
+  81 0020 00000000 		.word	_ux_system
+  82              		.cfi_endproc
+  83              	.LFE3:
+  85              		.text
+  86              	.Letext0:
+  87              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+  88              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+  89              		.file 4 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_system.h"
+ARM GAS  /tmp/claude-1000/ccyLg17z.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_system_error_handler.c
+/tmp/claude-1000/ccyLg17z.s:26     .text._ux_system_error_handler:00000000 $t
+/tmp/claude-1000/ccyLg17z.s:32     .text._ux_system_error_handler:00000000 _ux_system_error_handler
+/tmp/claude-1000/ccyLg17z.s:81     .text._ux_system_error_handler:00000020 $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+
+UNDEFINED SYMBOLS
+_ux_system

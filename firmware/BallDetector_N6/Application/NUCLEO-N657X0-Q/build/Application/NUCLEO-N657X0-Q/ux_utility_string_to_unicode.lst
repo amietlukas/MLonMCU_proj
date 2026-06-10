@@ -1,0 +1,299 @@
+ARM GAS  /tmp/claude-1000/ccBzVxnn.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_utility_string_to_unicode.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c"
+  25              		.section	.text._ux_utility_string_to_unicode,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_utility_string_to_unicode
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_utility_string_to_unicode:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**                                                                       */ 
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /** USBX Component                                                        */ 
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**   Utility                                                             */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /* Include necessary system files.  */
+ARM GAS  /tmp/claude-1000/ccBzVxnn.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** #define UX_SOURCE_CODE
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** #include "ux_api.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**************************************************************************/ 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  FUNCTION                                               RELEASE        */ 
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    _ux_utility_string_to_unicode                       PORTABLE C      */ 
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                           6.1          */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  AUTHOR                                                                */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  DESCRIPTION                                                           */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    This function converts a ascii string to a unicode string.          */ 
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    Note:                                                               */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    The unicode string length (including NULL-terminator) is limited by */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    length in a byte, so max ascii string length must be no more than   */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    254 (NULL-terminator excluded). Only first 254 characters           */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    are converted if the string is too long.                            */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    The buffer of destination must have enough space for result, at     */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    least 1 + (strlen(source) + 1) * 2 bytes.                           */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  INPUT                                                                 */ 
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    source                                Ascii String                  */ 
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    destination                           Unicode String                */ 
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  OUTPUT                                                                */ 
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    none                                                                */ 
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  CALLS                                                                 */ 
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    _ux_utility_string_length_check       Check and return C string     */
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                          length                        */
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  CALLED BY                                                             */ 
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    USBX Components                                                     */ 
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  RELEASE HISTORY                                                       */ 
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*    DATE              NAME                      DESCRIPTION             */ 
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */ 
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s),          */
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                            resulting in version 6.1    */
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /*                                                                        */
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** /**************************************************************************/
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** VOID  _ux_utility_string_to_unicode(UCHAR *source, UCHAR *destination)
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** {
+ARM GAS  /tmp/claude-1000/ccBzVxnn.s 			page 3
+
+
+  35              		.loc 1 81 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 8
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** UINT   string_length;
+  39              		.loc 1 83 1 view .LVU1
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     /* Get the ascii string length, when there is error length is not modified so max length is use
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     string_length = 254;
+  40              		.loc 1 86 5 view .LVU2
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  41              		.loc 1 81 1 is_stmt 0 view .LVU3
+  42 0000 73B5     		push	{r0, r1, r4, r5, r6, lr}
+  43              		.cfi_def_cfa_offset 24
+  44              		.cfi_offset 4, -16
+  45              		.cfi_offset 5, -12
+  46              		.cfi_offset 6, -8
+  47              		.cfi_offset 14, -4
+  48              		.loc 1 86 19 view .LVU4
+  49 0002 FE22     		movs	r2, #254
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  50              		.loc 1 81 1 view .LVU5
+  51 0004 0C46     		mov	r4, r1
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     _ux_utility_string_length_check(source, &string_length, 254);
+  52              		.loc 1 87 5 view .LVU6
+  53 0006 01A9     		add	r1, sp, #4
+  54              	.LVL1:
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     _ux_utility_string_length_check(source, &string_length, 254);
+  55              		.loc 1 86 19 view .LVU7
+  56 0008 0192     		str	r2, [sp, #4]
+  57              		.loc 1 87 5 is_stmt 1 view .LVU8
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  58              		.loc 1 81 1 is_stmt 0 view .LVU9
+  59 000a 0546     		mov	r5, r0
+  60              		.loc 1 87 5 view .LVU10
+  61 000c FFF7FEFF 		bl	_ux_utility_string_length_check
+  62              	.LVL2:
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     /* Set the length of the string as the first byte of the unicode string.  
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****        The length is casted as a byte since Unicode strings cannot be more than 255 chars.  */
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     *destination++ = (UCHAR)(string_length + 1);
+  63              		.loc 1 91 5 is_stmt 1 view .LVU11
+  64              		.loc 1 91 17 is_stmt 0 view .LVU12
+  65 0010 2146     		mov	r1, r4
+  66              	.LVL3:
+  67              		.loc 1 91 22 view .LVU13
+  68 0012 019B     		ldr	r3, [sp, #4]
+  69 0014 0020     		movs	r0, #0
+  70 0016 5A1C     		adds	r2, r3, #1
+  71              		.loc 1 91 20 view .LVU14
+  72 0018 01F8012B 		strb	r2, [r1], #1
+  73              	.LVL4:
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     while(string_length--)
+  74              		.loc 1 93 5 is_stmt 1 view .LVU15
+  75 001c 0A46     		mov	r2, r1
+ARM GAS  /tmp/claude-1000/ccBzVxnn.s 			page 4
+
+
+  76 001e 5C1C     		adds	r4, r3, #1
+  77              	.LVL5:
+  78              	.L2:
+  79              		.loc 1 93 11 view .LVU16
+  80 0020 013C     		subs	r4, r4, #1
+  81 0022 02F10202 		add	r2, r2, #2
+  82              	.LVL6:
+  83              		.loc 1 93 11 is_stmt 0 view .LVU17
+  84 0026 06D1     		bne	.L3
+  85              		.loc 1 93 11 view .LVU18
+  86 0028 01EB4302 		add	r2, r1, r3, lsl #1
+  87              	.LVL7:
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     {
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****         /* First character is from the source.  */
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****         *destination++ = *source++;
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****         /* Second character of unicode word is 0.  */
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****         *destination++ = 0;
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     }    
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     /* Finish with a 0.  */
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     *destination++ = 0;
+  88              		.loc 1 103 5 is_stmt 1 view .LVU19
+  89              		.loc 1 103 20 is_stmt 0 view .LVU20
+  90 002c 01F81300 		strb	r0, [r1, r3, lsl #1]
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     /* Finish with a 0.  */
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     *destination++ = 0;
+  91              		.loc 1 106 5 is_stmt 1 view .LVU21
+  92              	.LVL8:
+  93              		.loc 1 106 20 is_stmt 0 view .LVU22
+  94 0030 5070     		strb	r0, [r2, #1]
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     /* We are done.  */
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     return;
+  95              		.loc 1 109 5 is_stmt 1 view .LVU23
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** }
+  96              		.loc 1 110 1 is_stmt 0 view .LVU24
+  97 0032 02B0     		add	sp, sp, #8
+  98              		.cfi_remember_state
+  99              		.cfi_def_cfa_offset 16
+ 100              		@ sp needed
+ 101 0034 70BD     		pop	{r4, r5, r6, pc}
+ 102              	.LVL9:
+ 103              	.L3:
+ 104              		.cfi_restore_state
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+ 105              		.loc 1 96 9 is_stmt 1 view .LVU25
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+ 106              		.loc 1 96 26 is_stmt 0 view .LVU26
+ 107 0036 15F8016B 		ldrb	r6, [r5], #1	@ zero_extendqisi2
+ 108              	.LVL10:
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     }    
+ 109              		.loc 1 99 24 view .LVU27
+ 110 003a 02F8010C 		strb	r0, [r2, #-1]
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c **** 
+ 111              		.loc 1 96 24 view .LVU28
+ARM GAS  /tmp/claude-1000/ccBzVxnn.s 			page 5
+
+
+ 112 003e 02F8026C 		strb	r6, [r2, #-2]
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     }    
+ 113              		.loc 1 99 9 is_stmt 1 view .LVU29
+ 114              	.LVL11:
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_string_to_unicode.c ****     }    
+ 115              		.loc 1 99 9 is_stmt 0 view .LVU30
+ 116 0042 EDE7     		b	.L2
+ 117              		.cfi_endproc
+ 118              	.LFE3:
+ 120              		.text
+ 121              	.Letext0:
+ 122              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 123              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_utility.h"
+ARM GAS  /tmp/claude-1000/ccBzVxnn.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_utility_string_to_unicode.c
+/tmp/claude-1000/ccBzVxnn.s:26     .text._ux_utility_string_to_unicode:00000000 $t
+/tmp/claude-1000/ccBzVxnn.s:32     .text._ux_utility_string_to_unicode:00000000 _ux_utility_string_to_unicode
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+
+UNDEFINED SYMBOLS
+_ux_utility_string_length_check

@@ -1,0 +1,13 @@
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_NN_interface.h:504:32:LL_Buffer_addr_start	2
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:320:13:__ll_aton_lib_split_aton_canonical	10
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:117:23:__ll_aton_lib_is_in_slice	5
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:588:24:__ll_transp_get_inner_out_axis	2
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.h:45:22:__ll_aton_lib_copy_element.isra	4
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:192:20:__ll_slice_copy_elem	2
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:501:13:__ll_aton_lib_transpose	9
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:209:13:__ll_aton_lib_slice	11
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:644:5:LL_ATON_LIB_Split	36
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:775:5:LL_ATON_LIB_SW_SpaceToDepth	9
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:847:5:LL_ATON_LIB_SW_DepthToSpace	16
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:961:5:LL_ATON_LIB_Slice	5
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_lib_sw_operators.c:999:5:LL_ATON_LIB_Transpose	15

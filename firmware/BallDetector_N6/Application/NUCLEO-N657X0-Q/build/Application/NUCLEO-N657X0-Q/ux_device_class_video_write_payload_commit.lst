@@ -1,0 +1,488 @@
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_device_class_video_write_payload_commit.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_
+  25              		.section	.text._ux_device_class_video_write_payload_commit,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_device_class_video_write_payload_commit
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_device_class_video_write_payload_commit:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**                                                                       */
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /** USBX Component                                                        */
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**                                                                       */
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**   Device Video Class                                                  */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**                                                                       */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** #define UX_SOURCE_CODE
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /* Include necessary system files.  */
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** #include "ux_api.h"
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** #include "ux_device_class_video.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** #include "ux_device_stack.h"
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  FUNCTION                                               RELEASE        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    _ux_device_class_video_write_payload_commit         PORTABLE C      */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                           6.3.0        */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  AUTHOR                                                                */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  DESCRIPTION                                                           */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    This function set payload buffer valid to send in the Video class.  */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  INPUT                                                                 */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    stream                                Address of video stream       */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                            instance                    */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    length                                Frame length in bytes         */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  OUTPUT                                                                */
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    None                                                                */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  CALLS                                                                 */
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  CALLED BY                                                             */
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    Application                                                         */
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  RELEASE HISTORY                                                       */
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    DATE              NAME                      DESCRIPTION             */
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  04-25-2022     Chaoqiong Xiao           Initial Version 6.1.11        */
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  10-31-2023     Yajun Xia                Modified comment(s),          */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                            resulting in version 6.3.0  */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** UINT _ux_device_class_video_write_payload_commit(UX_DEVICE_CLASS_VIDEO_STREAM *stream, ULONG length
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** {
+  35              		.loc 1 73 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** UX_SLAVE_ENDPOINT           *endpoint;
+  39              		.loc 1 75 1 view .LVU1
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** UX_SLAVE_DEVICE             *device;
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 3
+
+
+  40              		.loc 1 76 1 view .LVU2
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** UCHAR                       *next_pos;
+  41              		.loc 1 77 1 view .LVU3
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Get the pointer to the device.  */
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     device =  &_ux_system_slave -> ux_system_slave_device;
+  42              		.loc 1 81 5 view .LVU4
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* As long as the device is in the CONFIGURED state.  */
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if (device -> ux_slave_device_state != UX_DEVICE_CONFIGURED)
+  43              		.loc 1 84 5 view .LVU5
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  44              		.loc 1 73 1 is_stmt 0 view .LVU6
+  45 0000 38B5     		push	{r3, r4, r5, lr}
+  46              		.cfi_def_cfa_offset 16
+  47              		.cfi_offset 3, -16
+  48              		.cfi_offset 4, -12
+  49              		.cfi_offset 5, -8
+  50              		.cfi_offset 14, -4
+  51              		.loc 1 84 16 view .LVU7
+  52 0002 154B     		ldr	r3, .L10
+  53              	.LVL1:
+  54              		.loc 1 84 16 view .LVU8
+  55 0004 1B68     		ldr	r3, [r3]
+  56              	.LVL2:
+  57              		.loc 1 84 8 view .LVU9
+  58 0006 5B6A     		ldr	r3, [r3, #36]
+  59              	.LVL3:
+  60              		.loc 1 84 8 view .LVU10
+  61 0008 032B     		cmp	r3, #3
+  62 000a 06D0     		beq	.L2
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     {
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         /* Error trap. */
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_CONFIGURATION_
+  63              		.loc 1 88 9 is_stmt 1 view .LVU11
+  64 000c 0220     		movs	r0, #2
+  65              	.LVL4:
+  66              		.loc 1 88 9 is_stmt 0 view .LVU12
+  67 000e 5122     		movs	r2, #81
+  68 0010 0721     		movs	r1, #7
+  69              	.LVL5:
+  70              		.loc 1 88 9 view .LVU13
+  71 0012 FFF7FEFF 		bl	_ux_system_error_handler
+  72              	.LVL6:
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         /* Cannot proceed with command, the interface is down.  */
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_CONFIGURATION_HANDLE_UNKNOWN);
+  73              		.loc 1 91 9 is_stmt 1 view .LVU14
+  74              		.loc 1 91 15 is_stmt 0 view .LVU15
+  75 0016 5120     		movs	r0, #81
+  76              	.L1:
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     }
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Check if endpoint is available.  */
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     endpoint = stream -> ux_device_class_video_stream_endpoint;
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 4
+
+
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if (endpoint == UX_NULL)
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Check if endpoint direction is OK.  */
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if ((endpoint -> ux_slave_endpoint_descriptor.bEndpointAddress & UX_ENDPOINT_DIRECTION) == UX_E
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Check overflow!!  */
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if (stream -> ux_device_class_video_stream_access_pos == stream -> ux_device_class_video_stream
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         stream -> ux_device_class_video_stream_access_pos -> ux_device_class_video_payload_length !
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_BUFFER_OVERFLOW);
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Check payload length.  */
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if ((stream -> ux_device_class_video_stream_payload_buffer_size - 4) < length)
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Calculate next payload buffer.  */
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     next_pos = (UCHAR *)stream -> ux_device_class_video_stream_access_pos;
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     next_pos += stream -> ux_device_class_video_stream_payload_buffer_size;
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if (next_pos >= stream -> ux_device_class_video_stream_buffer + stream -> ux_device_class_video
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         next_pos = stream -> ux_device_class_video_stream_buffer;
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Commit payload length.  */
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     stream -> ux_device_class_video_stream_access_pos -> ux_device_class_video_payload_length = len
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Move payload position.  */
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     stream -> ux_device_class_video_stream_access_pos = (UX_DEVICE_CLASS_VIDEO_PAYLOAD *)next_pos;
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     return(UX_SUCCESS);
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** }
+  77              		.loc 1 125 1 view .LVU16
+  78 0018 38BD     		pop	{r3, r4, r5, pc}
+  79              	.LVL7:
+  80              	.L2:
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if (endpoint == UX_NULL)
+  81              		.loc 1 95 5 is_stmt 1 view .LVU17
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if (endpoint == UX_NULL)
+  82              		.loc 1 95 14 is_stmt 0 view .LVU18
+  83 001a 8368     		ldr	r3, [r0, #8]
+  84              	.LVL8:
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+  85              		.loc 1 96 5 is_stmt 1 view .LVU19
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+  86              		.loc 1 96 8 is_stmt 0 view .LVU20
+  87 001c D3B1     		cbz	r3, .L9
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+  88              		.loc 1 100 5 is_stmt 1 view .LVU21
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+  89              		.loc 1 100 8 is_stmt 0 view .LVU22
+  90 001e 93F90E30 		ldrsb	r3, [r3, #14]
+  91              	.LVL9:
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+  92              		.loc 1 100 8 view .LVU23
+  93 0022 002B     		cmp	r3, #0
+  94 0024 16DA     		bge	.L9
+  95              	.LVL10:
+  96              	.LBB4:
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 5
+
+
+  97              	.LBI4:
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** {
+  98              		.loc 1 72 6 is_stmt 1 view .LVU24
+  99              	.LBB5:
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         stream -> ux_device_class_video_stream_access_pos -> ux_device_class_video_payload_length !
+ 100              		.loc 1 104 5 view .LVU25
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         stream -> ux_device_class_video_stream_access_pos -> ux_device_class_video_payload_length !
+ 101              		.loc 1 104 8 is_stmt 0 view .LVU26
+ 102 0026 D0E90E32 		ldrd	r3, r2, [r0, #56]
+ 103 002a 9A42     		cmp	r2, r3
+ 104 002c 01D1     		bne	.L4
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         stream -> ux_device_class_video_stream_access_pos -> ux_device_class_video_payload_length !
+ 105              		.loc 1 104 114 view .LVU27
+ 106 002e 1368     		ldr	r3, [r2]
+ 107 0030 73B9     		cbnz	r3, .L8
+ 108              	.L4:
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+ 109              		.loc 1 109 5 is_stmt 1 view .LVU28
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+ 110              		.loc 1 109 17 is_stmt 0 view .LVU29
+ 111 0032 436B     		ldr	r3, [r0, #52]
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+ 112              		.loc 1 109 69 view .LVU30
+ 113 0034 1C1F     		subs	r4, r3, #4
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_ERROR);
+ 114              		.loc 1 109 8 view .LVU31
+ 115 0036 A142     		cmp	r1, r4
+ 116 0038 0CD8     		bhi	.L9
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     next_pos += stream -> ux_device_class_video_stream_payload_buffer_size;
+ 117              		.loc 1 113 5 is_stmt 1 view .LVU32
+ 118              	.LVL11:
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if (next_pos >= stream -> ux_device_class_video_stream_buffer + stream -> ux_device_class_video
+ 119              		.loc 1 114 5 view .LVU33
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         next_pos = stream -> ux_device_class_video_stream_buffer;
+ 120              		.loc 1 115 67 is_stmt 0 view .LVU34
+ 121 003a D0E90B54 		ldrd	r5, r4, [r0, #44]
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if (next_pos >= stream -> ux_device_class_video_stream_buffer + stream -> ux_device_class_video
+ 122              		.loc 1 114 14 view .LVU35
+ 123 003e 1344     		add	r3, r3, r2
+ 124              	.LVL12:
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         next_pos = stream -> ux_device_class_video_stream_buffer;
+ 125              		.loc 1 115 5 is_stmt 1 view .LVU36
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         next_pos = stream -> ux_device_class_video_stream_buffer;
+ 126              		.loc 1 115 67 is_stmt 0 view .LVU37
+ 127 0040 2C44     		add	r4, r4, r5
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 128              		.loc 1 116 18 view .LVU38
+ 129 0042 A342     		cmp	r3, r4
+ 130 0044 28BF     		it	cs
+ 131 0046 2B46     		movcs	r3, r5
+ 132              	.LVL13:
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 133              		.loc 1 119 5 is_stmt 1 view .LVU39
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 134              		.loc 1 119 95 is_stmt 0 view .LVU40
+ 135 0048 1160     		str	r1, [r2]
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 6
+
+
+ 136              		.loc 1 122 5 is_stmt 1 view .LVU41
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 137              		.loc 1 122 55 is_stmt 0 view .LVU42
+ 138 004a C363     		str	r3, [r0, #60]
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** }
+ 139              		.loc 1 124 5 is_stmt 1 view .LVU43
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** }
+ 140              		.loc 1 124 11 is_stmt 0 view .LVU44
+ 141 004c 0020     		movs	r0, #0
+ 142              	.LVL14:
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** }
+ 143              		.loc 1 124 11 view .LVU45
+ 144 004e E3E7     		b	.L1
+ 145              	.LVL15:
+ 146              	.L8:
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 147              		.loc 1 106 15 view .LVU46
+ 148 0050 5D20     		movs	r0, #93
+ 149              	.LVL16:
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 150              		.loc 1 106 15 view .LVU47
+ 151 0052 E1E7     		b	.L1
+ 152              	.LVL17:
+ 153              	.L9:
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 154              		.loc 1 106 15 view .LVU48
+ 155              	.LBE5:
+ 156              	.LBE4:
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 157              		.loc 1 97 15 view .LVU49
+ 158 0054 FF20     		movs	r0, #255
+ 159              	.LVL18:
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 160              		.loc 1 97 15 view .LVU50
+ 161 0056 DFE7     		b	.L1
+ 162              	.L11:
+ 163              		.align	2
+ 164              	.L10:
+ 165 0058 00000000 		.word	_ux_system_slave
+ 166              		.cfi_endproc
+ 167              	.LFE3:
+ 169              		.section	.text._uxe_device_class_video_write_payload_commit,"ax",%progbits
+ 170              		.align	1
+ 171              		.global	_uxe_device_class_video_write_payload_commit
+ 172              		.syntax unified
+ 173              		.thumb
+ 174              		.thumb_func
+ 176              	_uxe_device_class_video_write_payload_commit:
+ 177              	.LVL19:
+ 178              	.LFB4:
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  FUNCTION                                               RELEASE        */
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    _uxe_device_class_video_write_payload_commit        PORTABLE C      */
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                           6.3.0        */
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 7
+
+
+ 133:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  AUTHOR                                                                */
+ 134:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    Yajun Xia, Microsoft Corporation                                    */
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 137:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  DESCRIPTION                                                           */
+ 138:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    This function checks errors in video write payload commit function  */
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    call.                                                               */
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 142:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  INPUT                                                                 */
+ 143:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 144:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    stream                                Address of video stream       */
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                            instance                    */
+ 146:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    length                                Frame length in bytes         */
+ 147:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  OUTPUT                                                                */
+ 149:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    None                                                                */
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 152:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  CALLS                                                                 */
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    _ux_device_class_video_write_payload_commit                         */
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                          Video write payload commit    */
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 157:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  CALLED BY                                                             */
+ 158:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    Application                                                         */
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  RELEASE HISTORY                                                       */
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 163:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*    DATE              NAME                      DESCRIPTION             */
+ 164:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*  10-31-2023     Yajun Xia                Initial Version 6.3.0         */
+ 166:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /*                                                                        */
+ 167:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** /**************************************************************************/
+ 168:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** UINT _uxe_device_class_video_write_payload_commit(UX_DEVICE_CLASS_VIDEO_STREAM *stream, ULONG lengt
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** {
+ 179              		.loc 1 169 1 is_stmt 1 view -0
+ 180              		.cfi_startproc
+ 181              		@ args = 0, pretend = 0, frame = 0
+ 182              		@ frame_needed = 0, uses_anonymous_args = 0
+ 183              		@ link register save eliminated.
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 171:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Sanity check. */
+ 172:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     if ((stream == UX_NULL) || (length == 0))
+ 184              		.loc 1 172 5 view .LVU52
+ 185              		.loc 1 172 8 is_stmt 0 view .LVU53
+ 186 0000 10B1     		cbz	r0, .L12
+ 187              		.loc 1 172 29 discriminator 1 view .LVU54
+ 188 0002 09B1     		cbz	r1, .L12
+ 173:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****         return(UX_INVALID_PARAMETER);
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** 
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     /* Call the actual video write payload commit function.  */
+ 176:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c ****     return (_ux_device_class_video_write_payload_commit(stream, length));
+ 189              		.loc 1 176 5 is_stmt 1 view .LVU55
+ 190              		.loc 1 176 13 is_stmt 0 view .LVU56
+ 191 0004 FFF7FEBF 		b	_ux_device_class_video_write_payload_commit
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 8
+
+
+ 192              	.LVL20:
+ 193              	.L12:
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_payload_commit.c **** }...
+ 194              		.loc 1 177 1 view .LVU57
+ 195 0008 FA20     		movs	r0, #250
+ 196              	.LVL21:
+ 197              		.loc 1 177 1 view .LVU58
+ 198 000a 7047     		bx	lr
+ 199              		.cfi_endproc
+ 200              	.LFE4:
+ 202              		.text
+ 203              	.Letext0:
+ 204              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 205              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+ 206              		.file 4 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_
+ 207              		.file 5 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_system.h"
+ 208              		.file 6 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_utility.h"
+ARM GAS  /tmp/claude-1000/ccrmeFVX.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_device_class_video_write_payload_commit.c
+/tmp/claude-1000/ccrmeFVX.s:26     .text._ux_device_class_video_write_payload_commit:00000000 $t
+/tmp/claude-1000/ccrmeFVX.s:32     .text._ux_device_class_video_write_payload_commit:00000000 _ux_device_class_video_write_payload_commit
+/tmp/claude-1000/ccrmeFVX.s:165    .text._ux_device_class_video_write_payload_commit:00000058 $d
+/tmp/claude-1000/ccrmeFVX.s:170    .text._uxe_device_class_video_write_payload_commit:00000000 $t
+/tmp/claude-1000/ccrmeFVX.s:176    .text._uxe_device_class_video_write_payload_commit:00000000 _uxe_device_class_video_write_payload_commit
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+                           .group:00000000 wm4.ux_device_class_video.h.57.e296a1f83e6a8abae51743ceeafe6df3
+
+UNDEFINED SYMBOLS
+_ux_system_error_handler
+_ux_system_slave

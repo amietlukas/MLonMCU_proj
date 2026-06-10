@@ -1,0 +1,652 @@
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_device_class_video_write_task_function.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_
+  25              		.section	.text._ux_device_class_video_write_task_function,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_device_class_video_write_task_function
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_device_class_video_write_task_function:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**************************************************************************/
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**                                                                       */
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /** USBX Component                                                        */
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**                                                                       */
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**   Device Video Class                                                  */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**                                                                       */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**************************************************************************/
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** #define UX_SOURCE_CODE
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /* Include necessary system files.  */
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** #include "ux_api.h"
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** #include "ux_device_class_video.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** #include "ux_device_stack.h"
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** #if defined(UX_DEVICE_STANDALONE)
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**************************************************************************/
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  FUNCTION                                               RELEASE        */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    _ux_device_class_video_write_task_function          PORTABLE C      */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                           6.3.0        */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  AUTHOR                                                                */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  DESCRIPTION                                                           */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    This function is the background task of the video stream write.     */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    It's for standalone mode.                                           */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  INPUT                                                                 */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    video_class                                 Address of video class  */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                container               */
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  OUTPUT                                                                */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    State machine status                                                */
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    UX_STATE_EXIT                         Device not configured         */
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    UX_STATE_IDLE                         No streaming transfer running */
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    UX_STATE_WAIT                         Streaming transfer running    */
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  CALLS                                                                 */
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    _ux_device_stack_transfer_run         Run transfer state machine    */
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    _ux_utility_memory_copy               Copy memory                   */
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  CALLED BY                                                             */
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    USBX Device Stack                                                   */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  RELEASE HISTORY                                                       */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*    DATE              NAME                      DESCRIPTION             */
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  10-31-2022     Chaoqiong Xiao           Initial Version 6.2.0         */
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*  10-31-2023     Chaoqiong Xiao           Modified comment(s),          */
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                            used zero copy when class   */
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                            owns endpoint buffer,       */
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                            resulting in version 6.3.0  */
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /*                                                                        */
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** /**************************************************************************/
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UINT _ux_device_class_video_write_task_function(UX_DEVICE_CLASS_VIDEO_STREAM *stream)
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 3
+
+
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** {
+  35              		.loc 1 82 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UX_SLAVE_DEVICE                 *device;
+  39              		.loc 1 83 1 view .LVU1
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UX_SLAVE_ENDPOINT               *endpoint;
+  40              		.loc 1 84 1 view .LVU2
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UX_SLAVE_TRANSFER               *transfer;
+  41              		.loc 1 85 1 view .LVU3
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UCHAR                           *next_pos;
+  42              		.loc 1 86 1 view .LVU4
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UX_DEVICE_CLASS_VIDEO_PAYLOAD   *next_payload;
+  43              		.loc 1 87 1 view .LVU5
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** ULONG                           transfer_length;
+  44              		.loc 1 88 1 view .LVU6
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** ULONG                           actual_length;
+  45              		.loc 1 89 1 view .LVU7
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UINT                            status;
+  46              		.loc 1 90 1 view .LVU8
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Get the pointer to the device.  */
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     device = stream -> ux_device_class_video_stream_video -> ux_device_class_video_device;
+  47              		.loc 1 94 5 view .LVU9
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Check if the device is configured.  */
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     if (device -> ux_slave_device_state != UX_DEVICE_CONFIGURED)
+  48              		.loc 1 97 5 view .LVU10
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  49              		.loc 1 94 12 is_stmt 0 view .LVU11
+  50 0000 0368     		ldr	r3, [r0]
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UX_SLAVE_DEVICE                 *device;
+  51              		.loc 1 82 1 view .LVU12
+  52 0002 70B5     		push	{r4, r5, r6, lr}
+  53              		.cfi_def_cfa_offset 16
+  54              		.cfi_offset 4, -16
+  55              		.cfi_offset 5, -12
+  56              		.cfi_offset 6, -8
+  57              		.cfi_offset 14, -4
+  58              		.loc 1 97 16 view .LVU13
+  59 0004 5B68     		ldr	r3, [r3, #4]
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** UX_SLAVE_DEVICE                 *device;
+  60              		.loc 1 82 1 view .LVU14
+  61 0006 0446     		mov	r4, r0
+  62              		.loc 1 97 8 view .LVU15
+  63 0008 1B68     		ldr	r3, [r3]
+  64 000a 032B     		cmp	r3, #3
+  65 000c 03D0     		beq	.L2
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_state = UX_STATE_EXIT;
+  66              		.loc 1 99 9 is_stmt 1 view .LVU16
+  67              		.loc 1 99 59 is_stmt 0 view .LVU17
+  68 000e 0123     		movs	r3, #1
+  69 0010 0362     		str	r3, [r0, #32]
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_EXIT);
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 4
+
+
+  70              		.loc 1 100 9 is_stmt 1 view .LVU18
+  71              	.LVL1:
+  72              	.L3:
+  73              		.loc 1 100 15 is_stmt 0 view .LVU19
+  74 0012 0120     		movs	r0, #1
+  75              	.L1:
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     }
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Get the endpoint.  */
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     endpoint = stream -> ux_device_class_video_stream_endpoint;
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* No endpoint ready, maybe it's alternate setting 0.  */
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     if (endpoint == UX_NULL)
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_IDLE);
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Check if background transfer task is started.  */
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     if (stream -> ux_device_class_video_stream_task_state == UX_DEVICE_CLASS_VIDEO_STREAM_RW_STOP)
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_IDLE);
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Get transfer instance.  */
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     transfer = &endpoint -> ux_slave_endpoint_transfer_request;
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* If not started yet, prepare data, reset transfer and start polling.  */
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     if (stream -> ux_device_class_video_stream_task_state == UX_DEVICE_CLASS_VIDEO_STREAM_RW_START)
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Next state: transfer wait.  */
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_state = UX_DEVICE_CLASS_VIDEO_STREAM_RW_WAIT;
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Start payload transfer anyway (even ZLP).  */
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         transfer_length = stream -> ux_device_class_video_stream_transfer_pos -> ux_device_class_vi
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** #if UX_DEVICE_ENDPOINT_BUFFER_OWNER == 1
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Zero copy: directly use frame buffer for transfer.  */
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         transfer -> ux_slave_transfer_request_data_pointer = stream ->
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                     ux_device_class_video_stream_transfer_pos -> ux_device_class_video_payload_data
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** #else
+ 133:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 134:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Copy frame buffer to transfer buffer.  */
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         if (transfer_length)
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             _ux_utility_memory_copy(transfer -> ux_slave_transfer_request_data_pointer,
+ 137:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 stream -> ux_device_class_video_stream_transfer_pos -> ux_device_class_video_payloa
+ 138:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** #endif
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Reset transfer state.  */
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         UX_SLAVE_TRANSFER_STATE_RESET(transfer);
+ 142:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     }
+ 143:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 144:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Get current transfer length.  */
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     transfer_length = stream -> ux_device_class_video_stream_transfer_pos -> ux_device_class_video_
+ 146:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 147:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Run transfer states.  */
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     status = _ux_device_stack_transfer_run(transfer, transfer_length, transfer_length);
+ 149:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Error case.  */
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     if (status < UX_STATE_NEXT)
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 5
+
+
+ 152:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Error on background transfer task start.  */
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_state = UX_STATE_RESET;
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_status =
+ 157:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                         transfer -> ux_slave_transfer_request_completion_code;
+ 158:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Error notification!  */
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_TRANSFER_ERROR
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_EXIT);
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     }
+ 163:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 164:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Success case.  */
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     if (status == UX_STATE_NEXT)
+ 166:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 167:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 168:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Next state: start.  */
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_state = UX_DEVICE_CLASS_VIDEO_STREAM_RW_START;
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_status =
+ 171:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                         transfer -> ux_slave_transfer_request_completion_code;
+ 172:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 173:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Frame sent, free it.  */
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_transfer_pos -> ux_device_class_video_payload_length
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 176:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Get actual transfer length.  */
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         actual_length = transfer -> ux_slave_transfer_request_actual_length;
+ 178:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 179:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Calculate next position.  */
+ 180:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         next_pos = (UCHAR *)stream -> ux_device_class_video_stream_transfer_pos;
+ 181:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         next_pos += stream -> ux_device_class_video_stream_payload_buffer_size;
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         if (next_pos >= stream -> ux_device_class_video_stream_buffer + stream -> ux_device_class_v
+ 183:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             next_pos = stream -> ux_device_class_video_stream_buffer;
+ 184:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         next_payload = (UX_DEVICE_CLASS_VIDEO_PAYLOAD *)next_pos;
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 186:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Underflow check!  */
+ 187:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         if (transfer_length)
+ 188:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         {
+ 189:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 190:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             /* Advance position.  */
+ 191:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             stream -> ux_device_class_video_stream_transfer_pos = next_payload;
+ 192:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 193:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             /* Error trap!  */
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             if (next_payload -> ux_device_class_video_payload_length == 0)
+ 195:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             {
+ 196:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 stream -> ux_device_class_video_stream_buffer_error_count ++;
+ 197:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_BUFFER
+ 198:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             }
+ 199:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         }
+ 200:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         else
+ 201:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         {
+ 202:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 203:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             /* Advance position if next payload available.  */
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             if (next_payload -> ux_device_class_video_payload_length)
+ 205:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 stream -> ux_device_class_video_stream_transfer_pos = next_payload;
+ 206:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             else
+ 207:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             {
+ 208:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 6
+
+
+ 209:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 /* Error trap!  */
+ 210:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 stream -> ux_device_class_video_stream_buffer_error_count ++;
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_BUFFER
+ 212:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             }
+ 213:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         }
+ 214:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 215:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         /* Invoke notification callback.  */
+ 216:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         if (stream -> ux_device_class_video_stream_callbacks.ux_device_class_video_stream_payload_d
+ 217:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             stream -> ux_device_class_video_stream_callbacks.ux_device_class_video_stream_payload_d
+ 218:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     }
+ 219:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 220:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     /* Keep waiting.  */
+ 221:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     return(UX_STATE_WAIT);
+ 222:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** }
+  76              		.loc 1 222 1 view .LVU20
+  77 0014 70BD     		pop	{r4, r5, r6, pc}
+  78              	.LVL2:
+  79              	.L2:
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  80              		.loc 1 104 5 is_stmt 1 view .LVU21
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  81              		.loc 1 104 14 is_stmt 0 view .LVU22
+  82 0016 8568     		ldr	r5, [r0, #8]
+  83              	.LVL3:
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_IDLE);
+  84              		.loc 1 107 5 is_stmt 1 view .LVU23
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_IDLE);
+  85              		.loc 1 107 8 is_stmt 0 view .LVU24
+  86 0018 002D     		cmp	r5, #0
+  87 001a 47D0     		beq	.L15
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_IDLE);
+  88              		.loc 1 111 5 is_stmt 1 view .LVU25
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_IDLE);
+  89              		.loc 1 111 16 is_stmt 0 view .LVU26
+  90 001c 026A     		ldr	r2, [r0, #32]
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_IDLE);
+  91              		.loc 1 111 8 view .LVU27
+  92 001e 002A     		cmp	r2, #0
+  93 0020 44D0     		beq	.L15
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  94              		.loc 1 115 5 is_stmt 1 view .LVU28
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+  95              		.loc 1 118 8 is_stmt 0 view .LVU29
+  96 0022 212A     		cmp	r2, #33
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  97              		.loc 1 125 34 view .LVU30
+  98 0024 A36B     		ldr	r3, [r4, #56]
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+  99              		.loc 1 115 14 view .LVU31
+ 100 0026 05F12000 		add	r0, r5, #32
+ 101              	.LVL4:
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 102              		.loc 1 118 5 is_stmt 1 view .LVU32
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 103              		.loc 1 118 8 is_stmt 0 view .LVU33
+ 104 002a 05D1     		bne	.L5
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 7
+
+
+ 105              		.loc 1 122 9 is_stmt 1 view .LVU34
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 106              		.loc 1 122 59 is_stmt 0 view .LVU35
+ 107 002c 2222     		movs	r2, #34
+ 108 002e 2262     		str	r2, [r4, #32]
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 109              		.loc 1 125 9 is_stmt 1 view .LVU36
+ 110              	.LVL5:
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                     ux_device_class_video_stream_transfer_pos -> ux_device_class_video_payload_data
+ 111              		.loc 1 130 9 view .LVU37
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                     ux_device_class_video_stream_transfer_pos -> ux_device_class_video_payload_data
+ 112              		.loc 1 130 62 is_stmt 0 view .LVU38
+ 113 0030 1A1D     		adds	r2, r3, #4
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                     ux_device_class_video_stream_transfer_pos -> ux_device_class_video_payload_data
+ 114              		.loc 1 130 60 view .LVU39
+ 115 0032 EA62     		str	r2, [r5, #44]
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     }
+ 116              		.loc 1 141 9 is_stmt 1 view .LVU40
+ 117 0034 0022     		movs	r2, #0
+ 118 0036 2A65     		str	r2, [r5, #80]
+ 119              	.LVL6:
+ 120              	.L5:
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 121              		.loc 1 145 5 view .LVU41
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 122              		.loc 1 145 21 is_stmt 0 view .LVU42
+ 123 0038 1E68     		ldr	r6, [r3]
+ 124              	.LVL7:
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 125              		.loc 1 148 5 is_stmt 1 view .LVU43
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 126              		.loc 1 148 14 is_stmt 0 view .LVU44
+ 127 003a 3246     		mov	r2, r6
+ 128 003c 3146     		mov	r1, r6
+ 129 003e FFF7FEFF 		bl	_ux_device_stack_transfer_run
+ 130              	.LVL8:
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 131              		.loc 1 151 5 is_stmt 1 view .LVU45
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 132              		.loc 1 151 8 is_stmt 0 view .LVU46
+ 133 0042 0328     		cmp	r0, #3
+ 134 0044 09D8     		bhi	.L6
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_status =
+ 135              		.loc 1 155 9 is_stmt 1 view .LVU47
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_status =
+ 136              		.loc 1 155 59 is_stmt 0 view .LVU48
+ 137 0046 0023     		movs	r3, #0
+ 138 0048 2362     		str	r3, [r4, #32]
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                         transfer -> ux_slave_transfer_request_completion_code;
+ 139              		.loc 1 156 9 is_stmt 1 view .LVU49
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                         transfer -> ux_slave_transfer_request_completion_code;
+ 140              		.loc 1 156 60 is_stmt 0 view .LVU50
+ 141 004a 6B6C     		ldr	r3, [r5, #68]
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_EXIT);
+ 142              		.loc 1 160 9 view .LVU51
+ 143 004c 2322     		movs	r2, #35
+ 144 004e 0721     		movs	r1, #7
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 8
+
+
+ 145 0050 0220     		movs	r0, #2
+ 146              	.LVL9:
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                         transfer -> ux_slave_transfer_request_completion_code;
+ 147              		.loc 1 156 60 view .LVU52
+ 148 0052 6362     		str	r3, [r4, #36]
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         return(UX_STATE_EXIT);
+ 149              		.loc 1 160 9 is_stmt 1 view .LVU53
+ 150 0054 FFF7FEFF 		bl	_ux_system_error_handler
+ 151              	.LVL10:
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     }
+ 152              		.loc 1 161 9 view .LVU54
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     }
+ 153              		.loc 1 161 15 is_stmt 0 view .LVU55
+ 154 0058 DBE7     		b	.L3
+ 155              	.LVL11:
+ 156              	.L6:
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 157              		.loc 1 165 5 is_stmt 1 view .LVU56
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     {
+ 158              		.loc 1 165 8 is_stmt 0 view .LVU57
+ 159 005a 0428     		cmp	r0, #4
+ 160 005c 24D1     		bne	.L8
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_status =
+ 161              		.loc 1 169 9 is_stmt 1 view .LVU58
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_status =
+ 162              		.loc 1 169 59 is_stmt 0 view .LVU59
+ 163 005e 2123     		movs	r3, #33
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 164              		.loc 1 174 101 view .LVU60
+ 165 0060 0022     		movs	r2, #0
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         stream -> ux_device_class_video_stream_task_status =
+ 166              		.loc 1 169 59 view .LVU61
+ 167 0062 2362     		str	r3, [r4, #32]
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                         transfer -> ux_slave_transfer_request_completion_code;
+ 168              		.loc 1 170 9 is_stmt 1 view .LVU62
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                         transfer -> ux_slave_transfer_request_completion_code;
+ 169              		.loc 1 170 60 is_stmt 0 view .LVU63
+ 170 0064 6B6C     		ldr	r3, [r5, #68]
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 171              		.loc 1 177 23 view .LVU64
+ 172 0066 AD6B     		ldr	r5, [r5, #56]
+ 173              	.LVL12:
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                         transfer -> ux_slave_transfer_request_completion_code;
+ 174              		.loc 1 170 60 view .LVU65
+ 175 0068 6362     		str	r3, [r4, #36]
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 176              		.loc 1 174 9 is_stmt 1 view .LVU66
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 177              		.loc 1 174 16 is_stmt 0 view .LVU67
+ 178 006a A36B     		ldr	r3, [r4, #56]
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 179              		.loc 1 174 101 view .LVU68
+ 180 006c 1A60     		str	r2, [r3]
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 181              		.loc 1 177 9 is_stmt 1 view .LVU69
+ 182              	.LVL13:
+ 180:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         next_pos += stream -> ux_device_class_video_stream_payload_buffer_size;
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 9
+
+
+ 183              		.loc 1 180 9 view .LVU70
+ 181:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         if (next_pos >= stream -> ux_device_class_video_stream_buffer + stream -> ux_device_class_v
+ 184              		.loc 1 181 9 view .LVU71
+ 181:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         if (next_pos >= stream -> ux_device_class_video_stream_buffer + stream -> ux_device_class_v
+ 185              		.loc 1 181 18 is_stmt 0 view .LVU72
+ 186 006e 626B     		ldr	r2, [r4, #52]
+ 187 0070 1344     		add	r3, r3, r2
+ 188              	.LVL14:
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             next_pos = stream -> ux_device_class_video_stream_buffer;
+ 189              		.loc 1 182 9 is_stmt 1 view .LVU73
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             next_pos = stream -> ux_device_class_video_stream_buffer;
+ 190              		.loc 1 182 71 is_stmt 0 view .LVU74
+ 191 0072 D4E90B12 		ldrd	r1, r2, [r4, #44]
+ 192 0076 0A44     		add	r2, r2, r1
+ 183:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         next_payload = (UX_DEVICE_CLASS_VIDEO_PAYLOAD *)next_pos;
+ 193              		.loc 1 183 22 view .LVU75
+ 194 0078 9342     		cmp	r3, r2
+ 195 007a 28BF     		it	cs
+ 196 007c 0B46     		movcs	r3, r1
+ 197              	.LVL15:
+ 184:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 198              		.loc 1 184 9 is_stmt 1 view .LVU76
+ 187:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         {
+ 199              		.loc 1 187 9 view .LVU77
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             {
+ 200              		.loc 1 194 30 is_stmt 0 view .LVU78
+ 201 007e 1A68     		ldr	r2, [r3]
+ 187:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****         {
+ 202              		.loc 1 187 12 view .LVU79
+ 203 0080 56B1     		cbz	r6, .L10
+ 191:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 204              		.loc 1 191 13 is_stmt 1 view .LVU80
+ 191:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 205              		.loc 1 191 65 is_stmt 0 view .LVU81
+ 206 0082 A363     		str	r3, [r4, #56]
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             {
+ 207              		.loc 1 194 13 is_stmt 1 view .LVU82
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             {
+ 208              		.loc 1 194 16 is_stmt 0 view .LVU83
+ 209 0084 5AB9     		cbnz	r2, .L11
+ 210              	.L12:
+ 210:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_BUFFER
+ 211              		.loc 1 210 17 is_stmt 1 view .LVU84
+ 210:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_BUFFER
+ 212              		.loc 1 210 75 is_stmt 0 view .LVU85
+ 213 0086 A36A     		ldr	r3, [r4, #40]
+ 214              	.LVL16:
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             }
+ 215              		.loc 1 211 17 view .LVU86
+ 216 0088 5D22     		movs	r2, #93
+ 210:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_BUFFER
+ 217              		.loc 1 210 75 view .LVU87
+ 218 008a 0133     		adds	r3, r3, #1
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             }
+ 219              		.loc 1 211 17 view .LVU88
+ 220 008c 0721     		movs	r1, #7
+ 221 008e 0220     		movs	r0, #2
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 10
+
+
+ 222              	.LVL17:
+ 210:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 _ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_BUFFER
+ 223              		.loc 1 210 75 view .LVU89
+ 224 0090 A362     		str	r3, [r4, #40]
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             }
+ 225              		.loc 1 211 17 is_stmt 1 view .LVU90
+ 226 0092 FFF7FEFF 		bl	_ux_system_error_handler
+ 227              	.LVL18:
+ 228 0096 02E0     		b	.L11
+ 229              	.LVL19:
+ 230              	.L10:
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 stream -> ux_device_class_video_stream_transfer_pos = next_payload;
+ 231              		.loc 1 204 13 view .LVU91
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****                 stream -> ux_device_class_video_stream_transfer_pos = next_payload;
+ 232              		.loc 1 204 16 is_stmt 0 view .LVU92
+ 233 0098 002A     		cmp	r2, #0
+ 234 009a F4D0     		beq	.L12
+ 205:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             else
+ 235              		.loc 1 205 17 is_stmt 1 view .LVU93
+ 205:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             else
+ 236              		.loc 1 205 69 is_stmt 0 view .LVU94
+ 237 009c A363     		str	r3, [r4, #56]
+ 238              	.LVL20:
+ 239              	.L11:
+ 216:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             stream -> ux_device_class_video_stream_callbacks.ux_device_class_video_stream_payload_d
+ 240              		.loc 1 216 9 is_stmt 1 view .LVU95
+ 216:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             stream -> ux_device_class_video_stream_callbacks.ux_device_class_video_stream_payload_d
+ 241              		.loc 1 216 61 is_stmt 0 view .LVU96
+ 242 009e A369     		ldr	r3, [r4, #24]
+ 216:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****             stream -> ux_device_class_video_stream_callbacks.ux_device_class_video_stream_payload_d
+ 243              		.loc 1 216 12 view .LVU97
+ 244 00a0 13B1     		cbz	r3, .L8
+ 217:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c ****     }
+ 245              		.loc 1 217 13 is_stmt 1 view .LVU98
+ 246 00a2 2946     		mov	r1, r5
+ 247 00a4 2046     		mov	r0, r4
+ 248 00a6 9847     		blx	r3
+ 249              	.LVL21:
+ 250              	.L8:
+ 221:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** }
+ 251              		.loc 1 221 11 is_stmt 0 view .LVU99
+ 252 00a8 0520     		movs	r0, #5
+ 253 00aa B3E7     		b	.L1
+ 254              	.LVL22:
+ 255              	.L15:
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 256              		.loc 1 108 15 view .LVU100
+ 257 00ac 0220     		movs	r0, #2
+ 258              	.LVL23:
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_write_task_function.c **** 
+ 259              		.loc 1 108 15 view .LVU101
+ 260 00ae B1E7     		b	.L1
+ 261              		.cfi_endproc
+ 262              	.LFE3:
+ 264              		.text
+ 265              	.Letext0:
+ 266              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 11
+
+
+ 267              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+ 268              		.file 4 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_
+ 269              		.file 5 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_utility.h"
+ 270              		.file 6 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_device_stack.h"
+ARM GAS  /tmp/claude-1000/cckqNEU6.s 			page 12
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_device_class_video_write_task_function.c
+/tmp/claude-1000/cckqNEU6.s:26     .text._ux_device_class_video_write_task_function:00000000 $t
+/tmp/claude-1000/cckqNEU6.s:32     .text._ux_device_class_video_write_task_function:00000000 _ux_device_class_video_write_task_function
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+                           .group:00000000 wm4.ux_device_class_video.h.57.e296a1f83e6a8abae51743ceeafe6df3
+
+UNDEFINED SYMBOLS
+_ux_device_stack_transfer_run
+_ux_system_error_handler

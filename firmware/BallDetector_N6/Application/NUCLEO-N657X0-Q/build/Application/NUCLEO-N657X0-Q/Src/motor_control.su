@@ -1,0 +1,7 @@
+Src/motor_control.c:52:6:Motor_SetSpeed	0	static
+Src/motor_control.c:58:6:Motor_Stop	16	static
+Src/motor_control.c:68:6:Motor_ForwardStraight	16	static
+Src/motor_control.c:77:6:Motor_BackwardStraight	16	static
+Src/motor_control.c:86:6:Motor_Curve	24	static
+Src/motor_control.c:96:6:Motor_Command	0	static
+Src/motor_control.c:109:6:Motor_Init	128	static

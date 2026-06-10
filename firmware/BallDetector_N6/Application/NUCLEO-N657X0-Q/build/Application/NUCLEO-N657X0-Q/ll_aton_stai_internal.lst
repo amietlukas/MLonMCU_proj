@@ -1,0 +1,2089 @@
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ll_aton_stai_internal.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c"
+  25              		.section	.text._stai_aton_internal_rt_callback,"ax",%progbits
+  26              		.align	1
+  27              		.syntax unified
+  28              		.thumb
+  29              		.thumb_func
+  31              	_stai_aton_internal_rt_callback:
+  32              	.LVL0:
+  33              	.LFB311:
+   1:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /**
+   2:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  ******************************************************************************
+   3:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * @file    ll_aton_stai_internal.c
+   4:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * @author  SRA Artificial Intelligence & Embedded Architectures
+   5:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * @brief   Implementation of ST.AI public & internal APIs for ATON
+   6:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  ******************************************************************************
+   7:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * @attention
+   8:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  *
+   9:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * Copyright (c) 2024 STMicroelectronics.
+  10:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * All rights reserved.
+  11:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  *
+  12:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * This software is licensed under terms that can be found in the LICENSE file
+  13:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * in the root directory of this software component.
+  14:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  *
+  16:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  ******************************************************************************
+  17:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  */
+  18:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  19:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #include <stdint.h>
+  20:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  21:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #include "stai_debug.h"
+  22:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  23:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #include "ll_aton_caches_interface.h"
+  24:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #include "ll_aton_rt_user_api.h"
+  25:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #include "ll_aton_runtime.h"
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 2
+
+
+  26:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #include "ll_aton_stai_internal.h"
+  27:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #include "ll_aton_version.h"
+  28:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  29:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* -----------------------------------------------------------------------------
+  30:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * MACRO - ARM tool chain definition
+  31:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  * -----------------------------------------------------------------------------
+  32:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****  */
+  33:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  34:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #undef _IS_AC5_COMPILER
+  35:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #undef _IS_AC6_COMPILER
+  36:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #undef _IS_GHS_COMPILER
+  37:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #undef _IS_HTC_COMPILER
+  38:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #undef _IS_GCC_COMPILER
+  39:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #undef _IS_IAR_COMPILER
+  40:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  41:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* ARM Compiler 5 tool-chain */
+  42:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #if defined(__CC_ARM)
+  43:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** // #if ((__ARMCC_VERSION >= 5000000) && (__ARMCC_VERSION < 6000000))
+  44:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _IS_AC5_COMPILER 1
+  45:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  46:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* ARM Compiler 6 tool-chain */
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _IS_AC6_COMPILER 1
+  49:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  50:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* GHS tool-chain */
+  51:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(__ghs__)
+  52:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _IS_GHS_COMPILER 1
+  53:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  54:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* HIGHTEC tool-chain */
+  55:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(__clang__)
+  56:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _IS_HTC_COMPILER 1
+  57:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  58:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* GCC tool-chain */
+  59:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(__GNUC__)
+  60:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _IS_GCC_COMPILER 1
+  61:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  62:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* IAR tool-chain */
+  63:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(__ICCARM__)
+  64:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _IS_IAR_COMPILER 1
+  65:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  66:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #else
+  67:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _IS_UNDEFINED_COMPILER 1
+  68:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif
+  69:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #undef _IS_ACx_COMPILER
+  71:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #if defined(_IS_AC5_COMPILER) && _IS_AC5_COMPILER || defined(_IS_AC6_COMPILER) && _IS_AC6_COMPILER
+  72:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _IS_ACx_COMPILER 1
+  73:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif
+  74:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  75:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STRINGIFY_(x) #x
+  76:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STRINGIFY(x)  STRINGIFY_(x)
+  77:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+  78:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #if defined(_IS_AC6_COMPILER) && _IS_AC6_COMPILER
+  79:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_DESC "MDK-ARM Keil (Arm Compiler 6) " STRINGIFY(__ARMCC_VERSION)
+  80:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_ID   STAI_COMPILER_ID_KEIL
+  81:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(_IS_GHS_COMPILER) && _IS_GHS_COMPILER
+  82:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_DESC "GHS-ARM Compiler " STRINGIFY(__GHS_VERSION_NUMBER)
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 3
+
+
+  83:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_ID   STAI_COMPILER_ID_GHS
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(_IS_HTC_COMPILER) && _IS_HTC_COMPILER
+  85:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_DESC                                                                        
+  86:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   "HIGHTEC Clang " STRINGIFY(__clang_major__) "." STRINGIFY(__clang_minor__) "." STRINGIFY(__clang_
+  87:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_ID STAI_COMPILER_ID_HIGHTECH
+  88:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(_IS_GCC_COMPILER) && _IS_GCC_COMPILER
+  89:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_DESC "GCC " STRINGIFY(__GNUC__) "." STRINGIFY(__GNUC_MINOR__) "." STRINGIFY(
+  90:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_ID   STAI_COMPILER_ID_GCC
+  91:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(_IS_IAR_COMPILER) && _IS_IAR_COMPILER
+  92:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_DESC "IAR " STRINGIFY(__IAR_SYSTEMS_ICC__) " (build " STRINGIFY(__BUILD_NUMB
+  93:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_ID   STAI_COMPILER_ID_IAR
+  94:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #elif defined(_IS_AC5_COMPILER) && _IS_AC5_COMPILER
+  95:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_DESC "MDK-ARM Keil " STRINGIFY(__ARMCC_VERSION)
+  96:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_ID   STAI_COMPILER_ID_KEIL
+  97:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #else
+  98:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_DESC "Undefined"
+  99:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define _STAI_COMPILER_ID   STAI_COMPILER_ID_NONE
+ 100:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif
+ 101:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 102:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* macro defining name of (platform specific) function called before ATON & RT initialization */
+ 103:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #ifndef LL_ATON_STAI_PRE_ATON_INIT_NAME
+ 104:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** static inline int __ll_empty_stai_pre_aton_init(void)
+ 105:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 106:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return 0;
+ 107:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 108:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define __LL_ATON_STAI_PRE_ATON_INIT() __ll_empty_stai_pre_aton_init()
+ 109:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #else // LL_ATON_STAI_PRE_ATON_INIT_NAME
+ 110:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** extern int LL_ATON_STAI_PRE_ATON_INIT_NAME(void);
+ 111:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define __LL_ATON_STAI_PRE_ATON_INIT() LL_ATON_STAI_PRE_ATON_INIT_NAME()
+ 112:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif // LL_ATON_STAI_PRE_ATON_INIT_NAME
+ 113:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 114:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* macro defining name of (platform specific) function called after ATON & RT de-initialization */
+ 115:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #ifndef LL_ATON_STAI_POST_ATON_DEINIT_NAME
+ 116:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** static inline int __ll_empty_stai_post_aton_deinit(void)
+ 117:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 118:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return 0;
+ 119:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 120:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define __LL_ATON_STAI_POST_ATON_DEINIT() __ll_empty_stai_post_aton_deinit()
+ 121:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #else // LL_ATON_STAI_POST_ATON_DEINIT_NAME
+ 122:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** extern int LL_ATON_STAI_POST_ATON_DEINIT_NAME(void);
+ 123:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define __LL_ATON_STAI_POST_ATON_DEINIT() LL_ATON_STAI_POST_ATON_DEINIT_NAME()
+ 124:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif // LL_ATON_STAI_POST_ATON_DEINIT_NAME
+ 125:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 126:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /*****************************************************************************/
+ 127:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /** Runtime callback variables                                              **/
+ 128:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /*****************************************************************************/
+ 129:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** static stai_event_cb _g_stai_aton_rt_callback = NULL;
+ 130:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** static void *_g_stai_aton_rt_cb_cookie = NULL;
+ 131:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 132:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /*****************************************************************************/
+ 133:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /**  Helper function (for callbacks)                                        **/
+ 134:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /*****************************************************************************/
+ 135:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** static void _stai_aton_internal_rt_callback(LL_ATON_RT_Callbacktype_t ctype)
+ 136:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+  34              		.loc 1 136 1 view -0
+  35              		.cfi_startproc
+  36              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 4
+
+
+  37              		@ frame_needed = 0, uses_anonymous_args = 0
+  38              		@ link register save eliminated.
+ 137:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (_g_stai_aton_rt_callback != NULL)
+  39              		.loc 1 137 3 view .LVU1
+  40              		.loc 1 137 32 is_stmt 0 view .LVU2
+  41 0000 044B     		ldr	r3, .L3
+ 136:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (_g_stai_aton_rt_callback != NULL)
+  42              		.loc 1 136 1 view .LVU3
+  43 0002 0146     		mov	r1, r0
+  44              		.loc 1 137 32 view .LVU4
+  45 0004 1B68     		ldr	r3, [r3]
+  46              		.loc 1 137 6 view .LVU5
+  47 0006 1BB1     		cbz	r3, .L1
+ 138:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 139:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     _g_stai_aton_rt_callback(_g_stai_aton_rt_cb_cookie, ctype, NULL);
+  48              		.loc 1 139 5 is_stmt 1 view .LVU6
+  49 0008 0348     		ldr	r0, .L3+4
+  50              	.LVL1:
+  51              		.loc 1 139 5 is_stmt 0 view .LVU7
+  52 000a 0022     		movs	r2, #0
+  53 000c 0068     		ldr	r0, [r0]
+  54 000e 1847     		bx	r3	@ indirect register sibling call
+  55              	.LVL2:
+  56              	.L1:
+ 140:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 141:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+  57              		.loc 1 141 1 view .LVU8
+  58 0010 7047     		bx	lr
+  59              	.L4:
+  60 0012 00BF     		.align	2
+  61              	.L3:
+  62 0014 00000000 		.word	_g_stai_aton_rt_callback
+  63 0018 00000000 		.word	_g_stai_aton_rt_cb_cookie
+  64              		.cfi_endproc
+  65              	.LFE311:
+  67              		.section	.text._stai_aton_internal_epoch_block_callback,"ax",%progbits
+  68              		.align	1
+  69              		.global	_stai_aton_internal_epoch_block_callback
+  70              		.syntax unified
+  71              		.thumb
+  72              		.thumb_func
+  74              	_stai_aton_internal_epoch_block_callback:
+  75              	.LVL3:
+  76              	.LFB312:
+ 142:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 143:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_INTERNAL_ENTRY
+ 144:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** void _stai_aton_internal_epoch_block_callback(LL_ATON_RT_Callbacktype_t ctype, const NN_Instance_Ty
+ 145:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                                               const LL_ATON_RT_EpochBlockItem_t *epoch_block)
+ 146:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+  77              		.loc 1 146 1 is_stmt 1 view -0
+  78              		.cfi_startproc
+  79              		@ args = 0, pretend = 0, frame = 0
+  80              		@ frame_needed = 0, uses_anonymous_args = 0
+  81              		@ link register save eliminated.
+ 147:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT(nn_instance != NULL);
+  82              		.loc 1 147 3 view .LVU10
+  83              		.loc 1 147 3 view .LVU11
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 5
+
+
+  84              		.loc 1 147 3 view .LVU12
+  85              		.loc 1 147 35 view .LVU13
+ 148:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _stai_aton_context *stai_nn_ctx =
+  86              		.loc 1 148 3 view .LVU14
+ 149:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       (_stai_aton_context *)((void *)nn_instance) - offsetof(_stai_aton_context, network_instance);
+ 150:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 151:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (stai_nn_ctx->callback != NULL)
+  87              		.loc 1 151 3 view .LVU15
+ 146:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT(nn_instance != NULL);
+  88              		.loc 1 146 1 is_stmt 0 view .LVU16
+  89 0000 10B4     		push	{r4}
+  90              		.cfi_def_cfa_offset 4
+  91              		.cfi_offset 4, -4
+  92              		.loc 1 151 18 view .LVU17
+  93 0002 0C6B     		ldr	r4, [r1, #48]
+ 146:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT(nn_instance != NULL);
+  94              		.loc 1 146 1 view .LVU18
+  95 0004 0B46     		mov	r3, r1
+  96              		.loc 1 151 6 view .LVU19
+  97 0006 2CB1     		cbz	r4, .L5
+ 152:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 153:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     stai_nn_ctx->callback(stai_nn_ctx->callback_cookie, ctype, (const void *)epoch_block);
+  98              		.loc 1 153 5 is_stmt 1 view .LVU20
+  99 0008 0146     		mov	r1, r0
+ 100              	.LVL4:
+ 101              		.loc 1 153 5 is_stmt 0 view .LVU21
+ 102 000a 586B     		ldr	r0, [r3, #52]
+ 103              	.LVL5:
+ 104              		.loc 1 153 5 view .LVU22
+ 105 000c 2346     		mov	r3, r4
+ 106              	.LVL6:
+ 154:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 155:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 107              		.loc 1 155 1 view .LVU23
+ 108 000e 5DF8044B 		ldr	r4, [sp], #4
+ 109              		.cfi_remember_state
+ 110              		.cfi_restore 4
+ 111              		.cfi_def_cfa_offset 0
+ 153:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 112              		.loc 1 153 5 view .LVU24
+ 113 0012 1847     		bx	r3	@ indirect register sibling call
+ 114              	.LVL7:
+ 115              	.L5:
+ 116              		.cfi_restore_state
+ 117              		.loc 1 155 1 view .LVU25
+ 118 0014 5DF8044B 		ldr	r4, [sp], #4
+ 119              		.cfi_restore 4
+ 120              		.cfi_def_cfa_offset 0
+ 121 0018 7047     		bx	lr
+ 122              		.cfi_endproc
+ 123              	.LFE312:
+ 125              		.section	.text.stai_runtime_set_callback,"ax",%progbits
+ 126              		.align	1
+ 127              		.global	stai_runtime_set_callback
+ 128              		.syntax unified
+ 129              		.thumb
+ 130              		.thumb_func
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 6
+
+
+ 132              	stai_runtime_set_callback:
+ 133              	.LVL8:
+ 134              	.LFB313:
+ 156:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 157:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /*****************************************************************************/
+ 158:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /**  Public ST.AI APIs                                                       **/
+ 159:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /*****************************************************************************/
+ 160:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ 161:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_runtime_set_callback(const stai_event_cb cb, void *cb_cookie)
+ 162:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 135              		.loc 1 162 1 is_stmt 1 view -0
+ 136              		.cfi_startproc
+ 137              		@ args = 0, pretend = 0, frame = 0
+ 138              		@ frame_needed = 0, uses_anonymous_args = 0
+ 163:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_callback = cb;
+ 139              		.loc 1 163 3 view .LVU27
+ 162:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_callback = cb;
+ 140              		.loc 1 162 1 is_stmt 0 view .LVU28
+ 141 0000 08B5     		push	{r3, lr}
+ 142              		.cfi_def_cfa_offset 8
+ 143              		.cfi_offset 3, -8
+ 144              		.cfi_offset 14, -4
+ 145              		.loc 1 163 28 view .LVU29
+ 146 0002 064B     		ldr	r3, .L11
+ 164:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_cb_cookie = cb_cookie;
+ 165:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 166:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_SetRuntimeCallback((_g_stai_aton_rt_callback != NULL) ? _stai_aton_internal_rt_callbac
+ 147              		.loc 1 166 3 view .LVU30
+ 148 0004 0028     		cmp	r0, #0
+ 163:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_cb_cookie = cb_cookie;
+ 149              		.loc 1 163 28 view .LVU31
+ 150 0006 1860     		str	r0, [r3]
+ 164:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_cb_cookie = cb_cookie;
+ 151              		.loc 1 164 3 is_stmt 1 view .LVU32
+ 164:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_cb_cookie = cb_cookie;
+ 152              		.loc 1 164 29 is_stmt 0 view .LVU33
+ 153 0008 054B     		ldr	r3, .L11+4
+ 154 000a 1960     		str	r1, [r3]
+ 155              		.loc 1 166 3 is_stmt 1 view .LVU34
+ 156 000c 054B     		ldr	r3, .L11+8
+ 157 000e 18BF     		it	ne
+ 158 0010 1846     		movne	r0, r3
+ 159              	.LVL9:
+ 160              		.loc 1 166 3 is_stmt 0 view .LVU35
+ 161 0012 FFF7FEFF 		bl	LL_ATON_RT_SetRuntimeCallback
+ 162              	.LVL10:
+ 167:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 168:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_SUCCESS;
+ 163              		.loc 1 168 3 is_stmt 1 view .LVU36
+ 169:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 164              		.loc 1 169 1 is_stmt 0 view .LVU37
+ 165 0016 0020     		movs	r0, #0
+ 166 0018 08BD     		pop	{r3, pc}
+ 167              	.L12:
+ 168 001a 00BF     		.align	2
+ 169              	.L11:
+ 170 001c 00000000 		.word	_g_stai_aton_rt_callback
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 7
+
+
+ 171 0020 00000000 		.word	_g_stai_aton_rt_cb_cookie
+ 172 0024 00000000 		.word	_stai_aton_internal_rt_callback
+ 173              		.cfi_endproc
+ 174              	.LFE313:
+ 176              		.section	.text.stai_runtime_init,"ax",%progbits
+ 177              		.align	1
+ 178              		.global	stai_runtime_init
+ 179              		.syntax unified
+ 180              		.thumb
+ 181              		.thumb_func
+ 183              	stai_runtime_init:
+ 184              	.LFB314:
+ 170:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 171:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ 172:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_runtime_init(void)
+ 173:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 185              		.loc 1 173 1 is_stmt 1 view -0
+ 186              		.cfi_startproc
+ 187              		@ args = 0, pretend = 0, frame = 0
+ 188              		@ frame_needed = 0, uses_anonymous_args = 0
+ 174:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* Execute (eventual) pre init code */
+ 175:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (__LL_ATON_STAI_PRE_ATON_INIT() != 0)
+ 189              		.loc 1 175 3 view .LVU39
+ 176:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 177:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     return STAI_ERROR_STAI_INIT_FAILED;
+ 178:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 179:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 180:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* Initialize ATON/N6 runtime */
+ 181:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_RuntimeInit();
+ 190              		.loc 1 181 3 view .LVU40
+ 173:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* Execute (eventual) pre init code */
+ 191              		.loc 1 173 1 is_stmt 0 view .LVU41
+ 192 0000 08B5     		push	{r3, lr}
+ 193              		.cfi_def_cfa_offset 8
+ 194              		.cfi_offset 3, -8
+ 195              		.cfi_offset 14, -4
+ 196              		.loc 1 181 3 view .LVU42
+ 197 0002 FFF7FEFF 		bl	LL_ATON_RT_RuntimeInit
+ 198              	.LVL11:
+ 182:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_SUCCESS;
+ 199              		.loc 1 182 3 is_stmt 1 view .LVU43
+ 183:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 200              		.loc 1 183 1 is_stmt 0 view .LVU44
+ 201 0006 0020     		movs	r0, #0
+ 202 0008 08BD     		pop	{r3, pc}
+ 203              		.cfi_endproc
+ 204              	.LFE314:
+ 206              		.section	.text.stai_runtime_deinit,"ax",%progbits
+ 207              		.align	1
+ 208              		.global	stai_runtime_deinit
+ 209              		.syntax unified
+ 210              		.thumb
+ 211              		.thumb_func
+ 213              	stai_runtime_deinit:
+ 214              	.LFB315:
+ 184:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 185:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 8
+
+
+ 186:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_runtime_deinit(void)
+ 187:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 215              		.loc 1 187 1 is_stmt 1 view -0
+ 216              		.cfi_startproc
+ 217              		@ args = 0, pretend = 0, frame = 0
+ 218              		@ frame_needed = 0, uses_anonymous_args = 0
+ 188:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* De-init ATON/N6 runtime */
+ 189:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_RuntimeDeInit();
+ 219              		.loc 1 189 3 view .LVU46
+ 187:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* De-init ATON/N6 runtime */
+ 220              		.loc 1 187 1 is_stmt 0 view .LVU47
+ 221 0000 10B5     		push	{r4, lr}
+ 222              		.cfi_def_cfa_offset 8
+ 223              		.cfi_offset 4, -8
+ 224              		.cfi_offset 14, -4
+ 190:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 191:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* Execute (eventual) post de-init code */
+ 192:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   int err = __LL_ATON_STAI_POST_ATON_DEINIT();
+ 193:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 194:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* Reset callbacks */
+ 195:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_callback = NULL;
+ 225              		.loc 1 195 28 view .LVU48
+ 226 0002 0024     		movs	r4, #0
+ 189:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 227              		.loc 1 189 3 view .LVU49
+ 228 0004 FFF7FEFF 		bl	LL_ATON_RT_RuntimeDeInit
+ 229              	.LVL12:
+ 192:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 230              		.loc 1 192 3 is_stmt 1 view .LVU50
+ 231              		.loc 1 195 3 view .LVU51
+ 232              		.loc 1 195 28 is_stmt 0 view .LVU52
+ 233 0008 044B     		ldr	r3, .L15
+ 196:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_cb_cookie = NULL;
+ 197:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_SetRuntimeCallback(NULL);
+ 234              		.loc 1 197 3 view .LVU53
+ 235 000a 2046     		mov	r0, r4
+ 195:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_cb_cookie = NULL;
+ 236              		.loc 1 195 28 view .LVU54
+ 237 000c 1C60     		str	r4, [r3]
+ 196:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_cb_cookie = NULL;
+ 238              		.loc 1 196 3 is_stmt 1 view .LVU55
+ 196:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _g_stai_aton_rt_cb_cookie = NULL;
+ 239              		.loc 1 196 29 is_stmt 0 view .LVU56
+ 240 000e 044B     		ldr	r3, .L15+4
+ 241 0010 1C60     		str	r4, [r3]
+ 242              		.loc 1 197 3 is_stmt 1 view .LVU57
+ 243 0012 FFF7FEFF 		bl	LL_ATON_RT_SetRuntimeCallback
+ 244              	.LVL13:
+ 198:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 199:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #ifdef STAI_ATON_ZYNQ
+ 200:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   // assuming zynq-based platform test harness & `stai_app_*.cpp` based application
+ 201:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   exit(err); // force exit status to test results check return value
+ 202:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif       // STAI_ATON_ZYNQ
+ 203:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 204:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (err != 0)
+ 245              		.loc 1 204 3 view .LVU58
+ 205:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 9
+
+
+ 206:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     return STAI_ERROR_STAI_DEINIT_FAILED;
+ 207:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 208:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   else
+ 209:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 210:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     return STAI_SUCCESS;
+ 246              		.loc 1 210 5 view .LVU59
+ 211:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 212:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 247              		.loc 1 212 1 is_stmt 0 view .LVU60
+ 248 0016 2046     		mov	r0, r4
+ 249 0018 10BD     		pop	{r4, pc}
+ 250              	.L16:
+ 251 001a 00BF     		.align	2
+ 252              	.L15:
+ 253 001c 00000000 		.word	_g_stai_aton_rt_callback
+ 254 0020 00000000 		.word	_g_stai_aton_rt_cb_cookie
+ 255              		.cfi_endproc
+ 256              	.LFE315:
+ 258              		.section	.text.stai_runtime_get_info,"ax",%progbits
+ 259              		.align	1
+ 260              		.global	stai_runtime_get_info
+ 261              		.syntax unified
+ 262              		.thumb
+ 263              		.thumb_func
+ 265              	stai_runtime_get_info:
+ 266              	.LVL14:
+ 267              	.LFB316:
+ 213:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 214:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* runtime build info bit shifts */
+ 215:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_PLAT_BSHIFT  0
+ 216:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_OSAL_BSHIFT  (STAI_RT_PLAT_BSHIFT + LL_ATON_CONFIG_PLAT_BSIZE)
+ 217:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_MODE_BSHIFT  (STAI_RT_OSAL_BSHIFT + LL_ATON_CONFIG_OSAL_BSIZE)
+ 218:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_BINFO_BSHIFT (STAI_RT_MODE_BSHIFT + LL_ATON_CONFIG_RT_MODE_BSIZE)
+ 219:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_CLKG_BSHIFT  (STAI_RT_BINFO_BSHIFT + LL_ATON_CONFIG_BINFO_BSIZE)
+ 220:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_SWF_BSHIFT   (STAI_RT_CLKG_BSHIFT + LL_ATON_CONFIG_CLKG_BSIZE)
+ 221:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_DD_BSHIFT    (STAI_RT_SWF_BSHIFT + LL_ATON_CONFIG_SWF_BSIZE)
+ 222:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_EBDBG_BSHIFT (STAI_RT_DD_BSHIFT + LL_ATON_CONFIG_DD_BSIZE)
+ 223:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 224:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /* runtime build info size masks */
+ 225:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_PLAT_MASK  ((1 << LL_ATON_CONFIG_PLAT_BSIZE) - 1)
+ 226:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_OSAL_MASK  ((1 << LL_ATON_CONFIG_OSAL_BSIZE) - 1)
+ 227:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_MODE_MASK  ((1 << LL_ATON_CONFIG_RT_MODE_BSIZE) - 1)
+ 228:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_BINFO_MASK ((1 << LL_ATON_CONFIG_BINFO_BSIZE) - 1)
+ 229:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_CLKG_MASK  ((1 << LL_ATON_CONFIG_CLKG_BSIZE) - 1)
+ 230:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_SWF_MASK   ((1 << LL_ATON_CONFIG_SWF_BSIZE) - 1)
+ 231:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_DD_MASK    ((1 << LL_ATON_CONFIG_DD_BSIZE) - 1)
+ 232:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #define STAI_RT_EBDBG_MASK ((1 << LL_ATON_CONFIG_EBDBG_BSIZE) - 1)
+ 233:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 234:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ 235:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_runtime_get_info(stai_runtime_info *info)
+ 236:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 268              		.loc 1 236 1 is_stmt 1 view -0
+ 269              		.cfi_startproc
+ 270              		@ args = 0, pretend = 0, frame = 0
+ 271              		@ frame_needed = 0, uses_anonymous_args = 0
+ 237:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (info)
+ 272              		.loc 1 237 3 view .LVU62
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 10
+
+
+ 236:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (info)
+ 273              		.loc 1 236 1 is_stmt 0 view .LVU63
+ 274 0000 30B5     		push	{r4, r5, lr}
+ 275              		.cfi_def_cfa_offset 12
+ 276              		.cfi_offset 4, -12
+ 277              		.cfi_offset 5, -8
+ 278              		.cfi_offset 14, -4
+ 279              		.loc 1 237 6 view .LVU64
+ 280 0002 0446     		mov	r4, r0
+ 281 0004 40B1     		cbz	r0, .L19
+ 282              	.LBB10:
+ 238:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 239:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     static const stai_runtime_info _info = {
+ 283              		.loc 1 239 5 is_stmt 1 view .LVU65
+ 240:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       .runtime_version = STAI_INIT_VERSION(LL_ATON_VERSION_MAJOR, LL_ATON_VERSION_MINOR, LL_ATON_VE
+ 241:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       .tools_version = STAI_INIT_VERSION(STAI_TOOLS_VERSION_MAJOR, STAI_TOOLS_VERSION_MINOR, STAI_T
+ 242:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       .api_version = STAI_INIT_VERSION(STAI_API_VERSION_MAJOR, STAI_API_VERSION_MINOR, STAI_API_VER
+ 243:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 244:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       .runtime_build = (((LL_ATON_PLATFORM & STAI_RT_PLAT_MASK) << STAI_RT_PLAT_BSHIFT) |
+ 245:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                         ((LL_ATON_OSAL & STAI_RT_OSAL_MASK) << STAI_RT_OSAL_BSHIFT) |
+ 246:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                         ((LL_ATON_RT_MODE & STAI_RT_MODE_MASK) << STAI_RT_MODE_BSHIFT) |
+ 247:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                         ((LL_ATON_DBG_BUFFER_INFO_EXCLUDED & STAI_RT_BINFO_MASK) << STAI_RT_BINFO_B
+ 248:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                         ((LL_ATON_ENABLE_CLOCK_GATING & STAI_RT_CLKG_MASK) << STAI_RT_CLKG_BSHIFT)
+ 249:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #if LL_ATON_SW_FALLBACK == 1
+ 250:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                         | (1 << STAI_RT_SWF_BSHIFT)
+ 251:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif // LL_ATON_SW_FALLBACK == 1
+ 252:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #ifdef LL_ATON_DUMP_DEBUG_API
+ 253:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                         | (1 << STAI_RT_DD_BSHIFT)
+ 254:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif // LL_ATON_DUMP_DEBUG_API
+ 255:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #ifdef LL_ATON_EB_DBG_INFO
+ 256:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                         | (1 << STAI_RT_EBDBG_BSHIFT)
+ 257:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** #endif // LL_ATON_EB_DBG_INFO
+ 258:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****                             ),
+ 259:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 260:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       .compiler_id = _STAI_COMPILER_ID,
+ 261:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       .compiler_desc = _STAI_COMPILER_DESC,
+ 262:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     };
+ 263:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 264:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     *info = _info;
+ 284              		.loc 1 264 5 view .LVU66
+ 285              		.loc 1 264 11 is_stmt 0 view .LVU67
+ 286 0006 054D     		ldr	r5, .L20
+ 287 0008 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 288              	.LVL15:
+ 289              		.loc 1 264 11 view .LVU68
+ 290 000a 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 291              	.LVL16:
+ 292              		.loc 1 264 11 view .LVU69
+ 293 000c 95E80300 		ldm	r5, {r0, r1}
+ 294 0010 84E80300 		stm	r4, {r0, r1}
+ 265:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     return STAI_SUCCESS;
+ 295              		.loc 1 265 5 is_stmt 1 view .LVU70
+ 296              		.loc 1 265 12 is_stmt 0 view .LVU71
+ 297 0014 0020     		movs	r0, #0
+ 298              	.LVL17:
+ 299              	.L17:
+ 300              		.loc 1 265 12 view .LVU72
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 11
+
+
+ 301              	.LBE10:
+ 266:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 267:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 268:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_ERROR_NETWORK_INVALID_API_ARGUMENTS;
+ 269:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 302              		.loc 1 269 1 view .LVU73
+ 303 0016 30BD     		pop	{r4, r5, pc}
+ 304              	.LVL18:
+ 305              	.L19:
+ 268:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 306              		.loc 1 268 10 view .LVU74
+ 307 0018 0148     		ldr	r0, .L20+4
+ 308              	.LVL19:
+ 268:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 309              		.loc 1 268 10 view .LVU75
+ 310 001a FCE7     		b	.L17
+ 311              	.L21:
+ 312              		.align	2
+ 313              	.L20:
+ 314 001c 00000000 		.word	_info.1
+ 315 0020 01000200 		.word	131073
+ 316              		.cfi_endproc
+ 317              	.LFE316:
+ 319              		.section	.text.stai_cache_mcu_clean_range,"ax",%progbits
+ 320              		.align	1
+ 321              		.global	stai_cache_mcu_clean_range
+ 322              		.syntax unified
+ 323              		.thumb
+ 324              		.thumb_func
+ 326              	stai_cache_mcu_clean_range:
+ 327              	.LVL20:
+ 328              	.LFB317:
+ 270:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 271:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ 272:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_cache_mcu_clean_range(uintptr_t virtual_addr, stai_size size)
+ 273:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 329              		.loc 1 273 1 is_stmt 1 view -0
+ 330              		.cfi_startproc
+ 331              		@ args = 0, pretend = 0, frame = 0
+ 332              		@ frame_needed = 0, uses_anonymous_args = 0
+ 274:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_Cache_MCU_Clean_Range(virtual_addr, size);
+ 333              		.loc 1 274 3 view .LVU77
+ 334              	.LBB13:
+ 335              	.LBI13:
+ 336              		.file 2 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h"
+   1:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** /**
+   2:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  ******************************************************************************
+   3:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * @file    ll_aton_caches_interface.h
+   4:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * @author  SRA Artificial Intelligence & Embedded Architectures
+   5:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * @brief   Header file for defining an implementing generic cache handling
+   6:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  *          functions for the application writer
+   7:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  ******************************************************************************
+   8:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * @attention
+   9:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  *
+  10:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * Copyright (c) 2024 STMicroelectronics.
+  11:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * All rights reserved.
+  12:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  *
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 12
+
+
+  13:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * This software is licensed under terms that can be found in the LICENSE file
+  14:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * in the root directory of this software component.
+  15:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  * If no LICENSE file comes with this software, it is provided AS-IS.
+  16:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  *
+  17:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  ******************************************************************************
+  18:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****  */
+  19:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  20:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #ifndef __LL_ATON_CACHES_H
+  21:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #define __LL_ATON_CACHES_H
+  22:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  23:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #include <stdint.h>
+  24:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  25:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #ifdef __cplusplus
+  26:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** extern "C"
+  27:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** {
+  28:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #endif
+  29:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  30:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #include "ll_aton_attributes.h"
+  31:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #include "ll_aton_osal.h"
+  32:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #include "ll_aton_platform.h"
+  33:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  34:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #if !defined(BUILD_AI_NETWORK_RELOC)
+  35:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  36:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #if (LL_ATON_PLATFORM == LL_ATON_PLAT_STM32N6)
+  37:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  38:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   /*** MCU cache maintenance functions ***/
+  39:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  40:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #include "mcu_cache.h"
+  41:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  42:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   /**
+  43:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @brief perform MCU cache clean maintenance operation on an address range
+  44:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @details whenever the content of a buffer is changed by the application (which is especially t
+  45:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *          buffers) cache maintenance MUST be taken into account before being able to run the ne
+  46:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] virtual_addr start address (host-side/virtual) of address range
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] size size of address range
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *
+  49:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note the address range should fulfill alignment constraints with respect to the MCU cache lin
+  50:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       for both its `address` & `size` (to better correspond to what this operation will actual
+  51:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note this function is intended to handle the case where a buffer has been filled by the MCU/p
+  52:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       passing thru the MCU cache) and should be called AFTER that the buffer has been filled
+  53:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    */
+  54:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   static inline void LL_ATON_Cache_MCU_Clean_Range(uintptr_t virtual_addr, uint32_t size)
+ 337              		.loc 2 54 22 view .LVU78
+ 338              	.LBB14:
+  55:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   {
+  56:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_LOCK_MCU_CACHE();
+ 339              		.loc 2 56 34 view .LVU79
+  57:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     mcu_cache_clean_range(virtual_addr, virtual_addr + size);
+ 340              		.loc 2 57 5 view .LVU80
+ 341              	.LBE14:
+ 342              	.LBE13:
+ 273:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_Cache_MCU_Clean_Range(virtual_addr, size);
+ 343              		.loc 1 273 1 is_stmt 0 view .LVU81
+ 344 0000 08B5     		push	{r3, lr}
+ 345              		.cfi_def_cfa_offset 8
+ 346              		.cfi_offset 3, -8
+ 347              		.cfi_offset 14, -4
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 13
+
+
+ 348              	.LBB16:
+ 349              	.LBB15:
+ 350              		.loc 2 57 5 view .LVU82
+ 351 0002 0144     		add	r1, r1, r0
+ 352              	.LVL21:
+ 353              		.loc 2 57 5 view .LVU83
+ 354 0004 FFF7FEFF 		bl	mcu_cache_clean_range
+ 355              	.LVL22:
+  58:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_UNLOCK_MCU_CACHE();
+ 356              		.loc 2 58 36 is_stmt 1 view .LVU84
+ 357              		.loc 2 58 36 is_stmt 0 view .LVU85
+ 358              	.LBE15:
+ 359              	.LBE16:
+ 275:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_SUCCESS;
+ 360              		.loc 1 275 3 is_stmt 1 view .LVU86
+ 276:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 361              		.loc 1 276 1 is_stmt 0 view .LVU87
+ 362 0008 0020     		movs	r0, #0
+ 363 000a 08BD     		pop	{r3, pc}
+ 364              		.cfi_endproc
+ 365              	.LFE317:
+ 367              		.section	.text.stai_cache_mcu_invalidate_range,"ax",%progbits
+ 368              		.align	1
+ 369              		.global	stai_cache_mcu_invalidate_range
+ 370              		.syntax unified
+ 371              		.thumb
+ 372              		.thumb_func
+ 374              	stai_cache_mcu_invalidate_range:
+ 375              	.LVL23:
+ 376              	.LFB318:
+ 277:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 278:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ 279:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_cache_mcu_invalidate_range(uintptr_t virtual_addr, stai_size size)
+ 280:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 377              		.loc 1 280 1 is_stmt 1 view -0
+ 378              		.cfi_startproc
+ 379              		@ args = 0, pretend = 0, frame = 0
+ 380              		@ frame_needed = 0, uses_anonymous_args = 0
+ 281:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_Cache_MCU_Invalidate_Range(virtual_addr, size);
+ 381              		.loc 1 281 3 view .LVU89
+ 382              	.LBB19:
+ 383              	.LBI19:
+  59:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   }
+  60:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  61:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   /**
+  62:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @brief perform MCU cache invalidate maintenance operation on an address range
+  63:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @details whenever the content of a buffer is changed by the application (which is especially t
+  64:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *          buffers) cache maintenance MUST be taken into account before being able to run the ne
+  65:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] virtual_addr start address (host-side/virtual) of address range
+  66:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] size size of address range
+  67:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *
+  68:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note the address range should fulfill alignment constraints with respect to the MCU cache lin
+  69:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       for both its `address` & `size` (to better correspond to what this operation will actual
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note this function is intended to handle the case where a buffer has been filled by-passing t
+  71:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       cache (e.g. using a DMA) and should be called BEFORE the buffer gets filled
+  72:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    */
+  73:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   static inline void LL_ATON_Cache_MCU_Invalidate_Range(uintptr_t virtual_addr, uint32_t size)
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 14
+
+
+ 384              		.loc 2 73 22 view .LVU90
+ 385              	.LBB20:
+  74:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   {
+  75:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_LOCK_MCU_CACHE();
+ 386              		.loc 2 75 34 view .LVU91
+  76:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     mcu_cache_invalidate_range(virtual_addr, virtual_addr + size);
+ 387              		.loc 2 76 5 view .LVU92
+ 388              	.LBE20:
+ 389              	.LBE19:
+ 280:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_Cache_MCU_Invalidate_Range(virtual_addr, size);
+ 390              		.loc 1 280 1 is_stmt 0 view .LVU93
+ 391 0000 08B5     		push	{r3, lr}
+ 392              		.cfi_def_cfa_offset 8
+ 393              		.cfi_offset 3, -8
+ 394              		.cfi_offset 14, -4
+ 395              	.LBB22:
+ 396              	.LBB21:
+ 397              		.loc 2 76 5 view .LVU94
+ 398 0002 0144     		add	r1, r1, r0
+ 399              	.LVL24:
+ 400              		.loc 2 76 5 view .LVU95
+ 401 0004 FFF7FEFF 		bl	mcu_cache_invalidate_range
+ 402              	.LVL25:
+  77:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_UNLOCK_MCU_CACHE();
+ 403              		.loc 2 77 36 is_stmt 1 view .LVU96
+ 404              		.loc 2 77 36 is_stmt 0 view .LVU97
+ 405              	.LBE21:
+ 406              	.LBE22:
+ 282:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_SUCCESS;
+ 407              		.loc 1 282 3 is_stmt 1 view .LVU98
+ 283:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 408              		.loc 1 283 1 is_stmt 0 view .LVU99
+ 409 0008 0020     		movs	r0, #0
+ 410 000a 08BD     		pop	{r3, pc}
+ 411              		.cfi_endproc
+ 412              	.LFE318:
+ 414              		.section	.text.stai_ext_cache_npu_clean_range,"ax",%progbits
+ 415              		.align	1
+ 416              		.global	stai_ext_cache_npu_clean_range
+ 417              		.syntax unified
+ 418              		.thumb
+ 419              		.thumb_func
+ 421              	stai_ext_cache_npu_clean_range:
+ 422              	.LVL26:
+ 423              	.LFB319:
+ 284:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 285:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ 286:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_ext_cache_npu_clean_range(uintptr_t virtual_addr, stai_size size)
+ 287:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 424              		.loc 1 287 1 is_stmt 1 view -0
+ 425              		.cfi_startproc
+ 426              		@ args = 0, pretend = 0, frame = 0
+ 427              		@ frame_needed = 0, uses_anonymous_args = 0
+ 288:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_Cache_NPU_Clean_Range(virtual_addr, size);
+ 428              		.loc 1 288 3 view .LVU101
+ 429              	.LBB25:
+ 430              	.LBI25:
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 15
+
+
+  78:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   }
+  79:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+  80:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   /**
+  81:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @brief perform MCU cache clean & invalidate maintenance operation on an address range
+  82:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @details whenever the content of a buffer is changed by the application (which is especially t
+  83:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *          buffers) cache maintenance MUST be taken into account before being able to run the ne
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] virtual_addr start address (host-side/virtual) of address range
+  85:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] size size of address range
+  86:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *
+  87:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note the address range should fulfill alignment constraints with respect to the MCU cache lin
+  88:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       for both its `address` & `size` (to better correspond to what this operation will actual
+  89:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note this function is intended to handle the case where a buffer has been filled by the MCU/p
+  90:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       (such passing thru the MCU cache) and is gonna to be modified immediately afterwards by-
+  91:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       the MCU/processor cache (e.g. using a DMA). It should be called AFTER that the buffer ha
+  92:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       filled
+  93:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    */
+  94:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   static inline void LL_ATON_Cache_MCU_Clean_Invalidate_Range(uintptr_t virtual_addr, uint32_t size
+  95:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   {
+  96:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_LOCK_MCU_CACHE();
+  97:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     mcu_cache_clean_invalidate_range(virtual_addr, virtual_addr + size);
+  98:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_UNLOCK_MCU_CACHE();
+  99:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   }
+ 100:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+ 101:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   /*** NPU cache maintenance functions ***/
+ 102:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+ 103:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** #include "npu_cache.h"
+ 104:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+ 105:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   /**
+ 106:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @brief perform NPU cache clean maintenance operation on an address range
+ 107:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @details whenever the content of a buffer is changed by the application (which is especially t
+ 108:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *          buffers) cache maintenance MUST be taken into account before being able to run the ne
+ 109:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] address start address (host-side/virtual) of address range
+ 110:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] size size of address range
+ 111:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *
+ 112:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note this cache maintenance function needs only be called for buffers which are NPU cacheable
+ 113:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note the address range should fulfill alignment constraints with respect to the NPU cache lin
+ 114:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       for both its `address` & `size` (to better correspond to what this operation will actual
+ 115:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note this function is intended to handle the case where a buffer has been filled passing thru
+ 116:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       and should be called AFTER that the buffer has been filled
+ 117:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    */
+ 118:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   static inline void LL_ATON_Cache_NPU_Clean_Range(uintptr_t virtual_addr, uint32_t size)
+ 431              		.loc 2 118 22 view .LVU102
+ 432              	.LBB26:
+ 119:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   {
+ 120:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_LOCK_NPU_CACHE();
+ 433              		.loc 2 120 34 view .LVU103
+ 121:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     npu_cache_clean_range(ATON_LIB_VIRTUAL_TO_PHYSICAL_ADDR(virtual_addr),
+ 434              		.loc 2 121 5 view .LVU104
+ 435              	.LBE26:
+ 436              	.LBE25:
+ 287:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_Cache_NPU_Clean_Range(virtual_addr, size);
+ 437              		.loc 1 287 1 is_stmt 0 view .LVU105
+ 438 0000 08B5     		push	{r3, lr}
+ 439              		.cfi_def_cfa_offset 8
+ 440              		.cfi_offset 3, -8
+ 441              		.cfi_offset 14, -4
+ 442              	.LBB28:
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 16
+
+
+ 443              	.LBB27:
+ 444              		.loc 2 121 5 view .LVU106
+ 445 0002 0144     		add	r1, r1, r0
+ 446              	.LVL27:
+ 447              		.loc 2 121 5 view .LVU107
+ 448 0004 FFF7FEFF 		bl	npu_cache_clean_range
+ 449              	.LVL28:
+ 122:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****                           ATON_LIB_VIRTUAL_TO_PHYSICAL_ADDR(virtual_addr + size));
+ 123:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_UNLOCK_NPU_CACHE();
+ 450              		.loc 2 123 36 is_stmt 1 view .LVU108
+ 451              		.loc 2 123 36 is_stmt 0 view .LVU109
+ 452              	.LBE27:
+ 453              	.LBE28:
+ 289:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_SUCCESS;
+ 454              		.loc 1 289 3 is_stmt 1 view .LVU110
+ 290:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 455              		.loc 1 290 1 is_stmt 0 view .LVU111
+ 456 0008 0020     		movs	r0, #0
+ 457 000a 08BD     		pop	{r3, pc}
+ 458              		.cfi_endproc
+ 459              	.LFE319:
+ 461              		.section	.text.stai_ext_cache_npu_clean_invalidate_range,"ax",%progbits
+ 462              		.align	1
+ 463              		.global	stai_ext_cache_npu_clean_invalidate_range
+ 464              		.syntax unified
+ 465              		.thumb
+ 466              		.thumb_func
+ 468              	stai_ext_cache_npu_clean_invalidate_range:
+ 469              	.LVL29:
+ 470              	.LFB320:
+ 291:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 292:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ 293:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_ext_cache_npu_clean_invalidate_range(uintptr_t virtual_addr, stai_size size)
+ 294:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 471              		.loc 1 294 1 is_stmt 1 view -0
+ 472              		.cfi_startproc
+ 473              		@ args = 0, pretend = 0, frame = 0
+ 474              		@ frame_needed = 0, uses_anonymous_args = 0
+ 295:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* NOTE: The ATON NPU cache does not provide a pure invalidate-range function, but only a clean-i
+ 296:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****      function! One has to take this into account when using `stai_ext_cache_npu_clean_invalidate_ra
+ 297:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_Cache_NPU_Clean_Invalidate_Range(virtual_addr, size);
+ 475              		.loc 1 297 3 view .LVU113
+ 476              	.LBB31:
+ 477              	.LBI31:
+ 124:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   }
+ 125:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h **** 
+ 126:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   /**
+ 127:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @brief perform NPU cache clean & invalidate maintenance operation on an address range
+ 128:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @details whenever the content of a buffer is changed by the application (which is especially t
+ 129:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *          buffers) cache maintenance MUST be taken into account before being able to run the ne
+ 130:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] address start address (host-side/virtual) of address range
+ 131:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @param[in] size size of address range
+ 132:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *
+ 133:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note this cache maintenance function needs only be called for buffers which are NPU cacheable
+ 134:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note the address range should fulfill alignment constraints with respect to the NPU cache lin
+ 135:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       for both its `address` & `size` (to better correspond to what this operation will actual
+ 136:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note this function is intended to handle the case where a buffer is NPU cacheable and has bee
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 17
+
+
+ 137:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       the NPU cache and should be called BEFORE the buffer gets filled
+ 138:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    * @note the NPU cache provides only a "clean & invalidate range" (and not a - pure - "invalidate
+ 139:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       maintenance function which will be called by "stai_ext_cache_npu_clean_invalidate_range(
+ 140:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    *       even more important to call it BEFORE the buffer gets filled
+ 141:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****    */
+ 142:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   static inline void LL_ATON_Cache_NPU_Clean_Invalidate_Range(uintptr_t virtual_addr, uint32_t size
+ 478              		.loc 2 142 22 view .LVU114
+ 479              	.LBB32:
+ 143:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****   {
+ 144:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     /* NOTE: The ATON NPU cache does not provide a pure invalidate-range function, but only a clean
+ 145:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****        function! One has to take this into account when using `stai_ext_cache_npu_clean_invalidate_
+ 146:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_LOCK_NPU_CACHE();
+ 480              		.loc 2 146 34 view .LVU115
+ 147:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     npu_cache_clean_invalidate_range(ATON_LIB_VIRTUAL_TO_PHYSICAL_ADDR(virtual_addr),
+ 481              		.loc 2 147 5 view .LVU116
+ 482              	.LBE32:
+ 483              	.LBE31:
+ 294:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* NOTE: The ATON NPU cache does not provide a pure invalidate-range function, but only a clean-i
+ 484              		.loc 1 294 1 is_stmt 0 view .LVU117
+ 485 0000 08B5     		push	{r3, lr}
+ 486              		.cfi_def_cfa_offset 8
+ 487              		.cfi_offset 3, -8
+ 488              		.cfi_offset 14, -4
+ 489              	.LBB34:
+ 490              	.LBB33:
+ 491              		.loc 2 147 5 view .LVU118
+ 492 0002 0144     		add	r1, r1, r0
+ 493              	.LVL30:
+ 494              		.loc 2 147 5 view .LVU119
+ 495 0004 FFF7FEFF 		bl	npu_cache_clean_invalidate_range
+ 496              	.LVL31:
+ 148:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****                                      ATON_LIB_VIRTUAL_TO_PHYSICAL_ADDR(virtual_addr + size));
+ 149:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_caches_interface.h ****     LL_ATON_OSAL_UNLOCK_NPU_CACHE();
+ 497              		.loc 2 149 36 is_stmt 1 view .LVU120
+ 498              		.loc 2 149 36 is_stmt 0 view .LVU121
+ 499              	.LBE33:
+ 500              	.LBE34:
+ 298:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_SUCCESS;
+ 501              		.loc 1 298 3 is_stmt 1 view .LVU122
+ 299:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 502              		.loc 1 299 1 is_stmt 0 view .LVU123
+ 503 0008 0020     		movs	r0, #0
+ 504 000a 08BD     		pop	{r3, pc}
+ 505              		.cfi_endproc
+ 506              	.LFE320:
+ 508              		.section	.text.stai_ext_wfe,"ax",%progbits
+ 509              		.align	1
+ 510              		.global	stai_ext_wfe
+ 511              		.syntax unified
+ 512              		.thumb
+ 513              		.thumb_func
+ 515              	stai_ext_wfe:
+ 516              	.LFB321:
+ 300:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 301:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_API_ENTRY
+ 302:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code stai_ext_wfe(void)
+ 303:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 18
+
+
+ 517              		.loc 1 303 1 is_stmt 1 view -0
+ 518              		.cfi_startproc
+ 519              		@ args = 0, pretend = 0, frame = 0
+ 520              		@ frame_needed = 0, uses_anonymous_args = 0
+ 521              		@ link register save eliminated.
+ 304:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_OSAL_WFE();
+ 522              		.loc 1 304 3 view .LVU125
+ 523              		.syntax unified
+ 524              	@ 304 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c" 1
+ 525 0000 20BF     		wfe
+ 526              	@ 0 "" 2
+ 305:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_SUCCESS;
+ 527              		.loc 1 305 3 view .LVU126
+ 306:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 528              		.loc 1 306 1 is_stmt 0 view .LVU127
+ 529              		.thumb
+ 530              		.syntax unified
+ 531 0002 0020     		movs	r0, #0
+ 532 0004 7047     		bx	lr
+ 533              		.cfi_endproc
+ 534              	.LFE321:
+ 536              		.section	.text.__ll_aton_stai_init_network_instance,"ax",%progbits
+ 537              		.align	1
+ 538              		.global	__ll_aton_stai_init_network_instance
+ 539              		.syntax unified
+ 540              		.thumb
+ 541              		.thumb_func
+ 543              	__ll_aton_stai_init_network_instance:
+ 544              	.LVL32:
+ 545              	.LFB322:
+ 307:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 308:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /*****************************************************************************/
+ 309:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /**  Internal stai APIs                                                     **/
+ 310:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** /*****************************************************************************/
+ 311:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_INTERNAL_ENTRY
+ 312:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** void __ll_aton_stai_init_network_instance(_stai_aton_context *nn_context)
+ 313:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 546              		.loc 1 313 1 is_stmt 1 view -0
+ 547              		.cfi_startproc
+ 548              		@ args = 0, pretend = 0, frame = 0
+ 549              		@ frame_needed = 0, uses_anonymous_args = 0
+ 550              		@ link register save eliminated.
+ 314:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT((nn_context != NULL) && (nn_context->network_instance.network != NULL)); // may never
+ 551              		.loc 1 314 3 view .LVU129
+ 552              		.loc 1 314 3 view .LVU130
+ 553              		.loc 1 314 3 view .LVU131
+ 554              		.loc 1 314 86 view .LVU132
+ 315:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 316:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   NN_Instance_TypeDef *nn_instance_ptr = &nn_context->network_instance;
+ 555              		.loc 1 316 3 view .LVU133
+ 317:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_Init_Network(nn_instance_ptr);
+ 556              		.loc 1 317 3 view .LVU134
+ 557 0000 FFF7FEBF 		b	LL_ATON_RT_Init_Network
+ 558              	.LVL33:
+ 559              		.loc 1 317 3 is_stmt 0 view .LVU135
+ 560              		.cfi_endproc
+ 561              	.LFE322:
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 19
+
+
+ 563              		.section	.text.__ll_aton_stai_deinit_network_instance,"ax",%progbits
+ 564              		.align	1
+ 565              		.global	__ll_aton_stai_deinit_network_instance
+ 566              		.syntax unified
+ 567              		.thumb
+ 568              		.thumb_func
+ 570              	__ll_aton_stai_deinit_network_instance:
+ 571              	.LVL34:
+ 572              	.LFB323:
+ 318:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 319:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 320:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_INTERNAL_ENTRY
+ 321:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** void __ll_aton_stai_deinit_network_instance(_stai_aton_context *nn_context)
+ 322:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 573              		.loc 1 322 1 is_stmt 1 view -0
+ 574              		.cfi_startproc
+ 575              		@ args = 0, pretend = 0, frame = 0
+ 576              		@ frame_needed = 0, uses_anonymous_args = 0
+ 577              		@ link register save eliminated.
+ 323:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT((nn_context != NULL) && (nn_context->network_instance.network != NULL)); // may never
+ 578              		.loc 1 323 3 view .LVU137
+ 579              		.loc 1 323 3 view .LVU138
+ 580              		.loc 1 323 3 view .LVU139
+ 581              		.loc 1 323 86 view .LVU140
+ 324:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 325:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   NN_Instance_TypeDef *nn_instance_ptr = &nn_context->network_instance;
+ 582              		.loc 1 325 3 view .LVU141
+ 326:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_DeInit_Network(nn_instance_ptr);
+ 583              		.loc 1 326 3 view .LVU142
+ 584 0000 FFF7FEBF 		b	LL_ATON_RT_DeInit_Network
+ 585              	.LVL35:
+ 586              		.loc 1 326 3 is_stmt 0 view .LVU143
+ 587              		.cfi_endproc
+ 588              	.LFE323:
+ 590              		.section	.text.__ll_aton_stai_set_execution_status,"ax",%progbits
+ 591              		.align	1
+ 592              		.global	__ll_aton_stai_set_execution_status
+ 593              		.syntax unified
+ 594              		.thumb
+ 595              		.thumb_func
+ 597              	__ll_aton_stai_set_execution_status:
+ 598              	.LVL36:
+ 599              	.LFB324:
+ 327:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 328:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 329:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_INTERNAL_ENTRY
+ 330:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** void __ll_aton_stai_set_execution_status(LL_ATON_RT_RetValues_t status, _stai_aton_context *nn_cont
+ 331:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 600              		.loc 1 331 1 is_stmt 1 view -0
+ 601              		.cfi_startproc
+ 602              		@ args = 0, pretend = 0, frame = 0
+ 603              		@ frame_needed = 0, uses_anonymous_args = 0
+ 604              		@ link register save eliminated.
+ 332:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT(nn_context != NULL);
+ 605              		.loc 1 332 3 view .LVU145
+ 606              		.loc 1 332 3 view .LVU146
+ 607              		.loc 1 332 3 view .LVU147
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 20
+
+
+ 608              		.loc 1 332 34 view .LVU148
+ 333:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 334:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   switch (status)
+ 609              		.loc 1 334 3 view .LVU149
+ 610 0000 0128     		cmp	r0, #1
+ 611 0002 05D0     		beq	.L30
+ 612 0004 0228     		cmp	r0, #2
+ 613 0006 05D0     		beq	.L31
+ 614 0008 08B9     		cbnz	r0, .L29
+ 335:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 336:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   case LL_ATON_RT_NO_WFE:
+ 337:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     nn_context->exec_status = STAI_RUNNING_NO_WFE;
+ 615              		.loc 1 337 5 view .LVU150
+ 616              		.loc 1 337 29 is_stmt 0 view .LVU151
+ 617 000a 1023     		movs	r3, #16
+ 618              	.L33:
+ 338:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 339:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   case LL_ATON_RT_WFE:
+ 340:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     nn_context->exec_status = STAI_RUNNING_WFE;
+ 341:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 342:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   case LL_ATON_RT_DONE:
+ 343:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     nn_context->exec_status = STAI_DONE;
+ 619              		.loc 1 343 29 view .LVU152
+ 620 000c 8B63     		str	r3, [r1, #56]
+ 344:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 621              		.loc 1 344 5 is_stmt 1 view .LVU153
+ 622              	.L29:
+ 345:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   default:
+ 346:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     STAI_ASSERT(false);
+ 347:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 348:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 349:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 623              		.loc 1 349 1 is_stmt 0 view .LVU154
+ 624 000e 7047     		bx	lr
+ 625              	.L30:
+ 340:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 626              		.loc 1 340 5 is_stmt 1 view .LVU155
+ 340:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 627              		.loc 1 340 29 is_stmt 0 view .LVU156
+ 628 0010 1123     		movs	r3, #17
+ 629 0012 FBE7     		b	.L33
+ 630              	.L31:
+ 343:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 631              		.loc 1 343 5 is_stmt 1 view .LVU157
+ 343:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 632              		.loc 1 343 29 is_stmt 0 view .LVU158
+ 633 0014 1223     		movs	r3, #18
+ 634 0016 F9E7     		b	.L33
+ 635              		.cfi_endproc
+ 636              	.LFE324:
+ 638              		.section	.text.__ll_aton_stai_get_execution_status,"ax",%progbits
+ 639              		.align	1
+ 640              		.global	__ll_aton_stai_get_execution_status
+ 641              		.syntax unified
+ 642              		.thumb
+ 643              		.thumb_func
+ 645              	__ll_aton_stai_get_execution_status:
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 21
+
+
+ 646              	.LVL37:
+ 647              	.LFB325:
+ 350:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 351:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_INTERNAL_ENTRY
+ 352:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code __ll_aton_stai_get_execution_status(_stai_aton_context *nn_context)
+ 353:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 648              		.loc 1 353 1 is_stmt 1 view -0
+ 649              		.cfi_startproc
+ 650              		@ args = 0, pretend = 0, frame = 0
+ 651              		@ frame_needed = 0, uses_anonymous_args = 0
+ 652              		@ link register save eliminated.
+ 354:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT(nn_context != NULL);
+ 653              		.loc 1 354 3 view .LVU160
+ 654              		.loc 1 354 3 view .LVU161
+ 655              		.loc 1 354 3 view .LVU162
+ 656              		.loc 1 354 34 view .LVU163
+ 355:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return nn_context->exec_status;
+ 657              		.loc 1 355 3 view .LVU164
+ 356:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 658              		.loc 1 356 1 is_stmt 0 view .LVU165
+ 659 0000 806B     		ldr	r0, [r0, #56]
+ 660              	.LVL38:
+ 661              		.loc 1 356 1 view .LVU166
+ 662 0002 7047     		bx	lr
+ 663              		.cfi_endproc
+ 664              	.LFE325:
+ 666              		.section	.text.__ll_aton_stai_reset,"ax",%progbits
+ 667              		.align	1
+ 668              		.global	__ll_aton_stai_reset
+ 669              		.syntax unified
+ 670              		.thumb
+ 671              		.thumb_func
+ 673              	__ll_aton_stai_reset:
+ 674              	.LVL39:
+ 675              	.LFB327:
+ 357:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 358:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_INTERNAL_ENTRY
+ 359:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** static void __ll_aton_stai_run_synchonously(NN_Instance_TypeDef *nn_instance)
+ 360:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 361:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT(nn_instance != NULL);
+ 362:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT(nn_instance->exec_state.current_epoch_block != NULL);
+ 363:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _stai_aton_context *stai_nn_ctx =
+ 364:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       (_stai_aton_context *)((void *)nn_instance) - offsetof(_stai_aton_context, network_instance);
+ 365:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 366:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_RetValues_t ll_aton_rt_ret;
+ 367:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 368:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   do
+ 369:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 370:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     /* Execute first/next step of ATON runtime */
+ 371:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(nn_instance);
+ 372:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     __ll_aton_stai_set_execution_status(ll_aton_rt_ret, stai_nn_ctx);
+ 373:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 374:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     /* Wait for next event */
+ 375:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     if (ll_aton_rt_ret == LL_ATON_RT_WFE)
+ 376:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     {
+ 377:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       LL_ATON_OSAL_WFE();
+ 378:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     }
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 22
+
+
+ 379:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   } while (ll_aton_rt_ret != LL_ATON_RT_DONE);
+ 380:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 381:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 382:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_INTERNAL_ENTRY
+ 383:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code __ll_aton_stai_reset(stai_network *network)
+ 384:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 676              		.loc 1 384 1 is_stmt 1 view -0
+ 677              		.cfi_startproc
+ 678              		@ args = 0, pretend = 0, frame = 0
+ 679              		@ frame_needed = 0, uses_anonymous_args = 0
+ 385:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* de-init network */
+ 386:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   __LL_ATON_STAI_ACQUIRE_INTERFACE(nn_i_ptr, network);
+ 680              		.loc 1 386 3 view .LVU168
+ 681              		.loc 1 386 3 view .LVU169
+ 682              	.LBB39:
+ 683              	.LBI39:
+ 684              		.file 3 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h"
+   1:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /**
+   2:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  ******************************************************************************
+   3:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * @file    ll_aton_stai_internal.h
+   4:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * @author  SRA Artificial Intelligence & Embedded Architectures
+   5:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * @brief   Implementation of ST.AI public & internal APIs for ATON
+   6:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  ******************************************************************************
+   7:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * @attention
+   8:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  *
+   9:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * Copyright (c) 2024 STMicroelectronics.
+  10:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * All rights reserved.
+  11:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  *
+  12:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * This software is licensed under terms that can be found in the LICENSE file
+  13:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * in the root directory of this software component.
+  14:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  *
+  16:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  ******************************************************************************
+  17:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****  */
+  18:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  19:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #ifndef __LL_ATON_STAI_INTERNAL_H
+  20:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define __LL_ATON_STAI_INTERNAL_H
+  21:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  22:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** // ATON headers
+  23:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #include "ll_aton_rt_user_api.h"
+  24:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #include "ll_aton_util.h"
+  25:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  26:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** // ST.AI headers
+  27:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #include "stai_aton_common.h"
+  28:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  29:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #ifdef __cplusplus
+  30:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** extern "C"
+  31:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** {
+  32:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #endif
+  33:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  34:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /*****************************************************************************/
+  35:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_INTERNAL_ENTRY /* STAI_INTERNAL_ENTRY */
+  36:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_SIZE(_size)    ((stai_size)(_size))
+  37:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  38:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /*****************************************************************************/
+  39:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_INIT_BUFFER(_flags, _size, _address)                                                  
+  40:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 23
+
+
+  41:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     .size = (_size), .address = (uintptr_t)(_address), .flags = (_flags),                          
+  42:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   }
+  43:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  44:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_INIT_TENSOR(_name, _flags, _fmt, _size_bytes, _shape, _scale, _zeropoint)             
+  45:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+  46:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     .size_bytes = (_size_bytes), .flags = (_flags), .format = (stai_format)(_fmt), .shape = STAI_PA
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     .scale = STAI_PACK(_scale), .zeropoint = STAI_PACK(_zeropoint), .name = (_name)                
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   }
+  49:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  50:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_INIT_ARRAY(_size, _ptr)                                                               
+  51:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+  52:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     .size = STAI_SIZE(_size), .data = STAI_PACK(_ptr)                                              
+  53:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   }
+  54:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  55:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_CAST_ARRAY(_type, _size, _ptr)                                                        
+  56:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+  57:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     .size = STAI_SIZE(_size), .data = (_type)STAI_PACK(_ptr)                                       
+  58:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   }
+  59:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  60:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_DECLARE_ARRAY(_type, _size, _array_initializer)                                       
+  61:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+  62:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     .size = STAI_SIZE(_size), .data = (_type[_size])STAI_PACK(_array_initializer)                  
+  63:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   }
+  64:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  65:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_EMPTY_ARRAY()                                                                         
+  66:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+  67:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     .size = 0, .data = NULL                                                                        
+  68:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   }
+  69:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define STAI_INIT_VERSION(_major, _minor, _micro)                                                  
+  71:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+  72:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     .major = (_major), .minor = (_minor), .micro = (_micro), .reserved = 0x0                       
+  73:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   }
+  74:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  75:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /*****************************************************************************/
+  76:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /**  Internal ATON ST.AI APIs                                               **/
+  77:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /*****************************************************************************/
+  78:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  79:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /*****************************************************************************/
+  80:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /**Macros **/
+  81:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /* Set context error */
+  82:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define __LL_ATON_STAI_SET_1ST_CTX_ERROR_AND_RETURN(ctx, err)                                      
+  83:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   do                                                                                               
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+  85:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     /* check context handle */                                                                     
+  86:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     if (!(ctx))                                                                                    
+  87:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****       return STAI_ERROR_NETWORK_INVALID_CONTEXT_HANDLE;                                            
+  88:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****                                                                                                    
+  89:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     if (((ctx)->first_error) < STAI_ERROR_GENERIC)                                                 
+  90:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****       (ctx)->first_error = (err);                                                                  
+  91:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     return (err);                                                                                  
+  92:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   } while (0)
+  93:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+  94:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** /* check context & network interface handle */
+  95:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define __LL_ATON_STAI_ACQUIRE_INTERFACE(_net_interface, _network)                                 
+  96:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   const NN_Interface_TypeDef *_net_interface = NULL;                                               
+  97:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   stai_return_code _ret = __ll_aton_stai_check_context_network_handle(_network, &_net_interface);  
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 24
+
+
+  98:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   if (_ret >= STAI_ERROR_GENERIC)                                                                  
+  99:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     return _ret;
+ 100:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+ 101:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** #define __LL_ATON_START_CONT_EXEC(_nn_instance)                                                    
+ 102:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   do                                                                                               
+ 103:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {                                                                                                
+ 104:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     STAI_ASSERT((_nn_instance) != NULL);                                                           
+ 105:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     _stai_aton_context *_stai_nn_ctx =                                                             
+ 106:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****         (_stai_aton_context *)((void *)(_nn_instance)) - offsetof(_stai_aton_context, network_insta
+ 107:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****                                                                                                    
+ 108:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     /* start/continue execution */                                                                 
+ 109:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     __ll_aton_stai_set_execution_status(LL_ATON_RT_RunEpochBlock((_nn_instance)), _stai_nn_ctx);   
+ 110:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****                                                                                                    
+ 111:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     /* get current execution status */                                                             
+ 112:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     stai_return_code current_exec_status = __ll_aton_stai_get_execution_status(_stai_nn_ctx);      
+ 113:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     return current_exec_status;                                                                    
+ 114:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   } while (0)
+ 115:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+ 116:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   /** Functions **/
+ 117:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   STAI_API_DECLARE_BEGIN
+ 118:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+ 119:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   STAI_INTERNAL_ENTRY
+ 120:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   static inline stai_return_code __ll_aton_stai_check_context_network_handle(stai_network *network,
+ 685              		.loc 3 120 34 view .LVU170
+ 686              	.LBB40:
+ 121:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****                                                                              const NN_Interface_Typ
+ 122:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****   {
+ 123:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     /* check context handle */
+ 124:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     if (!network)
+ 687              		.loc 3 124 5 view .LVU171
+ 688              	.LBE40:
+ 689              	.LBE39:
+ 384:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* de-init network */
+ 690              		.loc 1 384 1 is_stmt 0 view .LVU172
+ 691 0000 10B5     		push	{r4, lr}
+ 692              		.cfi_def_cfa_offset 8
+ 693              		.cfi_offset 4, -8
+ 694              		.cfi_offset 14, -4
+ 695              	.LBB43:
+ 696              	.LBB41:
+ 697              		.loc 3 124 8 view .LVU173
+ 698 0002 28B1     		cbz	r0, .L36
+ 125:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****       return STAI_ERROR_NETWORK_INVALID_CONTEXT_HANDLE;
+ 126:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+ 127:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     /* check network handle */
+ 128:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     _stai_aton_context *context_ptr = (_stai_aton_context *)network;
+ 699              		.loc 3 128 5 is_stmt 1 view .LVU174
+ 700              	.LVL40:
+ 129:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     const NN_Interface_TypeDef *nn_i_ptr = context_ptr->network_instance.network;
+ 701              		.loc 3 129 5 view .LVU175
+ 130:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     if (!nn_i_ptr)
+ 702              		.loc 3 130 5 view .LVU176
+ 703              		.loc 3 130 8 is_stmt 0 view .LVU177
+ 704 0004 0268     		ldr	r2, [r0]
+ 705 0006 52B9     		cbnz	r2, .L37
+ 131:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****     {
+ 132:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h ****       __LL_ATON_STAI_SET_1ST_CTX_ERROR_AND_RETURN(context_ptr, STAI_ERROR_NETWORK_INVALID_CONTEXT_H
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 25
+
+
+ 706              		.loc 3 132 7 is_stmt 1 view .LVU178
+ 707              		.loc 3 132 7 view .LVU179
+ 708              		.loc 3 132 7 view .LVU180
+ 709 0008 C26B     		ldr	r2, [r0, #60]
+ 710 000a B2F5003F 		cmp	r2, #131072
+ 711 000e 02D3     		bcc	.L38
+ 712              	.LVL41:
+ 713              	.L36:
+ 125:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+ 714              		.loc 3 125 14 is_stmt 0 view .LVU181
+ 715 0010 4FF44030 		mov	r0, #196608
+ 716              	.LVL42:
+ 717              	.L35:
+ 125:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.h **** 
+ 718              		.loc 3 125 14 view .LVU182
+ 719              	.LBE41:
+ 720              	.LBE43:
+ 387:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_LIB_UNUSED(nn_i_ptr);
+ 388:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _stai_aton_context *ctx = (_stai_aton_context *)network;
+ 389:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 390:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if ((ctx->exec_status != STAI_DONE) && (ctx->exec_status != STAI_RUNNING_NO_WFE))
+ 391:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 392:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     __LL_ATON_STAI_SET_1ST_CTX_ERROR_AND_RETURN(ctx, STAI_ERROR_NETWORK_STILL_RUNNING);
+ 393:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 394:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 395:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* reset network */
+ 396:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   ctx->exec_status = STAI_SUCCESS;
+ 397:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_Reset_Network(&ctx->network_instance);
+ 398:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 399:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return STAI_SUCCESS;
+ 400:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 721              		.loc 1 400 1 view .LVU183
+ 722 0014 10BD     		pop	{r4, pc}
+ 723              	.LVL43:
+ 724              	.L38:
+ 725              	.LBB44:
+ 726              	.LBB42:
+ 727              		.loc 3 132 7 is_stmt 1 view .LVU184
+ 728 0016 4FF44032 		mov	r2, #196608
+ 729 001a C263     		str	r2, [r0, #60]
+ 730              	.LVL44:
+ 731              		.loc 3 132 7 is_stmt 0 view .LVU185
+ 732              	.LBE42:
+ 733              	.LBE44:
+ 386:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_LIB_UNUSED(nn_i_ptr);
+ 734              		.loc 1 386 3 is_stmt 1 view .LVU186
+ 735 001c F8E7     		b	.L36
+ 736              	.LVL45:
+ 737              	.L37:
+ 386:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_LIB_UNUSED(nn_i_ptr);
+ 738              		.loc 1 386 3 view .LVU187
+ 386:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_LIB_UNUSED(nn_i_ptr);
+ 739              		.loc 1 386 54 view .LVU188
+ 387:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_LIB_UNUSED(nn_i_ptr);
+ 740              		.loc 1 387 3 view .LVU189
+ 388:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 741              		.loc 1 388 3 view .LVU190
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 26
+
+
+ 390:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 742              		.loc 1 390 3 view .LVU191
+ 390:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 743              		.loc 1 390 6 is_stmt 0 view .LVU192
+ 744 001e 826B     		ldr	r2, [r0, #56]
+ 745 0020 22F00202 		bic	r2, r2, #2
+ 746 0024 102A     		cmp	r2, #16
+ 747 0026 09D0     		beq	.L40
+ 748              	.LVL46:
+ 749              	.LBB45:
+ 750              	.LBI45:
+ 383:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 751              		.loc 1 383 18 is_stmt 1 view .LVU193
+ 752              	.LBB46:
+ 392:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 753              		.loc 1 392 5 view .LVU194
+ 392:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 754              		.loc 1 392 5 view .LVU195
+ 392:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 755              		.loc 1 392 5 view .LVU196
+ 756 0028 C26B     		ldr	r2, [r0, #60]
+ 757 002a B2F5003F 		cmp	r2, #131072
+ 392:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 758              		.loc 1 392 5 view .LVU197
+ 759 002e 3CBF     		itt	cc
+ 760 0030 4FF4A022 		movcc	r2, #327680
+ 761 0034 C263     		strcc	r2, [r0, #60]
+ 762              	.LBE46:
+ 763              	.LBE45:
+ 399:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 764              		.loc 1 399 10 is_stmt 0 view .LVU198
+ 765 0036 4FF4A020 		mov	r0, #327680
+ 766              	.LVL47:
+ 399:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 767              		.loc 1 399 10 view .LVU199
+ 768 003a EBE7     		b	.L35
+ 769              	.LVL48:
+ 770              	.L40:
+ 392:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 771              		.loc 1 392 5 is_stmt 1 view .LVU200
+ 396:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_Reset_Network(&ctx->network_instance);
+ 772              		.loc 1 396 3 view .LVU201
+ 396:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   LL_ATON_RT_Reset_Network(&ctx->network_instance);
+ 773              		.loc 1 396 20 is_stmt 0 view .LVU202
+ 774 003c 0024     		movs	r4, #0
+ 775 003e 8463     		str	r4, [r0, #56]
+ 397:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 776              		.loc 1 397 3 is_stmt 1 view .LVU203
+ 777 0040 FFF7FEFF 		bl	LL_ATON_RT_Reset_Network
+ 778              	.LVL49:
+ 399:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 779              		.loc 1 399 3 view .LVU204
+ 399:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 780              		.loc 1 399 10 is_stmt 0 view .LVU205
+ 781 0044 2046     		mov	r0, r4
+ 782              	.LVL50:
+ 399:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 27
+
+
+ 783              		.loc 1 399 10 view .LVU206
+ 784 0046 E5E7     		b	.L35
+ 785              		.cfi_endproc
+ 786              	.LFE327:
+ 788              		.section	.rodata.__ll_aton_stai_run.str1.1,"aMS",%progbits,1
+ 789              	.LC0:
+ 790 0000 6E6E5F63 		.ascii	"nn_context->exec_status == STAI_DONE\000"
+ 790      6F6E7465 
+ 790      78742D3E 
+ 790      65786563 
+ 790      5F737461 
+ 791              	.LC1:
+ 792 0025 2E2E2F2E 		.ascii	"../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_"
+ 792      2E2F4D69 
+ 792      64646C65 
+ 792      77617265 
+ 792      732F7374 
+ 793 0058 73746169 		.ascii	"stai_internal.c\000"
+ 793      5F696E74 
+ 793      65726E61 
+ 793      6C2E6300 
+ 794              	.LC2:
+ 795 0068 72657420 		.ascii	"ret == STAI_SUCCESS\000"
+ 795      3D3D2053 
+ 795      5441495F 
+ 795      53554343 
+ 795      45535300 
+ 796              		.section	.text.__ll_aton_stai_run,"ax",%progbits
+ 797              		.align	1
+ 798              		.global	__ll_aton_stai_run
+ 799              		.syntax unified
+ 800              		.thumb
+ 801              		.thumb_func
+ 803              	__ll_aton_stai_run:
+ 804              	.LVL51:
+ 805              	.LFB328:
+ 401:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 402:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** STAI_INTERNAL_ENTRY
+ 403:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** stai_return_code __ll_aton_stai_run(stai_network *network, const stai_run_mode mode)
+ 404:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 806              		.loc 1 404 1 is_stmt 1 view -0
+ 807              		.cfi_startproc
+ 808              		@ args = 0, pretend = 0, frame = 0
+ 809              		@ frame_needed = 0, uses_anonymous_args = 0
+ 405:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* check current network */
+ 406:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   STAI_ASSERT(network != NULL);
+ 810              		.loc 1 406 3 view .LVU208
+ 811              		.loc 1 406 3 view .LVU209
+ 812              		.loc 1 406 3 view .LVU210
+ 813              		.loc 1 406 31 view .LVU211
+ 407:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   _stai_aton_context *nn_context = (_stai_aton_context *)network;
+ 814              		.loc 1 407 3 view .LVU212
+ 408:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 409:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (nn_context->network_instance.exec_state.current_epoch_block == NULL)
+ 815              		.loc 1 409 3 view .LVU213
+ 404:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* check current network */
+ 816              		.loc 1 404 1 is_stmt 0 view .LVU214
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 28
+
+
+ 817 0000 38B5     		push	{r3, r4, r5, lr}
+ 818              		.cfi_def_cfa_offset 16
+ 819              		.cfi_offset 3, -16
+ 820              		.cfi_offset 4, -12
+ 821              		.cfi_offset 5, -8
+ 822              		.cfi_offset 14, -4
+ 823              		.loc 1 409 46 view .LVU215
+ 824 0002 4368     		ldr	r3, [r0, #4]
+ 404:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* check current network */
+ 825              		.loc 1 404 1 view .LVU216
+ 826 0004 0446     		mov	r4, r0
+ 827 0006 0D46     		mov	r5, r1
+ 828              		.loc 1 409 6 view .LVU217
+ 829 0008 3BB9     		cbnz	r3, .L46
+ 830              	.LVL52:
+ 831              	.L66:
+ 410:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 411:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     __LL_ATON_STAI_SET_1ST_CTX_ERROR_AND_RETURN(nn_context, STAI_ERROR_NETWORK_INVALID_API_ARGUMENT
+ 832              		.loc 1 411 5 is_stmt 1 discriminator 2 view .LVU218
+ 833              		.loc 1 411 5 discriminator 2 view .LVU219
+ 834              		.loc 1 411 5 discriminator 2 view .LVU220
+ 835 000a E36B     		ldr	r3, [r4, #60]
+ 412:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 413:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 414:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* reset first error */
+ 415:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   nn_context->first_error = STAI_SUCCESS;
+ 416:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 417:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* enable/disable tracing */
+ 418:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   if (nn_context->callback != NULL)
+ 419:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 420:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     LL_ATON_RT_SetNetworkCallback(&nn_context->network_instance, _stai_aton_internal_epoch_block_ca
+ 421:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 422:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   else
+ 423:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 424:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     LL_ATON_RT_SetNetworkCallback(&nn_context->network_instance, NULL);
+ 425:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 426:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 427:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   /* run/start network execution */
+ 428:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   switch (mode)
+ 429:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 430:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   case STAI_MODE_SYNC:
+ 431:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     __ll_aton_stai_run_synchonously(&nn_context->network_instance); // run current network
+ 432:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 433:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     /* reset network for new inference */
+ 434:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     {
+ 435:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       LL_ATON_ASSERT(nn_context->exec_status == STAI_DONE);
+ 436:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       stai_return_code ret = __ll_aton_stai_reset(network);
+ 437:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       LL_ATON_ASSERT(ret == STAI_SUCCESS);
+ 438:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       return ret;
+ 439:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     }
+ 440:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 441:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   case STAI_MODE_ASYNC:
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     __LL_ATON_START_CONT_EXEC(&nn_context->network_instance); // kick-off execution
+ 443:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 444:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   default:
+ 445:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     __LL_ATON_STAI_SET_1ST_CTX_ERROR_AND_RETURN(nn_context, STAI_ERROR_NETWORK_INVALID_API_ARGUMENT
+ 836              		.loc 1 445 5 is_stmt 0 discriminator 2 view .LVU221
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 29
+
+
+ 837 000c 1C48     		ldr	r0, .L68
+ 411:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 838              		.loc 1 411 5 discriminator 2 view .LVU222
+ 839 000e B3F5003F 		cmp	r3, #131072
+ 411:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 840              		.loc 1 411 5 is_stmt 1 discriminator 2 view .LVU223
+ 841 0012 3CBF     		itt	cc
+ 842 0014 1A4B     		ldrcc	r3, .L68
+ 843 0016 E363     		strcc	r3, [r4, #60]
+ 844              	.L45:
+ 446:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 447:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 845              		.loc 1 447 1 is_stmt 0 view .LVU224
+ 846 0018 38BD     		pop	{r3, r4, r5, pc}
+ 847              	.LVL53:
+ 848              	.L46:
+ 411:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 849              		.loc 1 411 5 is_stmt 1 view .LVU225
+ 415:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 850              		.loc 1 415 3 view .LVU226
+ 415:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 851              		.loc 1 415 27 is_stmt 0 view .LVU227
+ 852 001a 0023     		movs	r3, #0
+ 418:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 853              		.loc 1 418 6 view .LVU228
+ 854 001c 016B     		ldr	r1, [r0, #48]
+ 855              	.LVL54:
+ 415:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 856              		.loc 1 415 27 view .LVU229
+ 857 001e C363     		str	r3, [r0, #60]
+ 418:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 858              		.loc 1 418 3 is_stmt 1 view .LVU230
+ 418:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 859              		.loc 1 418 6 is_stmt 0 view .LVU231
+ 860 0020 01B1     		cbz	r1, .L50
+ 420:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 861              		.loc 1 420 5 is_stmt 1 view .LVU232
+ 862 0022 1849     		ldr	r1, .L68+4
+ 863              	.L50:
+ 424:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   }
+ 864              		.loc 1 424 5 view .LVU233
+ 865 0024 FFF7FEFF 		bl	LL_ATON_RT_SetNetworkCallback
+ 866              	.LVL55:
+ 428:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 867              		.loc 1 428 3 view .LVU234
+ 868 0028 012D     		cmp	r5, #1
+ 869 002a 09D0     		beq	.L52
+ 870 002c 022D     		cmp	r5, #2
+ 871 002e ECD1     		bne	.L66
+ 440:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   case STAI_MODE_ASYNC:
+ 872              		.loc 1 440 5 view .LVU235
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 873              		.loc 1 442 5 view .LVU236
+ 874              	.LBB53:
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 875              		.loc 1 442 5 view .LVU237
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 30
+
+
+ 876              		.loc 1 442 5 view .LVU238
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 877              		.loc 1 442 5 view .LVU239
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 878              		.loc 1 442 5 view .LVU240
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 879              		.loc 1 442 5 view .LVU241
+ 880              	.LVL56:
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 881              		.loc 1 442 5 view .LVU242
+ 882 0030 2046     		mov	r0, r4
+ 883 0032 FFF7FEFF 		bl	LL_ATON_RT_RunEpochBlock
+ 884              	.LVL57:
+ 885 0036 2146     		mov	r1, r4
+ 886 0038 FFF7FEFF 		bl	__ll_aton_stai_set_execution_status
+ 887              	.LVL58:
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 888              		.loc 1 442 5 view .LVU243
+ 889              	.LBB54:
+ 890              	.LBI54:
+ 352:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** {
+ 891              		.loc 1 352 18 view .LVU244
+ 892              	.LBB55:
+ 354:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return nn_context->exec_status;
+ 893              		.loc 1 354 3 view .LVU245
+ 354:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return nn_context->exec_status;
+ 894              		.loc 1 354 3 view .LVU246
+ 354:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return nn_context->exec_status;
+ 895              		.loc 1 354 3 view .LVU247
+ 354:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   return nn_context->exec_status;
+ 896              		.loc 1 354 34 view .LVU248
+ 355:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 897              		.loc 1 355 3 view .LVU249
+ 355:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 898              		.loc 1 355 20 is_stmt 0 view .LVU250
+ 899 003c A06B     		ldr	r0, [r4, #56]
+ 900              	.LVL59:
+ 355:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 901              		.loc 1 355 20 view .LVU251
+ 902              	.LBE55:
+ 903              	.LBE54:
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 904              		.loc 1 442 5 is_stmt 1 view .LVU252
+ 905 003e EBE7     		b	.L45
+ 906              	.LVL60:
+ 907              	.L52:
+ 442:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     break;
+ 908              		.loc 1 442 5 is_stmt 0 view .LVU253
+ 909              	.LBE53:
+ 910              	.LBB56:
+ 911              	.LBB57:
+ 366:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 912              		.loc 1 366 3 is_stmt 1 view .LVU254
+ 368:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****   {
+ 913              		.loc 1 368 3 view .LVU255
+ 371:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     __ll_aton_stai_set_execution_status(ll_aton_rt_ret, stai_nn_ctx);
+ 914              		.loc 1 371 5 view .LVU256
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 31
+
+
+ 371:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     __ll_aton_stai_set_execution_status(ll_aton_rt_ret, stai_nn_ctx);
+ 915              		.loc 1 371 22 is_stmt 0 view .LVU257
+ 916 0040 2046     		mov	r0, r4
+ 917 0042 FFF7FEFF 		bl	LL_ATON_RT_RunEpochBlock
+ 918              	.LVL61:
+ 372:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** 
+ 919              		.loc 1 372 5 is_stmt 1 view .LVU258
+ 920 0046 2146     		mov	r1, r4
+ 921 0048 FFF7FEFF 		bl	__ll_aton_stai_set_execution_status
+ 922              	.LVL62:
+ 375:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     {
+ 923              		.loc 1 375 5 view .LVU259
+ 375:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     {
+ 924              		.loc 1 375 8 is_stmt 0 view .LVU260
+ 925 004c 0128     		cmp	r0, #1
+ 926 004e 01D1     		bne	.L55
+ 927              	.LVL63:
+ 377:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****     }
+ 928              		.loc 1 377 7 is_stmt 1 view .LVU261
+ 929              		.syntax unified
+ 930              	@ 377 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c" 1
+ 931 0050 20BF     		wfe
+ 932              	@ 0 "" 2
+ 379:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 933              		.loc 1 379 27 view .LVU262
+ 934              		.thumb
+ 935              		.syntax unified
+ 936 0052 F5E7     		b	.L52
+ 937              	.L55:
+ 379:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 938              		.loc 1 379 27 view .LVU263
+ 939 0054 0228     		cmp	r0, #2
+ 940 0056 F3D1     		bne	.L52
+ 941              	.LVL64:
+ 379:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c **** }
+ 942              		.loc 1 379 27 is_stmt 0 view .LVU264
+ 943              	.LBE57:
+ 944              	.LBE56:
+ 945              	.LBB58:
+ 435:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       stai_return_code ret = __ll_aton_stai_reset(network);
+ 946              		.loc 1 435 7 is_stmt 1 view .LVU265
+ 947 0058 A36B     		ldr	r3, [r4, #56]
+ 948 005a 122B     		cmp	r3, #18
+ 949 005c 06D0     		beq	.L58
+ 435:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       stai_return_code ret = __ll_aton_stai_reset(network);
+ 950              		.loc 1 435 7 is_stmt 0 discriminator 1 view .LVU266
+ 951 005e 40F2B311 		movw	r1, #435
+ 952              	.LVL65:
+ 435:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       stai_return_code ret = __ll_aton_stai_reset(network);
+ 953              		.loc 1 435 7 discriminator 1 view .LVU267
+ 954 0062 094B     		ldr	r3, .L68+8
+ 955 0064 094A     		ldr	r2, .L68+12
+ 956              	.L67:
+ 437:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       return ret;
+ 957              		.loc 1 437 7 discriminator 1 view .LVU268
+ 958 0066 0A48     		ldr	r0, .L68+16
+ 959 0068 FFF7FEFF 		bl	__assert_func
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 32
+
+
+ 960              	.LVL66:
+ 961              	.L58:
+ 436:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       LL_ATON_ASSERT(ret == STAI_SUCCESS);
+ 962              		.loc 1 436 7 is_stmt 1 view .LVU269
+ 436:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       LL_ATON_ASSERT(ret == STAI_SUCCESS);
+ 963              		.loc 1 436 30 is_stmt 0 view .LVU270
+ 964 006c 2046     		mov	r0, r4
+ 965 006e FFF7FEFF 		bl	__ll_aton_stai_reset
+ 966              	.LVL67:
+ 437:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       return ret;
+ 967              		.loc 1 437 7 is_stmt 1 view .LVU271
+ 968 0072 0028     		cmp	r0, #0
+ 969 0074 D0D0     		beq	.L45
+ 437:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_stai_internal.c ****       return ret;
+ 970              		.loc 1 437 7 is_stmt 0 discriminator 1 view .LVU272
+ 971 0076 40F2B511 		movw	r1, #437
+ 972 007a 064B     		ldr	r3, .L68+20
+ 973 007c 034A     		ldr	r2, .L68+12
+ 974 007e F2E7     		b	.L67
+ 975              	.L69:
+ 976              		.align	2
+ 977              	.L68:
+ 978 0080 01000200 		.word	131073
+ 979 0084 00000000 		.word	_stai_aton_internal_epoch_block_callback
+ 980 0088 00000000 		.word	.LC0
+ 981 008c 00000000 		.word	__func__.0
+ 982 0090 25000000 		.word	.LC1
+ 983 0094 68000000 		.word	.LC2
+ 984              	.LBE58:
+ 985              		.cfi_endproc
+ 986              	.LFE328:
+ 988              		.section	.rodata.__func__.0,"a"
+ 991              	__func__.0:
+ 992 0000 5F5F6C6C 		.ascii	"__ll_aton_stai_run\000"
+ 992      5F61746F 
+ 992      6E5F7374 
+ 992      61695F72 
+ 992      756E00
+ 993              		.section	.rodata.str1.1,"aMS",%progbits,1
+ 994              	.LC3:
+ 995 0000 47434320 		.ascii	"GCC 12.3.1\000"
+ 995      31322E33 
+ 995      2E3100
+ 996              		.section	.rodata._info.1,"a"
+ 997              		.align	2
+ 1000              	_info.1:
+ 1001 0000 01       		.byte	1
+ 1002 0001 00       		.byte	0
+ 1003 0002 00       		.byte	0
+ 1004 0003 00       		.byte	0
+ 1005 0004 01       		.byte	1
+ 1006 0005 01       		.byte	1
+ 1007 0006 03       		.byte	3
+ 1008 0007 00       		.byte	0
+ 1009 0008 04       		.byte	4
+ 1010 0009 00       		.byte	0
+ 1011 000a 01       		.byte	1
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 33
+
+
+ 1012 000b 00       		.byte	0
+ 1013 000c 09011231 		.word	823263497
+ 1014 0010 01       		.byte	1
+ 1015 0011 000000   		.space	3
+ 1016 0014 00000000 		.word	.LC3
+ 1017              		.section	.bss._g_stai_aton_rt_cb_cookie,"aw",%nobits
+ 1018              		.align	2
+ 1021              	_g_stai_aton_rt_cb_cookie:
+ 1022 0000 00000000 		.space	4
+ 1023              		.section	.bss._g_stai_aton_rt_callback,"aw",%nobits
+ 1024              		.align	2
+ 1027              	_g_stai_aton_rt_callback:
+ 1028 0000 00000000 		.space	4
+ 1029              		.text
+ 1030              	.Letext0:
+ 1031              		.file 4 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 1032              		.file 5 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 1033              		.file 6 "../../Middlewares/stedgeai-lib/Inc/stai.h"
+ 1034              		.file 7 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_cipher.h"
+ 1035              		.file 8 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_NN_interface.h"
+ 1036              		.file 9 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_rt_user_api.h"
+ 1037              		.file 10 "../../Middlewares/stedgeai-lib/Npu/ll_aton/stai_aton_common.h"
+ 1038              		.file 11 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for
+ 1039              		.file 12 "../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.h"
+ 1040              		.file 13 "../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/mcu_cache.h"
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 34
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ll_aton_stai_internal.c
+/tmp/claude-1000/ccILVDoU.s:26     .text._stai_aton_internal_rt_callback:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:31     .text._stai_aton_internal_rt_callback:00000000 _stai_aton_internal_rt_callback
+/tmp/claude-1000/ccILVDoU.s:62     .text._stai_aton_internal_rt_callback:00000014 $d
+/tmp/claude-1000/ccILVDoU.s:1027   .bss._g_stai_aton_rt_callback:00000000 _g_stai_aton_rt_callback
+/tmp/claude-1000/ccILVDoU.s:1021   .bss._g_stai_aton_rt_cb_cookie:00000000 _g_stai_aton_rt_cb_cookie
+/tmp/claude-1000/ccILVDoU.s:68     .text._stai_aton_internal_epoch_block_callback:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:74     .text._stai_aton_internal_epoch_block_callback:00000000 _stai_aton_internal_epoch_block_callback
+/tmp/claude-1000/ccILVDoU.s:126    .text.stai_runtime_set_callback:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:132    .text.stai_runtime_set_callback:00000000 stai_runtime_set_callback
+/tmp/claude-1000/ccILVDoU.s:170    .text.stai_runtime_set_callback:0000001c $d
+/tmp/claude-1000/ccILVDoU.s:177    .text.stai_runtime_init:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:183    .text.stai_runtime_init:00000000 stai_runtime_init
+/tmp/claude-1000/ccILVDoU.s:207    .text.stai_runtime_deinit:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:213    .text.stai_runtime_deinit:00000000 stai_runtime_deinit
+/tmp/claude-1000/ccILVDoU.s:253    .text.stai_runtime_deinit:0000001c $d
+/tmp/claude-1000/ccILVDoU.s:259    .text.stai_runtime_get_info:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:265    .text.stai_runtime_get_info:00000000 stai_runtime_get_info
+/tmp/claude-1000/ccILVDoU.s:314    .text.stai_runtime_get_info:0000001c $d
+/tmp/claude-1000/ccILVDoU.s:1000   .rodata._info.1:00000000 _info.1
+/tmp/claude-1000/ccILVDoU.s:320    .text.stai_cache_mcu_clean_range:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:326    .text.stai_cache_mcu_clean_range:00000000 stai_cache_mcu_clean_range
+/tmp/claude-1000/ccILVDoU.s:368    .text.stai_cache_mcu_invalidate_range:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:374    .text.stai_cache_mcu_invalidate_range:00000000 stai_cache_mcu_invalidate_range
+/tmp/claude-1000/ccILVDoU.s:415    .text.stai_ext_cache_npu_clean_range:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:421    .text.stai_ext_cache_npu_clean_range:00000000 stai_ext_cache_npu_clean_range
+/tmp/claude-1000/ccILVDoU.s:462    .text.stai_ext_cache_npu_clean_invalidate_range:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:468    .text.stai_ext_cache_npu_clean_invalidate_range:00000000 stai_ext_cache_npu_clean_invalidate_range
+/tmp/claude-1000/ccILVDoU.s:509    .text.stai_ext_wfe:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:515    .text.stai_ext_wfe:00000000 stai_ext_wfe
+/tmp/claude-1000/ccILVDoU.s:537    .text.__ll_aton_stai_init_network_instance:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:543    .text.__ll_aton_stai_init_network_instance:00000000 __ll_aton_stai_init_network_instance
+/tmp/claude-1000/ccILVDoU.s:564    .text.__ll_aton_stai_deinit_network_instance:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:570    .text.__ll_aton_stai_deinit_network_instance:00000000 __ll_aton_stai_deinit_network_instance
+/tmp/claude-1000/ccILVDoU.s:591    .text.__ll_aton_stai_set_execution_status:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:597    .text.__ll_aton_stai_set_execution_status:00000000 __ll_aton_stai_set_execution_status
+/tmp/claude-1000/ccILVDoU.s:639    .text.__ll_aton_stai_get_execution_status:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:645    .text.__ll_aton_stai_get_execution_status:00000000 __ll_aton_stai_get_execution_status
+/tmp/claude-1000/ccILVDoU.s:667    .text.__ll_aton_stai_reset:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:673    .text.__ll_aton_stai_reset:00000000 __ll_aton_stai_reset
+/tmp/claude-1000/ccILVDoU.s:797    .text.__ll_aton_stai_run:00000000 $t
+/tmp/claude-1000/ccILVDoU.s:803    .text.__ll_aton_stai_run:00000000 __ll_aton_stai_run
+/tmp/claude-1000/ccILVDoU.s:978    .text.__ll_aton_stai_run:00000080 $d
+/tmp/claude-1000/ccILVDoU.s:991    .rodata.__func__.0:00000000 __func__.0
+/tmp/claude-1000/ccILVDoU.s:997    .rodata._info.1:00000000 $d
+/tmp/claude-1000/ccILVDoU.s:1018   .bss._g_stai_aton_rt_cb_cookie:00000000 $d
+/tmp/claude-1000/ccILVDoU.s:1024   .bss._g_stai_aton_rt_callback:00000000 $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.features.h.33.3e67abe6fb64142d4f6fa9496796153c
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.stddef.h.39.3e0425629195acf083c9561151306b4d
+                           .group:00000000 wm4.stai.h.24.8d8b44ec9b63ca929c31bdf057e6f795
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 35
+
+
+                           .group:00000000 wm4.stdbool.h.29.4a1c88fe569adb8d03217dd16982ca34
+                           .group:00000000 wm4.stai.h.38.8b7b3b20574e05eb8d4bb79c3a135768
+                           .group:00000000 wm4.stai_debug.h.37.4be079c70c66033549ba26b63a31db94
+                           .group:00000000 wm4.ll_aton_attributes.h.20.26d469460cb32db5740effdc8cc403f3
+                           .group:00000000 wm4.ll_aton_config.h.20.6c93c36cdcfd4d0d33ea92e3d64119d1
+                           .group:00000000 wm4.ll_aton_platform.h.20.8f1d4e7781c282794886ffdd00ccd30b
+                           .group:00000000 wm4.stm32n6xx.h.34.c523a1ffdf274a69e8802892c6776332
+                           .group:00000000 wm4.stm32n657xx.h.26.acd272cb67318cc1a4791ce2f0720ca6
+                           .group:00000000 wm4.cmsis_version.h.30.d128735bf87720f7436b74fefeb5043c
+                           .group:00000000 wm4.core_cm55.h.67.25006a3ce7048d64bcddd2996d5fac93
+                           .group:00000000 wm4.arm_acle.h.28.ce8f475a5cc50333e54ae4adeb8c0298
+                           .group:00000000 wm4.cmsis_gcc.h.39.eba7438bc45fd1a6e6376b63ffe44436
+                           .group:00000000 wm4.cmsis_gcc_m.h.24.e590ec51aeda3a1242400351d73f5dce
+                           .group:00000000 wm4.core_cm55.h.213.0528f46a674315ef8d35c4477e230358
+                           .group:00000000 wm4.armv8m_mpu.h.24.bf28cc25bee30a7ff9d2f7a44a5e2230
+                           .group:00000000 wm4.armv8m_pmu.h.24.6ded195d2625055391fd378c0e1d2519
+                           .group:00000000 wm4.core_cm55.h.4477.396e822ef855bcfb932819ad48de1c4c
+                           .group:00000000 wm4.armv7m_cachel1.h.24.936dd92d6e204a8d0b17d5e4ea4a356e
+                           .group:00000000 wm4.stm32n657xx.h.575.78d331c417ec710388ced647138f735f
+                           .group:00000000 wm4.stm32n6xx.h.116.b4247d9785590e7c5ec9234ffb2153bf
+                           .group:00000000 wm4.ll_aton_platform.h.194.63f87111ea665d85113e54bc582ff5fd
+                           .group:00000000 wm4.newlib.h.7.f9f25f80f86429f653675286e7973cb9
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.8.aeadd4934928258a76627d21910677e3
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.inttypes.h.28.684aa7736e7ecc9a6ffc44acc61c7a90
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.syslimits.h.34.de5cbd310098bc5895998b6bde577ed2
+                           .group:00000000 wm4.limits.h.9.70fb0ada6f71b16202a66baaa6d8ea70
+                           .group:00000000 wm4.limits.h.60.56a1ae353e2028a24298ec6463b8b593
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.string.h.15.dab3980bf35408a4c507182805e2de3a
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4.stdio.h.27.3fc80220048df77954e38daec3bb9670
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4.stdio.h.47.dc31ec4674d7bcb103c9f08809549f45
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.ATONidxs.h.26.0509aab23d8759e302dd89a3f1c4c4e6
+                           .group:00000000 wm4.ATON.h.31.92b067719450db0ca8cb669a46fd6466
+                           .group:00000000 wm4.ll_aton_rcompat.h.22.1cafe33611009fe26ae71004f793a6f2
+                           .group:00000000 wm4.ll_aton_platform.h.274.1a2262b76be334681d90d658c6589c73
+                           .group:00000000 wm4.assert.h.11.db24e541f16414db224bf986d21017e2
+                           .group:00000000 wm4.errno.h.2.ba016d646105af6cad23be83630b6a3f
+                           .group:00000000 wm4.errno.h.9.ae5ea2b0ff9ea6e39e585807e35200d3
+                           .group:00000000 wm4.ll_aton_util.h.34.9098eaa90d3d72b819973556e3e5fe44
+                           .group:00000000 wm4.ll_aton_osal.h.33.1085fc39e65ab5e8b6946b14f10d6aa3
+                           .group:00000000 wm4.ll_aton_cipher.h.20.e98fdae11c912f4036a83cedb835e14e
+                           .group:00000000 wm4.ll_aton_rt_user_api.h.71.52957347efa02883c6e8b1a7f756d297
+                           .group:00000000 wm4.stdlib.h.13.4ed386f5c1a80d71e72172885d946ef2
+                           .group:00000000 wm4.alloca.h.8.dfc0c703c47ec3e69746825b17d9e66d
+ARM GAS  /tmp/claude-1000/ccILVDoU.s 			page 36
+
+
+                           .group:00000000 wm4.stdlib.h.56.f4862cfbf4363a1db01842d5bdf72c18
+                           .group:00000000 wm4.ll_aton_stai_internal.h.35.4ede4d59178f196dca4b635c5600498b
+                           .group:00000000 wm4.ll_aton_version.h.20.2f6c67f842f79b5eee29e280324a19e9
+
+UNDEFINED SYMBOLS
+LL_ATON_RT_SetRuntimeCallback
+LL_ATON_RT_RuntimeInit
+LL_ATON_RT_RuntimeDeInit
+mcu_cache_clean_range
+mcu_cache_invalidate_range
+npu_cache_clean_range
+npu_cache_clean_invalidate_range
+LL_ATON_RT_Init_Network
+LL_ATON_RT_DeInit_Network
+LL_ATON_RT_Reset_Network
+LL_ATON_RT_SetNetworkCallback
+LL_ATON_RT_RunEpochBlock
+__assert_func

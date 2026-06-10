@@ -1,0 +1,219 @@
+ARM GAS  /tmp/claude-1000/cckh4Yw7.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_device_stack_host_wakeup.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c"
+  25              		.section	.text._ux_device_stack_host_wakeup,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_device_stack_host_wakeup
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_device_stack_host_wakeup:
+  33              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**                                                                       */ 
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /** USBX Component                                                        */ 
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**   Device Stack                                                        */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** #define UX_SOURCE_CODE
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+ARM GAS  /tmp/claude-1000/cckh4Yw7.s 			page 2
+
+
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /* Include necessary system files.  */
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** #include "ux_api.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** #include "ux_device_stack.h"
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**************************************************************************/
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  FUNCTION                                               RELEASE        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    _ux_device_stack_host_wakeup                        PORTABLE C      */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                           6.1          */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  AUTHOR                                                                */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  DESCRIPTION                                                           */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    This function is called when the device wants to wake up the host.  */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    This command is only valid when the device is in suspend mode.      */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  INPUT                                                                 */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    None                                                                */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  OUTPUT                                                                */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    Completion Status                                                   */ 
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  CALLS                                                                 */ 
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */ 
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    (ux_slave_dcd_function)               DCD dispatch function         */ 
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */ 
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  CALLED BY                                                             */ 
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */ 
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    Application                                                         */ 
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */ 
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  RELEASE HISTORY                                                       */ 
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */ 
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*    DATE              NAME                      DESCRIPTION             */ 
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */ 
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s),          */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                            resulting in version 6.1    */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /*                                                                        */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** /**************************************************************************/
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** UINT  _ux_device_stack_host_wakeup(VOID)
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** {
+  34              		.loc 1 73 1 view -0
+  35              		.cfi_startproc
+  36              		@ args = 0, pretend = 0, frame = 0
+  37              		@ frame_needed = 0, uses_anonymous_args = 0
+  38              		@ link register save eliminated.
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** UX_SLAVE_DCD        *dcd;
+  39              		.loc 1 75 1 view .LVU1
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** UINT                status = UX_FUNCTION_NOT_SUPPORTED;
+ARM GAS  /tmp/claude-1000/cckh4Yw7.s 			page 3
+
+
+  40              		.loc 1 76 1 view .LVU2
+  41              	.LVL0:
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****                     
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****     /* If trace is enabled, insert this event into the trace buffer.  */
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****     UX_TRACE_IN_LINE_INSERT(UX_TRACE_DEVICE_STACK_HOST_WAKEUP, 0, 0, 0, 0, UX_TRACE_DEVICE_STACK_EV
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****                         
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****     /* Get the pointer to the DCD.  */
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****     dcd =  &_ux_system_slave -> ux_system_slave_dcd;
+  42              		.loc 1 82 5 view .LVU3
+  43              		.loc 1 82 30 is_stmt 0 view .LVU4
+  44 0000 054B     		ldr	r3, .L3
+  45 0002 1868     		ldr	r0, [r3]
+  46              	.LVL1:
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****     /* Check if DEVICE_REMOTE_WAKEUP feature is enabled. */
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****     if (_ux_system_slave -> ux_system_slave_remote_wakeup_enabled)
+  47              		.loc 1 85 5 is_stmt 1 view .LVU5
+  48              		.loc 1 85 8 is_stmt 0 view .LVU6
+  49 0004 D0F84C31 		ldr	r3, [r0, #332]
+  50 0008 1BB1     		cbz	r3, .L2
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****         /* Send the change signal to the controller driver.  */
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****         status =  dcd -> ux_slave_dcd_function(dcd, UX_DCD_CHANGE_STATE, (VOID *) UX_DEVICE_REMOTE_
+  51              		.loc 1 88 9 is_stmt 1 view .LVU7
+  52              		.loc 1 88 19 is_stmt 0 view .LVU8
+  53 000a 0822     		movs	r2, #8
+  54 000c 1321     		movs	r1, #19
+  55 000e 8369     		ldr	r3, [r0, #24]
+  56 0010 1847     		bx	r3
+  57              	.LVL2:
+  58              	.L2:
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** 
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****     /* Return the status to the caller.  */
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c ****     return(status);
+  59              		.loc 1 91 5 is_stmt 1 view .LVU9
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_host_wakeup.c **** }
+  60              		.loc 1 92 1 is_stmt 0 view .LVU10
+  61 0012 5420     		movs	r0, #84
+  62              	.LVL3:
+  63              		.loc 1 92 1 view .LVU11
+  64 0014 7047     		bx	lr
+  65              	.L4:
+  66 0016 00BF     		.align	2
+  67              	.L3:
+  68 0018 00000000 		.word	_ux_system_slave
+  69              		.cfi_endproc
+  70              	.LFE3:
+  72              		.text
+  73              	.Letext0:
+  74              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+  75              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+  76              		.file 4 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_system.h"
+ARM GAS  /tmp/claude-1000/cckh4Yw7.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_device_stack_host_wakeup.c
+/tmp/claude-1000/cckh4Yw7.s:26     .text._ux_device_stack_host_wakeup:00000000 $t
+/tmp/claude-1000/cckh4Yw7.s:32     .text._ux_device_stack_host_wakeup:00000000 _ux_device_stack_host_wakeup
+/tmp/claude-1000/cckh4Yw7.s:68     .text._ux_device_stack_host_wakeup:00000018 $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+
+UNDEFINED SYMBOLS
+_ux_system_slave

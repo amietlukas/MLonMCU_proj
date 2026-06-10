@@ -1,0 +1,7 @@
+Src/motor_control.c:52:6:Motor_SetSpeed	1
+Src/motor_control.c:58:6:Motor_Stop	1
+Src/motor_control.c:68:6:Motor_ForwardStraight	1
+Src/motor_control.c:77:6:Motor_BackwardStraight	1
+Src/motor_control.c:86:6:Motor_Curve	1
+Src/motor_control.c:96:6:Motor_Command	6
+Src/motor_control.c:109:6:Motor_Init	4

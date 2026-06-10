@@ -1,0 +1,577 @@
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_utility_descriptor_parse.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c"
+  25              		.section	.text._ux_utility_descriptor_parse,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_utility_descriptor_parse
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_utility_descriptor_parse:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**                                                                       */
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /** USBX Component                                                        */
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**   Utility                                                             */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /* Include necessary system files.  */
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** #define UX_SOURCE_CODE
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** #include "ux_api.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  FUNCTION                                               RELEASE        */
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    _ux_utility_descriptor_parse                        PORTABLE C      */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                           6.3.0        */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  AUTHOR                                                                */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  DESCRIPTION                                                           */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    This function will unpack a USB descriptor from the bus into a      */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    memory aligned structure.                                           */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  INPUT                                                                 */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    raw_descriptor                        Pointer to packed descriptor  */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    descriptor_structure                  Components of the descriptor  */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    descriptor_entries                    Number of entries in the      */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                            descriptor                  */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    descriptor                            Pointer to the unpacked       */
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                            descriptor                  */
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  OUTPUT                                                                */
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    None                                                                */
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  CALLS                                                                 */
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    _ux_utility_long_get                  Get 32-bit value              */
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    _ux_utility_short_get                 Get 16-bit value              */
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  CALLED BY                                                             */
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    USBX Components                                                     */
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  RELEASE HISTORY                                                       */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    DATE              NAME                      DESCRIPTION             */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s),          */
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                            resulting in version 6.1    */
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  10-31-2023     Chaoqiong Xiao           Modified comment(s),          */
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                            optimized USB descriptors,  */
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                            resulting in version 6.3.0  */
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** VOID  _ux_utility_descriptor_parse(UCHAR * raw_descriptor, UCHAR * descriptor_structure,
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****                         UINT descriptor_entries, UCHAR * descriptor)
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 3
+
+
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** {
+  35              		.loc 1 82 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  39              		.loc 1 82 1 is_stmt 0 view .LVU1
+  40 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  41              		.cfi_def_cfa_offset 24
+  42              		.cfi_offset 4, -24
+  43              		.cfi_offset 5, -20
+  44              		.cfi_offset 6, -16
+  45              		.cfi_offset 7, -12
+  46              		.cfi_offset 8, -8
+  47              		.cfi_offset 14, -4
+  48              		.loc 1 82 1 view .LVU2
+  49 0004 0546     		mov	r5, r0
+  50 0006 0E46     		mov	r6, r1
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     /* Loop on all the entries in this descriptor.  */
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     while(descriptor_entries--)
+  51              		.loc 1 85 5 is_stmt 1 view .LVU3
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  52              		.loc 1 82 1 is_stmt 0 view .LVU4
+  53 0008 1C46     		mov	r4, r3
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     {
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         /* Get the length of that component.  */
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         switch(*descriptor_structure++)
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         {
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         /* Check the size then build the component from the source and
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****            insert it into the target descriptor.  */
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         case 4:
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Padding zeros so address is aligned.  */
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             while((ALIGN_TYPE) descriptor & 3u)
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****                 *descriptor++ =  0;
+  54              		.loc 1 98 31 view .LVU5
+  55 000a 4FF00008 		mov	r8, #0
+  56 000e 8F18     		adds	r7, r1, r2
+  57              	.LVL1:
+  58              	.L2:
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     {
+  59              		.loc 1 85 11 is_stmt 1 view .LVU6
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     {
+  60              		.loc 1 85 11 is_stmt 0 view .LVU7
+  61 0010 BE42     		cmp	r6, r7
+  62 0012 01D1     		bne	.L9
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Save the DW.  */
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             *((ULONG *) descriptor) =  _ux_utility_long_get(raw_descriptor);
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor +=  4;
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             descriptor += 4;
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         case 2:
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 4
+
+
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Padding zeros so address is aligned.  */
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             while((ALIGN_TYPE) descriptor & 1u)
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****                 *descriptor++ =  0;
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Save the word.  */
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             *((USHORT *) descriptor) = (USHORT) _ux_utility_short_get(raw_descriptor);
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor += 2;
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             descriptor += 2;
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         default:
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Save the byte.  */
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             *((UCHAR *) descriptor) =  (UCHAR) *raw_descriptor;
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor++;
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             descriptor ++;
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         }
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     }
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     /* Return to caller.  */
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     return;
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** }
+  63              		.loc 1 129 1 view .LVU8
+  64 0014 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+  65              	.LVL2:
+  66              	.L9:
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         {
+  67              		.loc 1 89 9 is_stmt 1 view .LVU9
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         {
+  68              		.loc 1 89 16 is_stmt 0 view .LVU10
+  69 0018 16F8013B 		ldrb	r3, [r6], #1	@ zero_extendqisi2
+  70              	.LVL3:
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         {
+  71              		.loc 1 89 9 view .LVU11
+  72 001c 022B     		cmp	r3, #2
+  73 001e 13D0     		beq	.L3
+  74 0020 042B     		cmp	r3, #4
+  75 0022 06D0     		beq	.L4
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor++;
+  76              		.loc 1 121 13 is_stmt 1 view .LVU12
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor++;
+  77              		.loc 1 121 40 is_stmt 0 view .LVU13
+  78 0024 15F8013B 		ldrb	r3, [r5], #1	@ zero_extendqisi2
+  79              	.LVL4:
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor++;
+  80              		.loc 1 121 37 view .LVU14
+  81 0028 04F8013B 		strb	r3, [r4], #1
+  82              	.LVL5:
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             descriptor ++;
+  83              		.loc 1 122 13 is_stmt 1 view .LVU15
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         }
+  84              		.loc 1 123 13 view .LVU16
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         }
+  85              		.loc 1 123 13 is_stmt 0 view .LVU17
+  86 002c F0E7     		b	.L2
+  87              	.L6:
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 5
+
+
+  88              		.loc 1 98 17 is_stmt 1 view .LVU18
+  89              	.LVL6:
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+  90              		.loc 1 98 31 is_stmt 0 view .LVU19
+  91 002e 04F8018B 		strb	r8, [r4], #1
+  92              	.LVL7:
+  93              	.L4:
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****                 *descriptor++ =  0;
+  94              		.loc 1 97 19 is_stmt 1 view .LVU20
+  95 0032 A207     		lsls	r2, r4, #30
+  96 0034 FBD1     		bne	.L6
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor +=  4;
+  97              		.loc 1 101 13 view .LVU21
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor +=  4;
+  98              		.loc 1 101 40 is_stmt 0 view .LVU22
+  99 0036 2846     		mov	r0, r5
+ 100 0038 FFF7FEFF 		bl	_ux_utility_long_get
+ 101              	.LVL8:
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             descriptor += 4;
+ 102              		.loc 1 102 28 view .LVU23
+ 103 003c 0435     		adds	r5, r5, #4
+ 104              	.LVL9:
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor +=  4;
+ 105              		.loc 1 101 37 view .LVU24
+ 106 003e 44F8040B 		str	r0, [r4], #4
+ 107              	.LVL10:
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             descriptor += 4;
+ 108              		.loc 1 102 13 is_stmt 1 view .LVU25
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 109              		.loc 1 103 13 view .LVU26
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 110              		.loc 1 104 13 view .LVU27
+ 111 0042 E5E7     		b	.L2
+ 112              	.L8:
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 113              		.loc 1 110 17 view .LVU28
+ 114              	.LVL11:
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 115              		.loc 1 110 31 is_stmt 0 view .LVU29
+ 116 0044 04F8018B 		strb	r8, [r4], #1
+ 117              	.LVL12:
+ 118              	.L3:
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****                 *descriptor++ =  0;
+ 119              		.loc 1 109 19 is_stmt 1 view .LVU30
+ 120 0048 E307     		lsls	r3, r4, #31
+ 121 004a FBD4     		bmi	.L8
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor += 2;
+ 122              		.loc 1 113 13 view .LVU31
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor += 2;
+ 123              		.loc 1 113 49 is_stmt 0 view .LVU32
+ 124 004c 2846     		mov	r0, r5
+ 125 004e FFF7FEFF 		bl	_ux_utility_short_get
+ 126              	.LVL13:
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             descriptor += 2;
+ 127              		.loc 1 114 28 view .LVU33
+ 128 0052 0235     		adds	r5, r5, #2
+ 129              	.LVL14:
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 6
+
+
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             raw_descriptor += 2;
+ 130              		.loc 1 113 40 view .LVU34
+ 131 0054 24F8020B 		strh	r0, [r4], #2	@ movhi
+ 132              	.LVL15:
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             descriptor += 2;
+ 133              		.loc 1 114 13 is_stmt 1 view .LVU35
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 134              		.loc 1 115 13 view .LVU36
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 135              		.loc 1 116 13 view .LVU37
+ 136 0058 DAE7     		b	.L2
+ 137              		.cfi_endproc
+ 138              	.LFE3:
+ 140              		.section	.text._ux_utility_descriptor_parse_size,"ax",%progbits
+ 141              		.align	1
+ 142              		.global	_ux_utility_descriptor_parse_size
+ 143              		.syntax unified
+ 144              		.thumb
+ 145              		.thumb_func
+ 147              	_ux_utility_descriptor_parse_size:
+ 148              	.LVL16:
+ 149              	.LFB4:
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 133:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  FUNCTION                                               RELEASE        */
+ 134:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    _ux_utility_descriptor_parse_size                   PORTABLE C      */
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                           6.3.0        */
+ 137:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  AUTHOR                                                                */
+ 138:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  DESCRIPTION                                                           */
+ 142:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 143:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    This function will calculate the size of a parsed USB descriptor.   */
+ 144:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  INPUT                                                                 */
+ 146:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 147:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    descriptor_structure                  Components of the descriptor  */
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    descriptor_entries                    Number of entries in the      */
+ 149:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                            descriptor                  */
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    size_align_mask                       Size alignment mask           */
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 152:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  OUTPUT                                                                */
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    size                                  Size of the parsed descriptor */
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  CALLS                                                                 */
+ 157:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 158:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    None                                                                */
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  CALLED BY                                                             */
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    USBX Components                                                     */
+ 163:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 164:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  RELEASE HISTORY                                                       */
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 7
+
+
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 166:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*    DATE              NAME                      DESCRIPTION             */
+ 167:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 168:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*  10-31-2023     Chaoqiong Xiao           Initial Version 6.3.0         */
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /*                                                                        */
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** /**************************************************************************/
+ 171:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** ULONG _ux_utility_descriptor_parse_size(UCHAR * descriptor_structure, UINT descriptor_entries, UINT
+ 172:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** {
+ 150              		.loc 1 172 1 view -0
+ 151              		.cfi_startproc
+ 152              		@ args = 0, pretend = 0, frame = 0
+ 153              		@ frame_needed = 0, uses_anonymous_args = 0
+ 173:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** ULONG           size = 0;
+ 154              		.loc 1 174 1 view .LVU39
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** ULONG           entry_size;
+ 155              		.loc 1 175 1 view .LVU40
+ 176:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     /* Loop on all the entries in this descriptor.  */
+ 178:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     while(descriptor_entries--)
+ 156              		.loc 1 178 5 view .LVU41
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** ULONG           entry_size;
+ 157              		.loc 1 174 17 is_stmt 0 view .LVU42
+ 158 0000 0023     		movs	r3, #0
+ 172:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 159              		.loc 1 172 1 view .LVU43
+ 160 0002 30B5     		push	{r4, r5, lr}
+ 161              		.cfi_def_cfa_offset 12
+ 162              		.cfi_offset 4, -12
+ 163              		.cfi_offset 5, -8
+ 164              		.cfi_offset 14, -4
+ 165 0004 0144     		add	r1, r1, r0
+ 166              	.LVL17:
+ 167              	.L14:
+ 168              		.loc 1 178 11 is_stmt 1 view .LVU44
+ 169              		.loc 1 178 11 is_stmt 0 view .LVU45
+ 170 0006 8842     		cmp	r0, r1
+ 171 0008 03D1     		bne	.L21
+ 179:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     {
+ 180:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 181:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         /* Get entry size.  */
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         entry_size = (ULONG)*descriptor_structure ++;
+ 183:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 184:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         /* Check the size then build the component from the source and
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****            insert it into the target descriptor.  */
+ 186:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         switch(entry_size)
+ 187:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         {
+ 188:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 189:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         case 4: /* Fall through.  */
+ 190:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         case 2:
+ 191:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 192:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Padding zeros so address is aligned.  */
+ 193:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             while(size & (entry_size - 1))
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****                 size++;
+ 195:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 196:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Add to the size.  */
+ 197:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             size += entry_size;
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 8
+
+
+ 198:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 199:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 200:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         case 1:
+ 201:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 202:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Add to the size.  */
+ 203:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             size += 1;
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 205:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 206:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         default:
+ 207:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 208:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             /* Invalid entry size.  */
+ 209:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             return(0);
+ 210:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         }
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     }
+ 212:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 213:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     /* Align the size.  */
+ 214:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     size = (size + size_align_mask) & (~size_align_mask);
+ 172              		.loc 1 214 5 is_stmt 1 view .LVU46
+ 173              		.loc 1 214 18 is_stmt 0 view .LVU47
+ 174 000a 9818     		adds	r0, r3, r2
+ 175              	.LVL18:
+ 176              		.loc 1 214 10 view .LVU48
+ 177 000c 20EA0200 		bic	r0, r0, r2
+ 178              	.LVL19:
+ 215:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 216:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     /* Return the size.  */
+ 217:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****     return(size);
+ 179              		.loc 1 217 5 is_stmt 1 view .LVU49
+ 180              		.loc 1 217 11 is_stmt 0 view .LVU50
+ 181 0010 07E0     		b	.L13
+ 182              	.LVL20:
+ 183              	.L21:
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 184              		.loc 1 182 9 is_stmt 1 view .LVU51
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 185              		.loc 1 182 29 is_stmt 0 view .LVU52
+ 186 0012 0478     		ldrb	r4, [r0]	@ zero_extendqisi2
+ 187              	.LVL21:
+ 186:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****         {
+ 188              		.loc 1 186 9 is_stmt 1 view .LVU53
+ 189 0014 022C     		cmp	r4, #2
+ 190 0016 05D0     		beq	.L15
+ 191 0018 042C     		cmp	r4, #4
+ 192 001a 03D0     		beq	.L15
+ 193 001c 012C     		cmp	r4, #1
+ 194 001e 09D0     		beq	.L16
+ 195 0020 0020     		movs	r0, #0
+ 196              	.LVL22:
+ 197              	.L13:
+ 218:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** }
+ 198              		.loc 1 218 1 is_stmt 0 view .LVU54
+ 199 0022 30BD     		pop	{r4, r5, pc}
+ 200              	.LVL23:
+ 201              	.L15:
+ 193:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****                 size++;
+ 202              		.loc 1 193 38 view .LVU55
+ 203 0024 651E     		subs	r5, r4, #1
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 9
+
+
+ 204              	.L18:
+ 193:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****                 size++;
+ 205              		.loc 1 193 19 is_stmt 1 view .LVU56
+ 206 0026 1D42     		tst	r5, r3
+ 207 0028 02D1     		bne	.L19
+ 197:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 208              		.loc 1 197 13 view .LVU57
+ 197:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 209              		.loc 1 197 18 is_stmt 0 view .LVU58
+ 210 002a 2344     		add	r3, r3, r4
+ 211              	.LVL24:
+ 198:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 212              		.loc 1 198 13 is_stmt 1 view .LVU59
+ 213              	.L20:
+ 198:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 214              		.loc 1 198 13 is_stmt 0 view .LVU60
+ 215 002c 0130     		adds	r0, r0, #1
+ 216              	.LVL25:
+ 198:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 217              		.loc 1 198 13 view .LVU61
+ 218 002e EAE7     		b	.L14
+ 219              	.LVL26:
+ 220              	.L19:
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 221              		.loc 1 194 17 is_stmt 1 view .LVU62
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 222              		.loc 1 194 21 is_stmt 0 view .LVU63
+ 223 0030 0133     		adds	r3, r3, #1
+ 224              	.LVL27:
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 225              		.loc 1 194 21 view .LVU64
+ 226 0032 F8E7     		b	.L18
+ 227              	.L16:
+ 203:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 228              		.loc 1 203 13 is_stmt 1 view .LVU65
+ 203:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c ****             break;
+ 229              		.loc 1 203 18 is_stmt 0 view .LVU66
+ 230 0034 0133     		adds	r3, r3, #1
+ 231              	.LVL28:
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c **** 
+ 232              		.loc 1 204 13 is_stmt 1 view .LVU67
+ 233 0036 F9E7     		b	.L20
+ 234              		.cfi_endproc
+ 235              	.LFE4:
+ 237              		.text
+ 238              	.Letext0:
+ 239              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 240              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_utility.h"
+ARM GAS  /tmp/claude-1000/ccNfnoRm.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_utility_descriptor_parse.c
+/tmp/claude-1000/ccNfnoRm.s:26     .text._ux_utility_descriptor_parse:00000000 $t
+/tmp/claude-1000/ccNfnoRm.s:32     .text._ux_utility_descriptor_parse:00000000 _ux_utility_descriptor_parse
+/tmp/claude-1000/ccNfnoRm.s:141    .text._ux_utility_descriptor_parse_size:00000000 $t
+/tmp/claude-1000/ccNfnoRm.s:147    .text._ux_utility_descriptor_parse_size:00000000 _ux_utility_descriptor_parse_size
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+
+UNDEFINED SYMBOLS
+_ux_utility_long_get
+_ux_utility_short_get

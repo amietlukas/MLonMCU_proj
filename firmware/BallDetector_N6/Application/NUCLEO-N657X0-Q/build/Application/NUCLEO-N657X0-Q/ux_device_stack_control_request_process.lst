@@ -1,0 +1,1013 @@
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_device_stack_control_request_process.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request
+  25              		.section	.text._ux_device_stack_control_request_process,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_device_stack_control_request_process
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_device_stack_control_request_process:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**                                                                       */ 
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /** USBX Component                                                        */ 
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**   Device Stack                                                        */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** #define UX_SOURCE_CODE
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /* Include necessary system files.  */
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** #include "ux_api.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** #include "ux_device_stack.h"
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**************************************************************************/
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  FUNCTION                                               RELEASE        */
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_control_request_process            PORTABLE C      */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                           6.3.0        */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  AUTHOR                                                                */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  DESCRIPTION                                                           */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    This function is called by the DCD when the device has received a   */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    SETUP packet.                                                       */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  INPUT                                                                 */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    transfer_request                      Pointer to transfer request   */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  OUTPUT                                                                */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    Completion Status                                                   */ 
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  CALLS                                                                 */ 
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */ 
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    (ux_slave_class_entry_function)       Device class entry function   */ 
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    (ux_slave_dcd_function)               DCD dispatch function         */ 
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_transfer_request     Transfer request              */
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_endpoint_stall       Stall endpoint                */
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_alternate_setting_get                              */
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                          Get alternate settings        */ 
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_alternate_setting_set                              */
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                          Set alternate settings        */ 
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_clear_feature        Clear feature                 */ 
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_configuration_get    Get configuration             */ 
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_configuration_set    Set configuration             */ 
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_descriptor_send      Send descriptor               */ 
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_get_status           Get status                    */ 
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_device_stack_set_feature          Set feature                   */ 
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    _ux_utility_short_get                 Get short value               */ 
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */ 
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  CALLED BY                                                             */ 
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */ 
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    Device Stack                                                        */
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */ 
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  RELEASE HISTORY                                                       */ 
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */ 
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*    DATE              NAME                      DESCRIPTION             */ 
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */ 
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s),          */
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 3
+
+
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            resulting in version 6.1    */
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  10-15-2021     Chaoqiong Xiao           Modified comment(s),          */
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            fixed possible buffer issue */
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            for control vendor request, */
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            resulting in version 6.1.9  */
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  01-31-2022     Chaoqiong Xiao           Modified comment(s),          */
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            added printer support,      */
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            resulting in version 6.1.10 */
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  07-29-2022     Chaoqiong Xiao           Modified comment(s),          */
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            fixed parameter/variable    */
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            names conflict C++ keyword, */
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            resulting in version 6.1.12 */
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  03-08-2023     Chaoqiong Xiao           Modified comment(s),          */
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            fixed vendor request issue, */
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            resulting in version 6.2.1  */
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*  10-31-2023     Chaoqiong Xiao           Modified comment(s),          */
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            improved interface request  */
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            process with print class,   */
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                            resulting in version 6.3.0  */
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /*                                                                        */
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** /**************************************************************************/
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UINT  _ux_device_stack_control_request_process(UX_SLAVE_TRANSFER *transfer_request)
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** {
+  35              		.loc 1 104 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 56
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UX_SLAVE_DCD                *dcd;
+  39              		.loc 1 106 1 view .LVU1
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UX_SLAVE_DEVICE             *device;
+  40              		.loc 1 107 1 view .LVU2
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UX_SLAVE_CLASS              *class_ptr;
+  41              		.loc 1 108 1 view .LVU3
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UX_SLAVE_CLASS_COMMAND      class_command;
+  42              		.loc 1 109 1 view .LVU4
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** ULONG                       request_type;
+  43              		.loc 1 110 1 view .LVU5
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** ULONG                       request;
+  44              		.loc 1 111 1 view .LVU6
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** ULONG                       request_value;
+  45              		.loc 1 112 1 view .LVU7
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** ULONG                       request_index;
+  46              		.loc 1 113 1 view .LVU8
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** ULONG                       request_length;
+  47              		.loc 1 114 1 view .LVU9
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** ULONG                       class_index;
+  48              		.loc 1 115 1 view .LVU10
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UINT                        status =  UX_ERROR;
+  49              		.loc 1 116 1 view .LVU11
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UX_SLAVE_ENDPOINT           *endpoint;
+  50              		.loc 1 117 1 view .LVU12
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** ULONG                       application_data_length;
+  51              		.loc 1 118 1 view .LVU13
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     /* Get the pointer to the DCD.  */
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     dcd =  &_ux_system_slave -> ux_system_slave_dcd;
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 4
+
+
+  52              		.loc 1 121 5 view .LVU14
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     /* Get the pointer to the device.  */
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     device =  &_ux_system_slave -> ux_system_slave_device;
+  53              		.loc 1 124 5 view .LVU15
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     /* Ensure that the Setup request has been received correctly.  */
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     if (transfer_request -> ux_slave_transfer_request_completion_code == UX_SUCCESS)
+  54              		.loc 1 127 5 view .LVU16
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  55              		.loc 1 104 1 is_stmt 0 view .LVU17
+  56 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  57              		.cfi_def_cfa_offset 36
+  58              		.cfi_offset 4, -36
+  59              		.cfi_offset 5, -32
+  60              		.cfi_offset 6, -28
+  61              		.cfi_offset 7, -24
+  62              		.cfi_offset 8, -20
+  63              		.cfi_offset 9, -16
+  64              		.cfi_offset 10, -12
+  65              		.cfi_offset 11, -8
+  66              		.cfi_offset 14, -4
+  67              		.loc 1 127 26 view .LVU18
+  68 0004 456A     		ldr	r5, [r0, #36]
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  69              		.loc 1 104 1 view .LVU19
+  70 0006 8046     		mov	r8, r0
+  71 0008 91B0     		sub	sp, sp, #68
+  72              		.cfi_def_cfa_offset 104
+  73              		.loc 1 127 8 view .LVU20
+  74 000a 002D     		cmp	r5, #0
+  75 000c 40F0DB80 		bne	.L27
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     {
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         /* Seems so far, the Setup request is valid. Extract all fields of
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****            the request.  */
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         request_type   =   *transfer_request -> ux_slave_transfer_request_setup;
+  76              		.loc 1 132 9 is_stmt 1 view .LVU21
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  77              		.loc 1 121 30 is_stmt 0 view .LVU22
+  78 0010 6E4A     		ldr	r2, .L48
+  79              	.LVL1:
+ 133:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         request        =   *(transfer_request -> ux_slave_transfer_request_setup + UX_SETUP_REQUEST
+  80              		.loc 1 133 28 view .LVU23
+  81 0012 90F83DA0 		ldrb	r10, [r0, #61]	@ zero_extendqisi2
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         request        =   *(transfer_request -> ux_slave_transfer_request_setup + UX_SETUP_REQUEST
+  82              		.loc 1 132 24 view .LVU24
+  83 0016 90F83C90 		ldrb	r9, [r0, #60]	@ zero_extendqisi2
+  84              	.LVL2:
+  85              		.loc 1 133 9 is_stmt 1 view .LVU25
+ 134:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         request_value  =   _ux_utility_short_get(transfer_request -> ux_slave_transfer_request_setu
+  86              		.loc 1 134 9 view .LVU26
+  87              		.loc 1 134 28 is_stmt 0 view .LVU27
+  88 001a 3E30     		adds	r0, r0, #62
+  89              	.LVL3:
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+  90              		.loc 1 121 30 view .LVU28
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 5
+
+
+  91 001c 1668     		ldr	r6, [r2]
+  92              		.loc 1 134 28 view .LVU29
+  93 001e FFF7FEFF 		bl	_ux_utility_short_get
+  94              	.LVL4:
+  95              		.loc 1 134 28 view .LVU30
+  96 0022 0746     		mov	r7, r0
+  97              	.LVL5:
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         request_index  =   _ux_utility_short_get(transfer_request -> ux_slave_transfer_request_setu
+  98              		.loc 1 135 9 is_stmt 1 view .LVU31
+  99              		.loc 1 135 28 is_stmt 0 view .LVU32
+ 100 0024 08F14000 		add	r0, r8, #64
+ 101              	.LVL6:
+ 102              		.loc 1 135 28 view .LVU33
+ 103 0028 FFF7FEFF 		bl	_ux_utility_short_get
+ 104              	.LVL7:
+ 105 002c 0446     		mov	r4, r0
+ 106              	.LVL8:
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         request_length =   _ux_utility_short_get(transfer_request -> ux_slave_transfer_request_setu
+ 107              		.loc 1 136 9 is_stmt 1 view .LVU34
+ 108              		.loc 1 136 28 is_stmt 0 view .LVU35
+ 109 002e 08F14200 		add	r0, r8, #66
+ 110              	.LVL9:
+ 111              		.loc 1 136 28 view .LVU36
+ 112 0032 FFF7FEFF 		bl	_ux_utility_short_get
+ 113              	.LVL10:
+ 137:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 138:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         /* Filter for GET_DESCRIPTOR/SET_DESCRIPTOR commands. If the descriptor to be returned is n
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****            treat the command as a CLASS command.  */
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         if ((request == UX_GET_DESCRIPTOR || request == UX_SET_DESCRIPTOR) && (((request_value >> 8
+ 114              		.loc 1 140 43 view .LVU37
+ 115 0036 AAF10601 		sub	r1, r10, #6
+ 116              		.loc 1 140 12 view .LVU38
+ 117 003a 0129     		cmp	r1, #1
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         request_length =   _ux_utility_short_get(transfer_request -> ux_slave_transfer_request_setu
+ 118              		.loc 1 136 28 view .LVU39
+ 119 003c 0346     		mov	r3, r0
+ 120              	.LVL11:
+ 121              		.loc 1 140 9 is_stmt 1 view .LVU40
+ 122              		.loc 1 140 12 is_stmt 0 view .LVU41
+ 123 003e 634A     		ldr	r2, .L48
+ 124 0040 08D8     		bhi	.L3
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         {        
+ 142:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 143:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* This request is to be handled by the class layer.  */
+ 144:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             request_type &=  (UINT)~UX_REQUEST_TYPE;
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             request_type |= UX_REQUEST_TYPE_CLASS;
+ 125              		.loc 1 145 26 discriminator 1 view .LVU42
+ 126 0042 29F06001 		bic	r1, r9, #96
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         {        
+ 127              		.loc 1 140 96 discriminator 1 view .LVU43
+ 128 0046 380A     		lsrs	r0, r7, #8
+ 129              	.LVL12:
+ 130              		.loc 1 145 26 discriminator 1 view .LVU44
+ 131 0048 41F02001 		orr	r1, r1, #32
+ 132 004c 10F0600F 		tst	r0, #96
+ 133 0050 18BF     		it	ne
+ 134 0052 8946     		movne	r9, r1
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 6
+
+
+ 135              	.LVL13:
+ 136              	.L3:
+ 146:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         }                   
+ 147:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         /* Check if there is a vendor registered function at the application layer.  If the request
+ 149:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****            is VENDOR and the request match, pass the request to the application.  */
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         if ((request_type & UX_REQUEST_TYPE) == UX_REQUEST_TYPE_VENDOR)
+ 137              		.loc 1 150 9 is_stmt 1 view .LVU45
+ 138              		.loc 1 150 27 is_stmt 0 view .LVU46
+ 139 0054 09F06001 		and	r1, r9, #96
+ 140              		.loc 1 150 12 view .LVU47
+ 141 0058 4029     		cmp	r1, #64
+ 142 005a 2AD1     		bne	.L4
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         {
+ 152:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* Check the request demanded and compare it to the application registered one.  */
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             if (_ux_system_slave -> ux_system_slave_device_vendor_request_function != UX_NULL &&
+ 143              		.loc 1 154 13 is_stmt 1 view .LVU48
+ 144              		.loc 1 154 34 is_stmt 0 view .LVU49
+ 145 005c 1168     		ldr	r1, [r2]
+ 146 005e D1F86CB1 		ldr	fp, [r1, #364]
+ 147              		.loc 1 154 16 view .LVU50
+ 148 0062 BBF1000F 		cmp	fp, #0
+ 149 0066 26D0     		beq	.L5
+ 150              		.loc 1 154 95 discriminator 1 view .LVU51
+ 151 0068 D1F86811 		ldr	r1, [r1, #360]
+ 152 006c 5145     		cmp	r1, r10
+ 153 006e 22D1     		bne	.L5
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 request == _ux_system_slave -> ux_system_slave_device_vendor_request)
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             {
+ 157:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 158:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* This is a Microsoft extended function. It happens before the device is configure
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                    The request is passed to the application directly.  */
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 application_data_length = UX_SLAVE_REQUEST_CONTROL_MAX_LENGTH;
+ 154              		.loc 1 160 17 is_stmt 1 view .LVU52
+ 155              		.loc 1 160 41 is_stmt 0 view .LVU53
+ 156 0070 4FF40072 		mov	r2, #512
+ 157 0074 0592     		str	r2, [sp, #20]
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 status = _ux_system_slave -> ux_system_slave_device_vendor_request_function(request
+ 158              		.loc 1 161 17 is_stmt 1 view .LVU54
+ 159              		.loc 1 161 26 is_stmt 0 view .LVU55
+ 160 0076 05AA     		add	r2, sp, #20
+ 161 0078 0192     		str	r2, [sp, #4]
+ 162 007a D8F80C20 		ldr	r2, [r8, #12]
+ 163 007e 3946     		mov	r1, r7
+ 164 0080 0092     		str	r2, [sp]
+ 165 0082 5046     		mov	r0, r10
+ 166 0084 2246     		mov	r2, r4
+ 167 0086 0393     		str	r3, [sp, #12]
+ 168 0088 D847     		blx	fp
+ 169              	.LVL14:
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                                                                                             request
+ 163:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                                                                                             transfe
+ 164:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                                                                                             &applic
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 166:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* Check the status from the application.  */
+ 167:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 if (status == UX_SUCCESS)
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 7
+
+
+ 170              		.loc 1 167 17 is_stmt 1 view .LVU56
+ 171              		.loc 1 167 20 is_stmt 0 view .LVU57
+ 172 008a 68B9     		cbnz	r0, .L6
+ 168:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 {
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* Get the control endpoint associated with the device.  */
+ 171:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     endpoint =  &device -> ux_slave_device_control_endpoint;
+ 173              		.loc 1 171 21 is_stmt 1 view .LVU58
+ 174              	.LVL15:
+ 172:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     
+ 173:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* Get the pointer to the transfer request associated with the control endpoint
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     transfer_request =  &endpoint -> ux_slave_endpoint_transfer_request;
+ 175              		.loc 1 174 21 view .LVU59
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     
+ 176:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* Set the direction to OUT.  */
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     transfer_request -> ux_slave_transfer_request_phase =  UX_TRANSFER_PHASE_DATA_O
+ 176              		.loc 1 177 21 view .LVU60
+ 177              		.loc 1 177 73 is_stmt 0 view .LVU61
+ 178 008c 0322     		movs	r2, #3
+ 178:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 179:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* Perform the data transfer.  */
+ 180:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     _ux_device_stack_transfer_request(transfer_request, application_data_length, re
+ 179              		.loc 1 180 21 view .LVU62
+ 180 008e 039B     		ldr	r3, [sp, #12]
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 181              		.loc 1 177 73 view .LVU63
+ 182 0090 C6F88420 		str	r2, [r6, #132]
+ 183              		.loc 1 180 21 is_stmt 1 view .LVU64
+ 184 0094 0599     		ldr	r1, [sp, #20]
+ 185 0096 1A46     		mov	r2, r3
+ 186 0098 06F15C00 		add	r0, r6, #92
+ 187              	.LVL16:
+ 188              		.loc 1 180 21 is_stmt 0 view .LVU65
+ 189 009c FFF7FEFF 		bl	_ux_device_stack_transfer_request
+ 190              	.LVL17:
+ 181:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* We are done here.  */
+ 183:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     return(UX_SUCCESS);
+ 191              		.loc 1 183 21 is_stmt 1 view .LVU66
+ 192              	.L1:
+ 184:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 }
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 else
+ 186:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 {
+ 187:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 188:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* The application did not like the vendor command format, stall the control en
+ 189:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     _ux_device_stack_endpoint_stall(&device -> ux_slave_device_control_endpoint);
+ 190:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     
+ 191:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* We are done here.  */
+ 192:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     return(UX_SUCCESS);
+ 193:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 }
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             }
+ 195:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         }
+ 196:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 197:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         /* Check the destination of the request. If the request is of type CLASS or VENDOR_SPECIFIC
+ 198:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****            the function has to be passed to the class layer.  */
+ 199:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         if (((request_type & UX_REQUEST_TYPE) == UX_REQUEST_TYPE_CLASS) ||
+ 200:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             ((request_type & UX_REQUEST_TYPE) == UX_REQUEST_TYPE_VENDOR))
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 8
+
+
+ 201:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         {
+ 202:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 203:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* Build all the fields of the Class Command.  */
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             class_command.ux_slave_class_command_request =  UX_SLAVE_CLASS_COMMAND_REQUEST;
+ 205:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 206:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* We need to find which class this request is for.  */
+ 207:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             for (class_index = 0; class_index < UX_MAX_SLAVE_INTERFACES; class_index ++)
+ 208:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             {
+ 209:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 210:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* Get the class for the interface.  */
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 class_ptr =  _ux_system_slave -> ux_system_slave_interface_class_array[class_index]
+ 212:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 213:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* If class is not ready, try next.  */
+ 214:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 if (class_ptr == UX_NULL)
+ 215:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     continue;
+ 216:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 217:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* Is the request target to an interface?  */
+ 218:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 if ((request_type & UX_REQUEST_TARGET) == UX_REQUEST_TARGET_INTERFACE)
+ 219:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 {
+ 220:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 221:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* Yes, so the request index contains the index of the interface 
+ 222:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                        the request is for. So if the current index does not match 
+ 223:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                        the request index, we should go to the next one.  */
+ 224:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* For printer class (0x07) GET_DEVICE_ID (0x00) the high byte of 
+ 225:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                        wIndex is interface index (for recommended index sequence the interface
+ 226:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                        number is same as interface index inside configuration).
+ 227:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                      */
+ 228:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     if ((request_type == 0xA1) && (request == 0x00) &&
+ 229:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         (class_ptr -> ux_slave_class_interface -> ux_slave_interface_descriptor.bIn
+ 230:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     {
+ 231:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 232:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         /* Check wIndex high byte.  */
+ 233:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         if(*(transfer_request -> ux_slave_transfer_request_setup + UX_SETUP_INDEX +
+ 234:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 235:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     }
+ 236:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     else
+ 237:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     {
+ 238:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 239:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         /* Check wIndex low.  */
+ 240:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         if ((request_index & 0xFF) != class_index)
+ 241:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 242:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     }
+ 243:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 }
+ 244:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 245:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* Memorize the class in the command.  */
+ 246:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 class_command.ux_slave_class_command_class_ptr = class_ptr;
+ 247:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 248:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* We have found a potential candidate. Call this registered class entry function. 
+ 249:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 status = class_ptr -> ux_slave_class_entry_function(&class_command);
+ 250:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 251:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* The status simply tells us if the registered class handled the 
+ 252:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                    command - if there was an issue processing the command, it would've 
+ 253:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                    stalled the control endpoint, notifying the host (and not us).  */
+ 254:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 if (status == UX_SUCCESS)
+ 255:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 256:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     /* We are done, break the loop!  */
+ 257:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     break;
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 9
+
+
+ 258:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 259:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* Not handled, try next.  */
+ 260:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             }
+ 261:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 262:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* If no class handled the command, then we have an error here.  */
+ 263:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             if (status != UX_SUCCESS)
+ 264:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 265:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 /* We stall the command (request not supported).  */
+ 266:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 _ux_device_stack_endpoint_stall(&device -> ux_slave_device_control_endpoint);
+ 267:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 268:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* We are done for class/vendor request.  */
+ 269:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             return(status);
+ 270:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         }
+ 271:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 272:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         /* At this point, the request must be a standard request that the device stack should handl
+ 273:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         switch (request)
+ 274:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         {
+ 275:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 276:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_GET_STATUS:
+ 277:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 278:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  _ux_device_stack_get_status(request_type, request_index, request_length);
+ 279:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 280:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 281:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_CLEAR_FEATURE:
+ 282:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 283:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  _ux_device_stack_clear_feature(request_type, request_value, request_index);
+ 284:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 285:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 286:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_SET_FEATURE:
+ 287:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 288:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  _ux_device_stack_set_feature(request_type, request_value, request_index);
+ 289:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 290:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 291:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_SET_ADDRESS:
+ 292:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         
+ 293:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* Memorize the address. Some controllers memorize the address here. Some don't.  */
+ 294:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             dcd -> ux_slave_dcd_device_address =  request_value;
+ 295:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 296:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* Force the new address.  */
+ 297:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  dcd -> ux_slave_dcd_function(dcd, UX_DCD_SET_DEVICE_ADDRESS, (VOID *) (ALIGN_
+ 298:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 299:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 300:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_GET_DESCRIPTOR:
+ 301:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 302:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  _ux_device_stack_descriptor_send(request_value, request_index, request_length
+ 303:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 304:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 305:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_SET_DESCRIPTOR:
+ 306:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 307:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status = UX_FUNCTION_NOT_SUPPORTED;
+ 308:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 309:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 310:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_GET_CONFIGURATION:
+ 311:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 312:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  _ux_device_stack_configuration_get();
+ 313:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 314:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 10
+
+
+ 315:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_SET_CONFIGURATION:
+ 316:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 317:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  _ux_device_stack_configuration_set(request_value);
+ 318:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 319:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 320:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_GET_INTERFACE:
+ 321:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 322:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  _ux_device_stack_alternate_setting_get(request_index);
+ 323:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 324:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 
+ 325:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_SET_INTERFACE:
+ 326:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 327:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status =  _ux_device_stack_alternate_setting_set(request_index,request_value);
+ 328:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 329:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 
+ 330:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 331:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         case UX_SYNCH_FRAME:
+ 332:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 333:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status = UX_SUCCESS;
+ 334:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 335:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 336:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         default :
+ 337:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 338:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             status = UX_FUNCTION_NOT_SUPPORTED;
+ 339:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 340:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         }
+ 341:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 342:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         if (status != UX_SUCCESS)
+ 343:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 344:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             /* Stall the control endpoint to issue protocol error. */
+ 345:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             _ux_device_stack_endpoint_stall(&device -> ux_slave_device_control_endpoint);
+ 346:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     }
+ 347:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 348:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     /* Return the function status.  */
+ 349:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     return(status);
+ 350:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** }
+ 193              		.loc 1 350 1 is_stmt 0 view .LVU67
+ 194 00a0 2846     		mov	r0, r5
+ 195 00a2 11B0     		add	sp, sp, #68
+ 196              		.cfi_remember_state
+ 197              		.cfi_def_cfa_offset 36
+ 198              		@ sp needed
+ 199 00a4 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 200              	.LVL18:
+ 201              	.L6:
+ 202              		.cfi_restore_state
+ 189:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     
+ 203              		.loc 1 189 21 is_stmt 1 view .LVU68
+ 204 00a8 06F13C00 		add	r0, r6, #60
+ 205              	.LVL19:
+ 189:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     
+ 206              		.loc 1 189 21 is_stmt 0 view .LVU69
+ 207 00ac FFF7FEFF 		bl	_ux_device_stack_endpoint_stall
+ 208              	.LVL20:
+ 192:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 }
+ 209              		.loc 1 192 21 is_stmt 1 view .LVU70
+ 192:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 }
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 11
+
+
+ 210              		.loc 1 192 27 is_stmt 0 view .LVU71
+ 211 00b0 F6E7     		b	.L1
+ 212              	.LVL21:
+ 213              	.L4:
+ 199:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             ((request_type & UX_REQUEST_TYPE) == UX_REQUEST_TYPE_VENDOR))
+ 214              		.loc 1 199 9 is_stmt 1 view .LVU72
+ 199:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             ((request_type & UX_REQUEST_TYPE) == UX_REQUEST_TYPE_VENDOR))
+ 215              		.loc 1 199 12 is_stmt 0 view .LVU73
+ 216 00b2 2029     		cmp	r1, #32
+ 217 00b4 2ED1     		bne	.L8
+ 218              	.L5:
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 219              		.loc 1 204 13 is_stmt 1 view .LVU74
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 220              		.loc 1 204 58 is_stmt 0 view .LVU75
+ 221 00b6 0423     		movs	r3, #4
+ 222              	.LVL22:
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UX_SLAVE_ENDPOINT           *endpoint;
+ 223              		.loc 1 116 29 view .LVU76
+ 224 00b8 FF27     		movs	r7, #255
+ 225              	.LVL23:
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 226              		.loc 1 204 58 view .LVU77
+ 227 00ba 0593     		str	r3, [sp, #20]
+ 207:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             {
+ 228              		.loc 1 207 13 is_stmt 1 view .LVU78
+ 229              	.LVL24:
+ 207:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             {
+ 230              		.loc 1 207 47 view .LVU79
+ 218:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 {
+ 231              		.loc 1 218 35 is_stmt 0 view .LVU80
+ 232 00bc 09F0030B 		and	fp, r9, #3
+ 240:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 233              		.loc 1 240 44 view .LVU81
+ 234 00c0 E4B2     		uxtb	r4, r4
+ 235              	.LVL25:
+ 236              	.L13:
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 237              		.loc 1 211 17 is_stmt 1 view .LVU82
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 238              		.loc 1 211 27 is_stmt 0 view .LVU83
+ 239 00c2 1368     		ldr	r3, [r2]
+ 240 00c4 05F14001 		add	r1, r5, #64
+ 241 00c8 53F82110 		ldr	r1, [r3, r1, lsl #2]
+ 242              	.LVL26:
+ 214:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     continue;
+ 243              		.loc 1 214 17 is_stmt 1 view .LVU84
+ 214:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     continue;
+ 244              		.loc 1 214 20 is_stmt 0 view .LVU85
+ 245 00cc B9B1     		cbz	r1, .L9
+ 218:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 {
+ 246              		.loc 1 218 17 is_stmt 1 view .LVU86
+ 218:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 {
+ 247              		.loc 1 218 20 is_stmt 0 view .LVU87
+ 248 00ce BBF1010F 		cmp	fp, #1
+ 249 00d2 0DD1     		bne	.L10
+ 228:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         (class_ptr -> ux_slave_class_interface -> ux_slave_interface_descriptor.bIn
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 12
+
+
+ 250              		.loc 1 228 21 is_stmt 1 view .LVU88
+ 228:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         (class_ptr -> ux_slave_class_interface -> ux_slave_interface_descriptor.bIn
+ 251              		.loc 1 228 24 is_stmt 0 view .LVU89
+ 252 00d4 B9F1A10F 		cmp	r9, #161
+ 253 00d8 1AD1     		bne	.L11
+ 228:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         (class_ptr -> ux_slave_class_interface -> ux_slave_interface_descriptor.bIn
+ 254              		.loc 1 228 48 discriminator 1 view .LVU90
+ 255 00da BAF1000F 		cmp	r10, #0
+ 256 00de 17D1     		bne	.L11
+ 229:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                     {
+ 257              		.loc 1 229 96 discriminator 2 view .LVU91
+ 258 00e0 0B6E     		ldr	r3, [r1, #96]
+ 228:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                         (class_ptr -> ux_slave_class_interface -> ux_slave_interface_descriptor.bIn
+ 259              		.loc 1 228 69 discriminator 2 view .LVU92
+ 260 00e2 5B7C     		ldrb	r3, [r3, #17]	@ zero_extendqisi2
+ 261 00e4 072B     		cmp	r3, #7
+ 262 00e6 13D1     		bne	.L11
+ 233:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 263              		.loc 1 233 25 is_stmt 1 view .LVU93
+ 233:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 264              		.loc 1 233 28 is_stmt 0 view .LVU94
+ 265 00e8 98F84130 		ldrb	r3, [r8, #65]	@ zero_extendqisi2
+ 233:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 266              		.loc 1 233 27 view .LVU95
+ 267 00ec AB42     		cmp	r3, r5
+ 268              	.L46:
+ 240:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 269              		.loc 1 240 28 view .LVU96
+ 270 00ee 06D1     		bne	.L9
+ 271              	.L10:
+ 246:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 272              		.loc 1 246 17 is_stmt 1 view .LVU97
+ 249:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 273              		.loc 1 249 26 is_stmt 0 view .LVU98
+ 274 00f0 4B6C     		ldr	r3, [r1, #68]
+ 246:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 275              		.loc 1 246 64 view .LVU99
+ 276 00f2 0D91     		str	r1, [sp, #52]
+ 249:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 277              		.loc 1 249 17 is_stmt 1 view .LVU100
+ 249:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 278              		.loc 1 249 26 is_stmt 0 view .LVU101
+ 279 00f4 05A8     		add	r0, sp, #20
+ 280 00f6 9847     		blx	r3
+ 281              	.LVL27:
+ 254:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 282              		.loc 1 254 17 is_stmt 1 view .LVU102
+ 254:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 283              		.loc 1 254 20 is_stmt 0 view .LVU103
+ 284 00f8 344A     		ldr	r2, .L48
+ 285 00fa 0746     		mov	r7, r0
+ 286 00fc 30B1     		cbz	r0, .L12
+ 287              	.LVL28:
+ 288              	.L9:
+ 207:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             {
+ 289              		.loc 1 207 86 is_stmt 1 discriminator 2 view .LVU104
+ 290 00fe 0135     		adds	r5, r5, #1
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 13
+
+
+ 291              	.LVL29:
+ 207:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             {
+ 292              		.loc 1 207 47 discriminator 2 view .LVU105
+ 293 0100 102D     		cmp	r5, #16
+ 294 0102 DED1     		bne	.L13
+ 295              	.LVL30:
+ 263:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 296              		.loc 1 263 13 view .LVU106
+ 266:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 297              		.loc 1 266 17 view .LVU107
+ 298 0104 06F13C00 		add	r0, r6, #60
+ 299 0108 FFF7FEFF 		bl	_ux_device_stack_endpoint_stall
+ 300              	.LVL31:
+ 301              	.L12:
+ 345:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     }
+ 302              		.loc 1 345 13 is_stmt 0 view .LVU108
+ 303 010c 3D46     		mov	r5, r7
+ 304              	.LVL32:
+ 345:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     }
+ 305              		.loc 1 345 13 view .LVU109
+ 306 010e C7E7     		b	.L1
+ 307              	.LVL33:
+ 308              	.L11:
+ 240:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 309              		.loc 1 240 25 is_stmt 1 view .LVU110
+ 240:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                             continue;
+ 310              		.loc 1 240 28 is_stmt 0 view .LVU111
+ 311 0110 AC42     		cmp	r4, r5
+ 312 0112 ECE7     		b	.L46
+ 313              	.LVL34:
+ 314              	.L8:
+ 273:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         {
+ 315              		.loc 1 273 9 is_stmt 1 view .LVU112
+ 316 0114 BAF10C0F 		cmp	r10, #12
+ 317 0118 53D8     		bhi	.L28
+ 318 011a 01A2     		adr	r2, .L16
+ 319 011c 52F82AF0 		ldr	pc, [r2, r10, lsl #2]
+ 320              		.p2align 2
+ 321              	.L16:
+ 322 0120 55010000 		.word	.L25+1
+ 323 0124 71010000 		.word	.L24+1
+ 324 0128 C3010000 		.word	.L28+1
+ 325 012c 7D010000 		.word	.L23+1
+ 326 0130 C3010000 		.word	.L28+1
+ 327 0134 89010000 		.word	.L22+1
+ 328 0138 97010000 		.word	.L21+1
+ 329 013c C3010000 		.word	.L28+1
+ 330 0140 A3010000 		.word	.L20+1
+ 331 0144 A9010000 		.word	.L19+1
+ 332 0148 B1010000 		.word	.L18+1
+ 333 014c B9010000 		.word	.L17+1
+ 334 0150 A1000000 		.word	.L1+1
+ 335              		.p2align 1
+ 336              	.L25:
+ 278:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 337              		.loc 1 278 13 view .LVU113
+ 278:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 14
+
+
+ 338              		.loc 1 278 23 is_stmt 0 view .LVU114
+ 339 0154 1A46     		mov	r2, r3
+ 340 0156 2146     		mov	r1, r4
+ 341 0158 4846     		mov	r0, r9
+ 342 015a FFF7FEFF 		bl	_ux_device_stack_get_status
+ 343              	.LVL35:
+ 344              	.L47:
+ 327:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 345              		.loc 1 327 23 view .LVU115
+ 346 015e 0446     		mov	r4, r0
+ 347              	.LVL36:
+ 328:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****                 
+ 348              		.loc 1 328 13 is_stmt 1 view .LVU116
+ 342:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 349              		.loc 1 342 9 view .LVU117
+ 342:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 350              		.loc 1 342 12 is_stmt 0 view .LVU118
+ 351 0160 0028     		cmp	r0, #0
+ 352 0162 9DD0     		beq	.L1
+ 353              	.LVL37:
+ 354              	.L15:
+ 345:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****     }
+ 355              		.loc 1 345 13 is_stmt 1 view .LVU119
+ 356 0164 06F13C00 		add	r0, r6, #60
+ 357 0168 FFF7FEFF 		bl	_ux_device_stack_endpoint_stall
+ 358              	.LVL38:
+ 359 016c 2546     		mov	r5, r4
+ 360 016e 97E7     		b	.L1
+ 361              	.LVL39:
+ 362              	.L24:
+ 283:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 363              		.loc 1 283 13 view .LVU120
+ 283:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 364              		.loc 1 283 23 is_stmt 0 view .LVU121
+ 365 0170 2246     		mov	r2, r4
+ 366 0172 3946     		mov	r1, r7
+ 367 0174 4846     		mov	r0, r9
+ 368 0176 FFF7FEFF 		bl	_ux_device_stack_clear_feature
+ 369              	.LVL40:
+ 283:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 370              		.loc 1 283 23 view .LVU122
+ 371 017a F0E7     		b	.L47
+ 372              	.LVL41:
+ 373              	.L23:
+ 288:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 374              		.loc 1 288 13 is_stmt 1 view .LVU123
+ 288:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 375              		.loc 1 288 23 is_stmt 0 view .LVU124
+ 376 017c 2246     		mov	r2, r4
+ 377 017e 3946     		mov	r1, r7
+ 378 0180 4846     		mov	r0, r9
+ 379 0182 FFF7FEFF 		bl	_ux_device_stack_set_feature
+ 380              	.LVL42:
+ 288:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 381              		.loc 1 288 23 view .LVU125
+ 382 0186 EAE7     		b	.L47
+ 383              	.LVL43:
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 15
+
+
+ 384              	.L22:
+ 294:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 385              		.loc 1 294 13 is_stmt 1 view .LVU126
+ 297:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 386              		.loc 1 297 23 is_stmt 0 view .LVU127
+ 387 0188 3A46     		mov	r2, r7
+ 388 018a 1121     		movs	r1, #17
+ 389 018c 3046     		mov	r0, r6
+ 390 018e B369     		ldr	r3, [r6, #24]
+ 391              	.LVL44:
+ 294:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** 
+ 392              		.loc 1 294 48 view .LVU128
+ 393 0190 7761     		str	r7, [r6, #20]
+ 297:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 394              		.loc 1 297 13 is_stmt 1 view .LVU129
+ 297:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 395              		.loc 1 297 23 is_stmt 0 view .LVU130
+ 396 0192 9847     		blx	r3
+ 397              	.LVL45:
+ 398 0194 E3E7     		b	.L47
+ 399              	.LVL46:
+ 400              	.L21:
+ 302:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 401              		.loc 1 302 13 is_stmt 1 view .LVU131
+ 302:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 402              		.loc 1 302 23 is_stmt 0 view .LVU132
+ 403 0196 1A46     		mov	r2, r3
+ 404 0198 2146     		mov	r1, r4
+ 405 019a 3846     		mov	r0, r7
+ 406 019c FFF7FEFF 		bl	_ux_device_stack_descriptor_send
+ 407              	.LVL47:
+ 302:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 408              		.loc 1 302 23 view .LVU133
+ 409 01a0 DDE7     		b	.L47
+ 410              	.LVL48:
+ 411              	.L20:
+ 312:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 412              		.loc 1 312 13 is_stmt 1 view .LVU134
+ 312:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 413              		.loc 1 312 23 is_stmt 0 view .LVU135
+ 414 01a2 FFF7FEFF 		bl	_ux_device_stack_configuration_get
+ 415              	.LVL49:
+ 312:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 416              		.loc 1 312 23 view .LVU136
+ 417 01a6 DAE7     		b	.L47
+ 418              	.LVL50:
+ 419              	.L19:
+ 317:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 420              		.loc 1 317 13 is_stmt 1 view .LVU137
+ 317:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 421              		.loc 1 317 23 is_stmt 0 view .LVU138
+ 422 01a8 3846     		mov	r0, r7
+ 423 01aa FFF7FEFF 		bl	_ux_device_stack_configuration_set
+ 424              	.LVL51:
+ 317:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 425              		.loc 1 317 23 view .LVU139
+ 426 01ae D6E7     		b	.L47
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 16
+
+
+ 427              	.LVL52:
+ 428              	.L18:
+ 322:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 429              		.loc 1 322 13 is_stmt 1 view .LVU140
+ 322:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 430              		.loc 1 322 23 is_stmt 0 view .LVU141
+ 431 01b0 2046     		mov	r0, r4
+ 432 01b2 FFF7FEFF 		bl	_ux_device_stack_alternate_setting_get
+ 433              	.LVL53:
+ 322:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 434              		.loc 1 322 23 view .LVU142
+ 435 01b6 D2E7     		b	.L47
+ 436              	.LVL54:
+ 437              	.L17:
+ 327:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 438              		.loc 1 327 13 is_stmt 1 view .LVU143
+ 327:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 439              		.loc 1 327 23 is_stmt 0 view .LVU144
+ 440 01b8 3946     		mov	r1, r7
+ 441 01ba 2046     		mov	r0, r4
+ 442 01bc FFF7FEFF 		bl	_ux_device_stack_alternate_setting_set
+ 443              	.LVL55:
+ 327:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****             break;
+ 444              		.loc 1 327 23 view .LVU145
+ 445 01c0 CDE7     		b	.L47
+ 446              	.LVL56:
+ 447              	.L28:
+ 273:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         {
+ 448              		.loc 1 273 9 view .LVU146
+ 449 01c2 5424     		movs	r4, #84
+ 450              	.LVL57:
+ 273:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c ****         {
+ 451              		.loc 1 273 9 view .LVU147
+ 452 01c4 CEE7     		b	.L15
+ 453              	.LVL58:
+ 454              	.L27:
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_stack_control_request_process.c **** UX_SLAVE_ENDPOINT           *endpoint;
+ 455              		.loc 1 116 29 view .LVU148
+ 456 01c6 FF25     		movs	r5, #255
+ 457 01c8 6AE7     		b	.L1
+ 458              	.L49:
+ 459 01ca 00BF     		.align	2
+ 460              	.L48:
+ 461 01cc 00000000 		.word	_ux_system_slave
+ 462              		.cfi_endproc
+ 463              	.LFE3:
+ 465              		.text
+ 466              	.Letext0:
+ 467              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 468              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+ 469              		.file 4 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_device_stack.h"
+ 470              		.file 5 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_utility.h"
+ 471              		.file 6 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_system.h"
+ARM GAS  /tmp/claude-1000/cc1Kqp4I.s 			page 17
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_device_stack_control_request_process.c
+/tmp/claude-1000/cc1Kqp4I.s:26     .text._ux_device_stack_control_request_process:00000000 $t
+/tmp/claude-1000/cc1Kqp4I.s:32     .text._ux_device_stack_control_request_process:00000000 _ux_device_stack_control_request_process
+/tmp/claude-1000/cc1Kqp4I.s:322    .text._ux_device_stack_control_request_process:00000120 $d
+/tmp/claude-1000/cc1Kqp4I.s:335    .text._ux_device_stack_control_request_process:00000154 $t
+/tmp/claude-1000/cc1Kqp4I.s:461    .text._ux_device_stack_control_request_process:000001cc $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+
+UNDEFINED SYMBOLS
+_ux_utility_short_get
+_ux_device_stack_transfer_request
+_ux_device_stack_endpoint_stall
+_ux_device_stack_get_status
+_ux_device_stack_clear_feature
+_ux_device_stack_set_feature
+_ux_device_stack_descriptor_send
+_ux_device_stack_configuration_get
+_ux_device_stack_configuration_set
+_ux_device_stack_alternate_setting_get
+_ux_device_stack_alternate_setting_set
+_ux_system_slave

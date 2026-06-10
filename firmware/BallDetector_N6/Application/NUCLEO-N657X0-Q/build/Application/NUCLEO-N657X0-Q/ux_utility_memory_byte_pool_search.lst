@@ -1,0 +1,586 @@
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_utility_memory_byte_pool_search.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_sea
+  25              		.section	.text._ux_utility_memory_byte_pool_search,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_utility_memory_byte_pool_search
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_utility_memory_byte_pool_search:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**************************************************************************/
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**                                                                       */
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /** USBX Component                                                        */
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**   USBX main stack                                                     */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**                                                                       */
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**************************************************************************/
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /* Include necessary system files.  */
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** #define UX_SOURCE_CODE
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** #include "ux_api.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**************************************************************************/
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  FUNCTION                                               RELEASE        */
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    _ux_utility_memory_byte_pool_search                 PORTABLE C      */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                           6.3.0        */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  AUTHOR                                                                */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    Yajun Xia, Microsoft Corporation                                    */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  DESCRIPTION                                                           */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    This function searches a byte pool for a memory block to satisfy    */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    the requested number of bytes.  Merging of adjacent free blocks     */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    takes place during the search.                                      */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  INPUT                                                                 */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    pool_ptr                          Pointer to pool control block     */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    memory_size                       Number of bytes required          */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  OUTPUT                                                                */
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    UCHAR *                           Pointer to the allocated memory,  */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                        if successful.  Otherwise, a    */
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                        NULL is returned                */
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  CALLS                                                                 */
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    None                                                                */
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  CALLED BY                                                             */
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    USBX Components                                                     */
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  RELEASE HISTORY                                                       */
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*    DATE              NAME                      DESCRIPTION             */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*  10-31-2023     Yajun Xia                Initial Version 6.3.0         */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /*                                                                        */
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** /**************************************************************************/
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UCHAR  *_ux_utility_memory_byte_pool_search(UX_MEMORY_BYTE_POOL *pool_ptr, ULONG memory_size)
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** {
+  35              		.loc 1 74 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UCHAR               *current_ptr;
+  39              		.loc 1 75 1 view .LVU1
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UCHAR               *next_ptr;
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 3
+
+
+  40              		.loc 1 76 1 view .LVU2
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UCHAR               **this_block_link_ptr;
+  41              		.loc 1 77 1 view .LVU3
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UCHAR               **next_block_link_ptr;
+  42              		.loc 1 78 1 view .LVU4
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** ULONG               available_bytes;
+  43              		.loc 1 79 1 view .LVU5
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UINT                examine_blocks;
+  44              		.loc 1 80 1 view .LVU6
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UINT                first_free_block_found =  UX_FALSE;
+  45              		.loc 1 81 1 view .LVU7
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** ALIGN_TYPE          *free_ptr;
+  46              		.loc 1 82 1 view .LVU8
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UCHAR               *work_ptr;
+  47              		.loc 1 83 1 view .LVU9
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** ULONG               total_theoretical_available;
+  48              		.loc 1 84 1 view .LVU10
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     /* First, determine if there are enough bytes in the pool.  */
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     /* Theoretical bytes available = free bytes + ((fragments-2) * overhead of each block) */
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     total_theoretical_available = pool_ptr -> ux_byte_pool_available + ((pool_ptr -> ux_byte_pool_f
+  49              		.loc 1 88 5 view .LVU11
+  50              		.loc 1 88 83 is_stmt 0 view .LVU12
+  51 0000 4268     		ldr	r2, [r0, #4]
+  52              	.LVL1:
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     if (memory_size >= total_theoretical_available)
+  53              		.loc 1 89 5 is_stmt 1 view .LVU13
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UCHAR               *current_ptr;
+  54              		.loc 1 74 1 is_stmt 0 view .LVU14
+  55 0002 0346     		mov	r3, r0
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     if (memory_size >= total_theoretical_available)
+  56              		.loc 1 88 33 view .LVU15
+  57 0004 0068     		ldr	r0, [r0]
+  58              	.LVL2:
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** UCHAR               *current_ptr;
+  59              		.loc 1 74 1 view .LVU16
+  60 0006 F0B5     		push	{r4, r5, r6, r7, lr}
+  61              		.cfi_def_cfa_offset 20
+  62              		.cfi_offset 4, -20
+  63              		.cfi_offset 5, -16
+  64              		.cfi_offset 6, -12
+  65              		.cfi_offset 7, -8
+  66              		.cfi_offset 14, -4
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     if (memory_size >= total_theoretical_available)
+  67              		.loc 1 88 109 view .LVU17
+  68 0008 941E     		subs	r4, r2, #2
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     if (memory_size >= total_theoretical_available)
+  69              		.loc 1 88 33 view .LVU18
+  70 000a 00EBC400 		add	r0, r0, r4, lsl #3
+  71              	.LVL3:
+  72              		.loc 1 89 8 view .LVU19
+  73 000e 8842     		cmp	r0, r1
+  74 0010 01D8     		bhi	.L2
+  75              	.LVL4:
+  76              	.L4:
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     {
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 4
+
+
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         /* Not enough memory, return a NULL pointer.  */
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         return(UX_NULL);
+  77              		.loc 1 93 15 view .LVU20
+  78 0012 0020     		movs	r0, #0
+  79              	.L1:
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     }
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     /* Check if the search pointer is valid.  */
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     if ((pool_ptr -> ux_byte_pool_search < pool_ptr -> ux_byte_pool_start) ||
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         (pool_ptr -> ux_byte_pool_search > pool_ptr -> ux_byte_pool_start + pool_ptr -> ux_byte_poo
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     {
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         /* Return a NULL pointer.  */
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         return(UX_NULL);
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     }
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     /* Walk through the memory pool in search for a large enough block.  */
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     current_ptr =      pool_ptr -> ux_byte_pool_search;
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     examine_blocks =   pool_ptr -> ux_byte_pool_fragments + ((UINT) 1);
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     available_bytes =  ((ULONG) 0);
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     do
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     {
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         /* Check to see if this block is free.  */
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         work_ptr =  UX_UCHAR_POINTER_ADD(current_ptr, (sizeof(UCHAR *)));
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         free_ptr =  UX_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(work_ptr);
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         if ((*free_ptr) == UX_BYTE_BLOCK_FREE)
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         {
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             /* Determine if this is the first free block.  */
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             if (first_free_block_found == UX_FALSE)
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             {
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 /* This is the first free block.  */
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 pool_ptr->ux_byte_pool_search =  current_ptr;
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 /* Set the flag to indicate we have found the first free
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     block.  */
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 first_free_block_found =  UX_TRUE;
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             }
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             /* Block is free, see if it is large enough.  */
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             /* Pickup the next block's pointer.  */
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             this_block_link_ptr =  UX_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(current_ptr);
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             next_ptr =             *this_block_link_ptr;
+ 133:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 134:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             /* Calculate the number of bytes available in this block.  */
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             available_bytes =   UX_UCHAR_POINTER_DIF(next_ptr, current_ptr);
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             available_bytes =   available_bytes - UX_MEMORY_BLOCK_HEADER_SIZE;
+ 137:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 138:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             /* If this is large enough, we are done because our first-fit algorithm
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 has been satisfied!  */
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             if (available_bytes >= memory_size)
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             {
+ 142:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 143:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 /* Get out of the search loop!  */
+ 144:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 break;
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             }
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 5
+
+
+ 146:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             else
+ 147:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             {
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 149:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 /* Clear the available bytes variable.  */
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 available_bytes =  ((ULONG) 0);
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 152:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 /* Not enough memory, check to see if the neighbor is
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     free and can be merged.  */
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 work_ptr =  UX_UCHAR_POINTER_ADD(next_ptr, (sizeof(UCHAR *)));
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 free_ptr =  UX_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(work_ptr);
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 if ((*free_ptr) == UX_BYTE_BLOCK_FREE)
+ 157:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 {
+ 158:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     /* Yes, neighbor block can be merged!  This is quickly accomplished
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                         by updating the current block with the next blocks pointer.  */
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     next_block_link_ptr =  UX_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(next_ptr);
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     *this_block_link_ptr =  *next_block_link_ptr;
+ 163:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 164:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     /* Reduce the fragment total.  We don't need to increase the bytes
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                         available because all free headers are also included in the available
+ 166:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                         count.  */
+ 167:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     pool_ptr -> ux_byte_pool_fragments--;
+ 168:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     /* See if the search pointer is affected.  */
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     if (pool_ptr -> ux_byte_pool_search ==  next_ptr)
+ 171:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     {
+ 172:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                         /* Yes, update the search pointer.   */
+ 173:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                         pool_ptr -> ux_byte_pool_search =  current_ptr;
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     }
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 }
+ 176:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 else
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 {
+ 178:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     /* Neighbor is not free so we can skip over it!  */
+ 179:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     next_block_link_ptr =  UX_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(next_ptr);
+ 180:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     current_ptr =  *next_block_link_ptr;
+ 181:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     /* Decrement the examined block count to account for this one.  */
+ 183:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     if (examine_blocks != ((UINT) 0))
+ 184:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     {
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                         examine_blocks--;
+ 186:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     }
+ 187:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 }
+ 188:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             }
+ 189:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         }
+ 190:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         else
+ 191:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         {
+ 192:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 193:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             /* Block is not free, move to next block.  */
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             this_block_link_ptr =  UX_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(current_ptr);
+ 195:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             current_ptr =  *this_block_link_ptr;
+ 196:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         }
+ 197:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 198:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         /* Another block has been searched... decrement counter.  */
+ 199:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         if (examine_blocks != ((UINT) 0))
+ 200:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         {
+ 201:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 202:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             examine_blocks--;
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 6
+
+
+ 203:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         }
+ 204:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 205:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     } while(examine_blocks != ((UINT) 0));
+ 206:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 207:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     /* If a block was found, just return. */
+ 208:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     if (available_bytes == ((ULONG) 0))
+ 209:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     {
+ 210:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         return(UX_NULL);
+ 211:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     }
+ 212:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 213:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     /* Return the search pointer.  */
+ 214:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     return(current_ptr);
+ 215:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** }
+  80              		.loc 1 215 1 view .LVU21
+  81 0014 F0BD     		pop	{r4, r5, r6, r7, pc}
+  82              	.LVL5:
+  83              	.L2:
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         (pool_ptr -> ux_byte_pool_search > pool_ptr -> ux_byte_pool_start + pool_ptr -> ux_byte_poo
+  84              		.loc 1 97 5 is_stmt 1 view .LVU22
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         (pool_ptr -> ux_byte_pool_search > pool_ptr -> ux_byte_pool_start + pool_ptr -> ux_byte_poo
+  85              		.loc 1 97 53 is_stmt 0 view .LVU23
+  86 0016 D3E90204 		ldrd	r0, r4, [r3, #8]
+  87              	.LVL6:
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         (pool_ptr -> ux_byte_pool_search > pool_ptr -> ux_byte_pool_start + pool_ptr -> ux_byte_poo
+  88              		.loc 1 97 8 view .LVU24
+  89 001a A042     		cmp	r0, r4
+  90 001c F9D3     		bcc	.L4
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     {
+  91              		.loc 1 98 75 discriminator 1 view .LVU25
+  92 001e 1D69     		ldr	r5, [r3, #16]
+  93 0020 2C44     		add	r4, r4, r5
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         (pool_ptr -> ux_byte_pool_search > pool_ptr -> ux_byte_pool_start + pool_ptr -> ux_byte_poo
+  94              		.loc 1 97 76 discriminator 1 view .LVU26
+  95 0022 A042     		cmp	r0, r4
+  96 0024 F5D8     		bhi	.L4
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     examine_blocks =   pool_ptr -> ux_byte_pool_fragments + ((UINT) 1);
+  97              		.loc 1 106 5 is_stmt 1 view .LVU27
+  98              	.LVL7:
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     available_bytes =  ((ULONG) 0);
+  99              		.loc 1 107 5 view .LVU28
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** ALIGN_TYPE          *free_ptr;
+ 100              		.loc 1 81 21 is_stmt 0 view .LVU29
+ 101 0026 0024     		movs	r4, #0
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         {
+ 102              		.loc 1 114 12 view .LVU30
+ 103 0028 134E     		ldr	r6, .L24
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     available_bytes =  ((ULONG) 0);
+ 104              		.loc 1 107 20 view .LVU31
+ 105 002a 0132     		adds	r2, r2, #1
+ 106              	.LVL8:
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     do
+ 107              		.loc 1 108 5 is_stmt 1 view .LVU32
+ 108              	.L12:
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     {
+ 109              		.loc 1 109 5 view .LVU33
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         free_ptr =  UX_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(work_ptr);
+ 110              		.loc 1 112 9 view .LVU34
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 7
+
+
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         if ((*free_ptr) == UX_BYTE_BLOCK_FREE)
+ 111              		.loc 1 113 9 view .LVU35
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         {
+ 112              		.loc 1 114 9 view .LVU36
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         {
+ 113              		.loc 1 114 12 is_stmt 0 view .LVU37
+ 114 002c 4568     		ldr	r5, [r0, #4]
+ 115 002e B542     		cmp	r5, r6
+ 116 0030 1DD1     		bne	.L5
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             {
+ 117              		.loc 1 118 13 is_stmt 1 view .LVU38
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             {
+ 118              		.loc 1 118 16 is_stmt 0 view .LVU39
+ 119 0032 04B9     		cbnz	r4, .L6
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 120              		.loc 1 121 17 is_stmt 1 view .LVU40
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 121              		.loc 1 121 47 is_stmt 0 view .LVU41
+ 122 0034 9860     		str	r0, [r3, #8]
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             }
+ 123              		.loc 1 125 17 is_stmt 1 view .LVU42
+ 124              	.LVL9:
+ 125              	.L6:
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             next_ptr =             *this_block_link_ptr;
+ 126              		.loc 1 131 13 view .LVU43
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 127              		.loc 1 132 13 view .LVU44
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 128              		.loc 1 132 22 is_stmt 0 view .LVU45
+ 129 0036 0568     		ldr	r5, [r0]
+ 130              	.LVL10:
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             available_bytes =   available_bytes - UX_MEMORY_BLOCK_HEADER_SIZE;
+ 131              		.loc 1 135 13 is_stmt 1 view .LVU46
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             available_bytes =   available_bytes - UX_MEMORY_BLOCK_HEADER_SIZE;
+ 132              		.loc 1 135 33 is_stmt 0 view .LVU47
+ 133 0038 2C1A     		subs	r4, r5, r0
+ 134              	.LVL11:
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 135              		.loc 1 136 13 is_stmt 1 view .LVU48
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 136              		.loc 1 136 29 is_stmt 0 view .LVU49
+ 137 003a 083C     		subs	r4, r4, #8
+ 138              	.LVL12:
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             {
+ 139              		.loc 1 140 13 is_stmt 1 view .LVU50
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             {
+ 140              		.loc 1 140 16 is_stmt 0 view .LVU51
+ 141 003c A142     		cmp	r1, r4
+ 142 003e 18D9     		bls	.L7
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 143              		.loc 1 150 17 is_stmt 1 view .LVU52
+ 144              	.LVL13:
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 free_ptr =  UX_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(work_ptr);
+ 145              		.loc 1 154 17 view .LVU53
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 if ((*free_ptr) == UX_BYTE_BLOCK_FREE)
+ 146              		.loc 1 155 17 view .LVU54
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 {
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 8
+
+
+ 147              		.loc 1 156 17 view .LVU55
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                 {
+ 148              		.loc 1 156 20 is_stmt 0 view .LVU56
+ 149 0040 D5E90047 		ldrd	r4, r7, [r5]
+ 150 0044 B742     		cmp	r7, r6
+ 151 0046 0DD1     		bne	.L8
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     *this_block_link_ptr =  *next_block_link_ptr;
+ 152              		.loc 1 161 21 is_stmt 1 view .LVU57
+ 153              	.LVL14:
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 154              		.loc 1 162 21 view .LVU58
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 155              		.loc 1 162 42 is_stmt 0 view .LVU59
+ 156 0048 0460     		str	r4, [r0]
+ 167:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 157              		.loc 1 167 21 is_stmt 1 view .LVU60
+ 167:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 158              		.loc 1 167 55 is_stmt 0 view .LVU61
+ 159 004a 5C68     		ldr	r4, [r3, #4]
+ 160 004c 013C     		subs	r4, r4, #1
+ 161 004e 5C60     		str	r4, [r3, #4]
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     {
+ 162              		.loc 1 170 21 is_stmt 1 view .LVU62
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     {
+ 163              		.loc 1 170 24 is_stmt 0 view .LVU63
+ 164 0050 9C68     		ldr	r4, [r3, #8]
+ 165 0052 AC42     		cmp	r4, r5
+ 166 0054 00D1     		bne	.L23
+ 173:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     }
+ 167              		.loc 1 173 25 is_stmt 1 view .LVU64
+ 173:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     }
+ 168              		.loc 1 173 57 is_stmt 0 view .LVU65
+ 169 0056 9860     		str	r0, [r3, #8]
+ 170              	.LVL15:
+ 171              	.L23:
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     }
+ 172              		.loc 1 185 39 view .LVU66
+ 173 0058 0124     		movs	r4, #1
+ 174              	.LVL16:
+ 175              	.L10:
+ 199:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         {
+ 176              		.loc 1 199 9 is_stmt 1 view .LVU67
+ 199:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         {
+ 177              		.loc 1 199 12 is_stmt 0 view .LVU68
+ 178 005a 002A     		cmp	r2, #0
+ 179 005c D9D0     		beq	.L4
+ 202:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         }
+ 180              		.loc 1 202 13 is_stmt 1 view .LVU69
+ 181              	.LVL17:
+ 205:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 182              		.loc 1 205 28 view .LVU70
+ 183 005e 013A     		subs	r2, r2, #1
+ 184              	.LVL18:
+ 205:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 185              		.loc 1 205 28 is_stmt 0 view .LVU71
+ 186 0060 E4D1     		bne	.L12
+ 187 0062 D6E7     		b	.L4
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 9
+
+
+ 188              	.LVL19:
+ 189              	.L8:
+ 179:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     current_ptr =  *next_block_link_ptr;
+ 190              		.loc 1 179 21 is_stmt 1 view .LVU72
+ 180:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 191              		.loc 1 180 21 view .LVU73
+ 183:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     {
+ 192              		.loc 1 183 21 view .LVU74
+ 183:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     {
+ 193              		.loc 1 183 24 is_stmt 0 view .LVU75
+ 194 0064 002A     		cmp	r2, #0
+ 195 0066 D4D0     		beq	.L4
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     }
+ 196              		.loc 1 185 25 is_stmt 1 view .LVU76
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c **** 
+ 197              		.loc 1 162 45 is_stmt 0 view .LVU77
+ 198 0068 2046     		mov	r0, r4
+ 199              	.LVL20:
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     }
+ 200              		.loc 1 185 39 view .LVU78
+ 201 006a 013A     		subs	r2, r2, #1
+ 202              	.LVL21:
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****                     }
+ 203              		.loc 1 185 39 view .LVU79
+ 204 006c F4E7     		b	.L23
+ 205              	.LVL22:
+ 206              	.L5:
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****             current_ptr =  *this_block_link_ptr;
+ 207              		.loc 1 194 13 is_stmt 1 view .LVU80
+ 195:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         }
+ 208              		.loc 1 195 13 view .LVU81
+ 195:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         }
+ 209              		.loc 1 195 25 is_stmt 0 view .LVU82
+ 210 006e 0068     		ldr	r0, [r0]
+ 211              	.LVL23:
+ 195:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****         }
+ 212              		.loc 1 195 25 view .LVU83
+ 213 0070 F3E7     		b	.L10
+ 214              	.LVL24:
+ 215              	.L7:
+ 208:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     {
+ 216              		.loc 1 208 5 is_stmt 1 view .LVU84
+ 208:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c ****     {
+ 217              		.loc 1 208 8 is_stmt 0 view .LVU85
+ 218 0072 002C     		cmp	r4, #0
+ 219 0074 CED1     		bne	.L1
+ 220 0076 CCE7     		b	.L4
+ 221              	.L25:
+ 222              		.align	2
+ 223              	.L24:
+ 224 0078 EEEEFFFF 		.word	-4370
+ 225              		.cfi_endproc
+ 226              	.LFE3:
+ 228              		.text
+ 229              	.Letext0:
+ 230              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 231              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 10
+
+
+ARM GAS  /tmp/claude-1000/ccIbLxbN.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_utility_memory_byte_pool_search.c
+/tmp/claude-1000/ccIbLxbN.s:26     .text._ux_utility_memory_byte_pool_search:00000000 $t
+/tmp/claude-1000/ccIbLxbN.s:32     .text._ux_utility_memory_byte_pool_search:00000000 _ux_utility_memory_byte_pool_search
+/tmp/claude-1000/ccIbLxbN.s:224    .text._ux_utility_memory_byte_pool_search:00000078 $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,504 @@
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_device_class_dpump_change.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c"
+  25              		.section	.text._ux_device_class_dpump_change,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_device_class_dpump_change
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_device_class_dpump_change:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**************************************************************************/
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**                                                                       */ 
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /** USBX Component                                                        */ 
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**                                                                       */
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**   Device DPUMP Class                                                  */
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**                                                                       */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**************************************************************************/
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**************************************************************************/
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #define UX_SOURCE_CODE
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /* Include necessary system files.  */
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #include "ux_api.h"
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #include "ux_device_class_dpump.h"
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #include "ux_device_stack.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**************************************************************************/ 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  FUNCTION                                               RELEASE        */ 
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    _ux_device_class_dpump_change                       PORTABLE C      */ 
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                           6.3.0        */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  AUTHOR                                                                */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  DESCRIPTION                                                           */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    This function changes the interface of the DPUMP device             */ 
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  INPUT                                                                 */ 
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    command                             Pointer to dpump command        */ 
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  OUTPUT                                                                */ 
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    Completion Status                                                   */ 
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  CALLS                                                                 */ 
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    _ux_utility_memory_set              Set memory                      */
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    _ux_device_stack_transfer_all_request_abort                         */
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                        Abort request                   */
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  CALLED BY                                                             */ 
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    USBX Source Code                                                    */ 
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  RELEASE HISTORY                                                       */ 
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*    DATE              NAME                      DESCRIPTION             */ 
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */ 
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  05-19-2020     Chaoqiong Xiao           Initial Version 6.0           */
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  09-30-2020     Chaoqiong Xiao           Modified comment(s),          */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            verified memset and memcpy  */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            cases,                      */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            resulting in version 6.1    */
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  01-31-2022     Chaoqiong Xiao           Modified comment(s),          */
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            added standalone support,   */
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            resulting in version 6.1.10 */
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  07-29-2022     Chaoqiong Xiao           Modified comment(s),          */
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            fixed parameter/variable    */
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            names conflict C++ keyword, */
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            resulting in version 6.1.12 */
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*  10-31-2023     Chaoqiong Xiao           Modified comment(s),          */
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            added a new mode to manage  */
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            endpoint buffer in classes, */
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 3
+
+
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                            resulting in version 6.3.0  */
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /*                                                                        */
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** /**************************************************************************/
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** UINT  _ux_device_class_dpump_change(UX_SLAVE_CLASS_COMMAND *command)
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** {
+  35              		.loc 1 86 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                           
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** UX_SLAVE_INTERFACE                      *interface_ptr;            
+  39              		.loc 1 88 1 view .LVU1
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** UX_SLAVE_CLASS                          *class_ptr;
+  40              		.loc 1 89 1 view .LVU2
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** UX_SLAVE_CLASS_DPUMP                    *dpump;
+  41              		.loc 1 90 1 view .LVU3
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** UX_SLAVE_ENDPOINT                       *endpoint;
+  42              		.loc 1 91 1 view .LVU4
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* Get the class container.  */
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     class_ptr =  command -> ux_slave_class_command_class_ptr;
+  43              		.loc 1 94 5 view .LVU5
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* Get the class instance in the container.  */
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     dpump = (UX_SLAVE_CLASS_DPUMP *) class_ptr -> ux_slave_class_instance;
+  44              		.loc 1 97 5 view .LVU6
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                           
+  45              		.loc 1 86 1 is_stmt 0 view .LVU7
+  46 0000 70B5     		push	{r4, r5, r6, lr}
+  47              		.cfi_def_cfa_offset 16
+  48              		.cfi_offset 4, -16
+  49              		.cfi_offset 5, -12
+  50              		.cfi_offset 6, -8
+  51              		.cfi_offset 14, -4
+  52              		.loc 1 97 11 view .LVU8
+  53 0002 036A     		ldr	r3, [r0, #32]
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* Get the interface that owns this instance.  */
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     interface_ptr =  (UX_SLAVE_INTERFACE  *) command -> ux_slave_class_command_interface;
+  54              		.loc 1 100 19 view .LVU9
+  55 0004 8668     		ldr	r6, [r0, #8]
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+  56              		.loc 1 97 11 view .LVU10
+  57 0006 9C6C     		ldr	r4, [r3, #72]
+  58              	.LVL1:
+  59              		.loc 1 100 5 is_stmt 1 view .LVU11
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* Locate the endpoints.  Control and Bulk in/out for data.  */
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     endpoint =  interface_ptr -> ux_slave_interface_first_endpoint;
+  60              		.loc 1 103 5 view .LVU12
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* Keep the alternate setting in the dpump structure. */
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     dpump -> ux_slave_class_dpump_alternate_setting =  interface_ptr -> ux_slave_interface_descript
+  61              		.loc 1 106 102 is_stmt 0 view .LVU13
+  62 0008 F37B     		ldrb	r3, [r6, #15]	@ zero_extendqisi2
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     
+  63              		.loc 1 103 14 view .LVU14
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 4
+
+
+  64 000a F569     		ldr	r5, [r6, #28]
+  65              	.LVL2:
+  66              		.loc 1 106 5 is_stmt 1 view .LVU15
+  67              		.loc 1 106 102 is_stmt 0 view .LVU16
+  68 000c A361     		str	r3, [r4, #24]
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* If the interface to mount has a non zero alternate setting, the class is really active with
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****        the endpoints active.  If the interface reverts to alternate setting 0, it needs to have
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****        the pending transactions terminated.  */
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     if (interface_ptr -> ux_slave_interface_descriptor.bAlternateSetting != 0)       
+  69              		.loc 1 111 5 is_stmt 1 view .LVU17
+  70              		.loc 1 111 8 is_stmt 0 view .LVU18
+  71 000e BBB9     		cbnz	r3, .L2
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     {
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         /* Parse all endpoints.  */
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         while (endpoint != UX_NULL)
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         {
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             /* Check the endpoint direction, and type.  */
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             if ((endpoint -> ux_slave_endpoint_descriptor.bEndpointAddress & UX_ENDPOINT_DIRECTION)
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             {
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                 /* Look at type.  */
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                 if ((endpoint -> ux_slave_endpoint_descriptor.bmAttributes & UX_MASK_ENDPOINT_TYPE)
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                     /* We have found the bulk in endpoint, save it.  */
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                     dpump -> ux_slave_class_dpump_bulkin_endpoint =  endpoint;
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #if UX_DEVICE_ENDPOINT_BUFFER_OWNER == 1
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                     endpoint -> ux_slave_endpoint_transfer_request.
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                             ux_slave_transfer_request_data_pointer =
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                     UX_DEVICE_CLASS_DPUMP_WRITE_BUFFER(dpump);
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #endif
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             }
+ 133:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             else
+ 134:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             {
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                 /* Look at type for out endpoint.  */
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                 if ((endpoint -> ux_slave_endpoint_descriptor.bmAttributes & UX_MASK_ENDPOINT_TYPE)
+ 137:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             
+ 138:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                     /* We have found the bulk out endpoint, save it.  */
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                     dpump -> ux_slave_class_dpump_bulkout_endpoint =  endpoint;
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #if UX_DEVICE_ENDPOINT_BUFFER_OWNER == 1
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                     endpoint -> ux_slave_endpoint_transfer_request.
+ 142:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                             ux_slave_transfer_request_data_pointer =
+ 143:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                     UX_DEVICE_CLASS_DPUMP_READ_BUFFER(dpump);
+ 144:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #endif
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             }                
+ 146:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     
+ 147:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             /* Next endpoint.  */
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             endpoint =  endpoint -> ux_slave_endpoint_next_endpoint;
+ 149:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         }
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 152:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         /* Now check if all endpoints have been found.  */
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         if (dpump -> ux_slave_class_dpump_bulkout_endpoint == UX_NULL || dpump -> ux_slave_class_dp
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             /* Not all endpoints have been found. Major error, do not proceed.  */
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 5
+
+
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             return(UX_ERROR);
+ 157:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 158:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         /* Reset the endpoint buffers.  */
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         _ux_utility_memory_set(dpump -> ux_slave_class_dpump_bulkout_endpoint -> ux_slave_endpoint_
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                         ux_slave_transfer_request_data_pointer, 0, UX_SLAVE_REQUEST
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         _ux_utility_memory_set(dpump -> ux_slave_class_dpump_bulkin_endpoint -> ux_slave_endpoint_t
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                         ux_slave_transfer_request_data_pointer, 0, UX_SLAVE_REQUEST
+ 163:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 164:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         /* Keep the alternate setting in the dpump structure. */
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         dpump -> ux_slave_class_dpump_alternate_setting =  interface_ptr -> ux_slave_interface_desc
+ 166:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 167:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #if defined(UX_DEVICE_STANDALONE)
+ 168:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 169:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         /* Reset read/write states.  */
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         dpump -> ux_device_class_dpump_read_state = 0;
+ 171:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         dpump -> ux_device_class_dpump_write_state = 0;
+ 172:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #endif
+ 173:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 174:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         /* If there is an activate function call it.  */
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         if (dpump -> ux_slave_class_dpump_parameter.ux_slave_class_dpump_instance_activate != UX_NU
+ 176:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 177:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             /* Invoke the application.  */
+ 178:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             dpump -> ux_slave_class_dpump_parameter.ux_slave_class_dpump_instance_activate(dpump);
+ 179:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     }                
+ 180:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     else
+ 181:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     {
+ 182:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 183:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         /* In this case, we are reverting to the Alternate Setting 0.  We need to terminate the pen
+ 184:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         /* Terminate the transactions pending on the endpoints (bulk in, bulk out).  */
+ 185:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         _ux_device_stack_transfer_all_request_abort(dpump -> ux_slave_class_dpump_bulkin_endpoint, 
+  72              		.loc 1 185 9 is_stmt 1 view .LVU19
+  73 0010 2821     		movs	r1, #40
+  74 0012 E068     		ldr	r0, [r4, #12]
+  75              	.LVL3:
+  76              		.loc 1 185 9 is_stmt 0 view .LVU20
+  77 0014 FFF7FEFF 		bl	_ux_device_stack_transfer_all_request_abort
+  78              	.LVL4:
+ 186:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         _ux_device_stack_transfer_all_request_abort(dpump -> ux_slave_class_dpump_bulkout_endpoint,
+  79              		.loc 1 186 9 is_stmt 1 view .LVU21
+  80 0018 2821     		movs	r1, #40
+  81 001a 2069     		ldr	r0, [r4, #16]
+  82 001c FFF7FEFF 		bl	_ux_device_stack_transfer_all_request_abort
+  83              	.LVL5:
+  84 0020 27E0     		b	.L11
+  85              	.LVL6:
+  86              	.L8:
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             {
+  87              		.loc 1 119 13 view .LVU22
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             {
+  88              		.loc 1 119 16 is_stmt 0 view .LVU23
+  89 0022 95F90E30 		ldrsb	r3, [r5, #14]
+  90 0026 EA7B     		ldrb	r2, [r5, #15]	@ zero_extendqisi2
+  91 0028 002B     		cmp	r3, #0
+  92 002a 02F00302 		and	r2, r2, #3
+  93 002e 6369     		ldr	r3, [r4, #20]
+  94 0030 21DA     		bge	.L4
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 6
+
+
+  95              		.loc 1 123 17 is_stmt 1 view .LVU24
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             
+  96              		.loc 1 123 20 is_stmt 0 view .LVU25
+  97 0032 022A     		cmp	r2, #2
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #if UX_DEVICE_ENDPOINT_BUFFER_OWNER == 1
+  98              		.loc 1 126 21 is_stmt 1 view .LVU26
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #if UX_DEVICE_ENDPOINT_BUFFER_OWNER == 1
+  99              		.loc 1 126 67 is_stmt 0 view .LVU27
+ 100 0034 08BF     		it	eq
+ 101 0036 E560     		streq	r5, [r4, #12]
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                             ux_slave_transfer_request_data_pointer =
+ 102              		.loc 1 128 21 is_stmt 1 view .LVU28
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #endif
+ 103              		.loc 1 130 37 is_stmt 0 view .LVU29
+ 104 0038 03F54063 		add	r3, r3, #3072
+ 105              	.L6:
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                     UX_DEVICE_CLASS_DPUMP_WRITE_BUFFER(dpump);
+ 106              		.loc 1 129 68 view .LVU30
+ 107 003c EB62     		str	r3, [r5, #44]
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         }
+ 108              		.loc 1 148 13 is_stmt 1 view .LVU31
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         }
+ 109              		.loc 1 148 22 is_stmt 0 view .LVU32
+ 110 003e 6D69     		ldr	r5, [r5, #20]
+ 111              	.LVL7:
+ 112              	.L2:
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         {
+ 113              		.loc 1 115 25 is_stmt 1 view .LVU33
+ 114 0040 002D     		cmp	r5, #0
+ 115 0042 EED1     		bne	.L8
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 116              		.loc 1 153 9 view .LVU34
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 117              		.loc 1 153 19 is_stmt 0 view .LVU35
+ 118 0044 2369     		ldr	r3, [r4, #16]
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 119              		.loc 1 153 12 view .LVU36
+ 120 0046 EBB1     		cbz	r3, .L13
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 121              		.loc 1 153 71 discriminator 1 view .LVU37
+ 122 0048 E268     		ldr	r2, [r4, #12]
+ 123 004a DAB1     		cbz	r2, .L13
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                         ux_slave_transfer_request_data_pointer, 0, UX_SLAVE_REQUEST
+ 124              		.loc 1 159 9 is_stmt 1 view .LVU38
+ 125 004c D86A     		ldr	r0, [r3, #44]
+ 126              	.LVL8:
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                         ux_slave_transfer_request_data_pointer, 0, UX_SLAVE_REQUEST
+ 127              		.loc 1 159 9 is_stmt 0 view .LVU39
+ 128 004e 4FF44062 		mov	r2, #3072
+ 129 0052 2946     		mov	r1, r5
+ 130 0054 FFF7FEFF 		bl	_ux_utility_memory_set
+ 131              	.LVL9:
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                         ux_slave_transfer_request_data_pointer, 0, UX_SLAVE_REQUEST
+ 132              		.loc 1 161 9 is_stmt 1 view .LVU40
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                         ux_slave_transfer_request_data_pointer, 0, UX_SLAVE_REQUEST
+ 133              		.loc 1 161 115 is_stmt 0 view .LVU41
+ 134 0058 E368     		ldr	r3, [r4, #12]
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 7
+
+
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                                         ux_slave_transfer_request_data_pointer, 0, UX_SLAVE_REQUEST
+ 135              		.loc 1 161 9 view .LVU42
+ 136 005a 4FF44062 		mov	r2, #3072
+ 137 005e D86A     		ldr	r0, [r3, #44]
+ 138 0060 2946     		mov	r1, r5
+ 139 0062 FFF7FEFF 		bl	_ux_utility_memory_set
+ 140              	.LVL10:
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 141              		.loc 1 165 9 is_stmt 1 view .LVU43
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 142              		.loc 1 165 106 is_stmt 0 view .LVU44
+ 143 0066 F37B     		ldrb	r3, [r6, #15]	@ zero_extendqisi2
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         dpump -> ux_device_class_dpump_write_state = 0;
+ 144              		.loc 1 170 51 view .LVU45
+ 145 0068 6564     		str	r5, [r4, #68]
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 146              		.loc 1 165 106 view .LVU46
+ 147 006a A361     		str	r3, [r4, #24]
+ 170:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****         dpump -> ux_device_class_dpump_write_state = 0;
+ 148              		.loc 1 170 9 is_stmt 1 view .LVU47
+ 171:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #endif
+ 149              		.loc 1 171 9 view .LVU48
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 150              		.loc 1 175 52 is_stmt 0 view .LVU49
+ 151 006c 6368     		ldr	r3, [r4, #4]
+ 171:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #endif
+ 152              		.loc 1 171 52 view .LVU50
+ 153 006e E562     		str	r5, [r4, #44]
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 154              		.loc 1 175 9 is_stmt 1 view .LVU51
+ 175:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 155              		.loc 1 175 12 is_stmt 0 view .LVU52
+ 156 0070 2BB9     		cbnz	r3, .L10
+ 157              	.L11:
+ 187:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 188:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     }
+ 189:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 190:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* If trace is enabled, insert this event into the trace buffer.  */
+ 191:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     UX_TRACE_IN_LINE_INSERT(UX_TRACE_DEVICE_CLASS_DPUMP_CHANGE, dpump, 0, 0, 0, UX_TRACE_DEVICE_CLA
+ 192:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 193:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* If trace is enabled, register this object.  */
+ 194:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     UX_TRACE_OBJECT_REGISTER(UX_TRACE_DEVICE_OBJECT_TYPE_INTERFACE, dpump, 0, 0, 0)
+ 195:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 196:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     /* Return completion status.  */
+ 197:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     return(UX_SUCCESS);
+ 158              		.loc 1 197 11 view .LVU53
+ 159 0072 0020     		movs	r0, #0
+ 160              	.L1:
+ 198:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** }
+ 161              		.loc 1 198 1 view .LVU54
+ 162 0074 70BD     		pop	{r4, r5, r6, pc}
+ 163              	.LVL11:
+ 164              	.L4:
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             
+ 165              		.loc 1 136 17 is_stmt 1 view .LVU55
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****             
+ 166              		.loc 1 136 20 is_stmt 0 view .LVU56
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 8
+
+
+ 167 0076 022A     		cmp	r2, #2
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #if UX_DEVICE_ENDPOINT_BUFFER_OWNER == 1
+ 168              		.loc 1 139 21 is_stmt 1 view .LVU57
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** #if UX_DEVICE_ENDPOINT_BUFFER_OWNER == 1
+ 169              		.loc 1 139 68 is_stmt 0 view .LVU58
+ 170 0078 08BF     		it	eq
+ 171 007a 2561     		streq	r5, [r4, #16]
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****                             ux_slave_transfer_request_data_pointer =
+ 172              		.loc 1 141 21 is_stmt 1 view .LVU59
+ 173 007c DEE7     		b	.L6
+ 174              	.LVL12:
+ 175              	.L10:
+ 178:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c ****     }                
+ 176              		.loc 1 178 13 view .LVU60
+ 177 007e 2046     		mov	r0, r4
+ 178 0080 9847     		blx	r3
+ 179              	.LVL13:
+ 180 0082 F6E7     		b	.L11
+ 181              	.LVL14:
+ 182              	.L13:
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 183              		.loc 1 156 19 is_stmt 0 view .LVU61
+ 184 0084 FF20     		movs	r0, #255
+ 185              	.LVL15:
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_device_class_dpump_change.c **** 
+ 186              		.loc 1 156 19 view .LVU62
+ 187 0086 F5E7     		b	.L1
+ 188              		.cfi_endproc
+ 189              	.LFE3:
+ 191              		.text
+ 192              	.Letext0:
+ 193              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 194              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+ 195              		.file 4 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_device_class_dpump.h"
+ 196              		.file 5 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_device_stack.h"
+ 197              		.file 6 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_utility.h"
+ARM GAS  /tmp/claude-1000/ccS2jycL.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_device_class_dpump_change.c
+/tmp/claude-1000/ccS2jycL.s:26     .text._ux_device_class_dpump_change:00000000 $t
+/tmp/claude-1000/ccS2jycL.s:32     .text._ux_device_class_dpump_change:00000000 _ux_device_class_dpump_change
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+                           .group:00000000 wm4.ux_device_class_dpump.h.61.041fcfd7c2fd7640c9a4372d84a7ac68
+
+UNDEFINED SYMBOLS
+_ux_device_stack_transfer_all_request_abort
+_ux_utility_memory_set

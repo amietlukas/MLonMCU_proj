@@ -1,0 +1,1963 @@
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"yolo_postproc.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "Src/yolo_postproc.c"
+  25              		.section	.text.yolo_postprocess,"ax",%progbits
+  26              		.align	1
+  27              		.global	yolo_postprocess
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	yolo_postprocess:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:Src/yolo_postproc.c **** /* Implementation — see yolo_postproc.h.
+   2:Src/yolo_postproc.c ****  *
+   3:Src/yolo_postproc.c ****  * Hot path:
+   4:Src/yolo_postproc.c ****  *   1. For each head and cell, reject early using a *quantized* threshold
+   5:Src/yolo_postproc.c ****  *      on tobj (no math, no dequant). Survivors are typically a few hundred
+   6:Src/yolo_postproc.c ****  *      out of 6300 cells.
+   7:Src/yolo_postproc.c ****  *   2. For survivors, dequant + sigmoid/exp decode → xyxy.
+   8:Src/yolo_postproc.c ****  *   3. Bubble-sort top-K by score (K small, ~32), then greedy NMS.
+   9:Src/yolo_postproc.c ****  *
+  10:Src/yolo_postproc.c ****  * Quant params come from stedgeai's analyze report and are fixed for this
+  11:Src/yolo_postproc.c ****  * model. If the model is re-trained or re-quantized, re-run
+  12:Src/yolo_postproc.c ****  * `stedgeai analyze` and update these constants.
+  13:Src/yolo_postproc.c ****  */
+  14:Src/yolo_postproc.c **** #include "yolo_postproc.h"
+  15:Src/yolo_postproc.c **** 
+  16:Src/yolo_postproc.c **** #include <math.h>
+  17:Src/yolo_postproc.c **** #include <string.h>
+  18:Src/yolo_postproc.c **** 
+  19:Src/yolo_postproc.c **** /* Per-head config (count/scale/zp/stride/grid) is now passed in at call time,
+  20:Src/yolo_postproc.c ****  * sourced from the generated STAI_NETWORK_OUT_* macros -- see head_cfg_init()
+  21:Src/yolo_postproc.c ****  * in main.c. Fully model-agnostic: 2- or 3-head, any stride set. */
+  22:Src/yolo_postproc.c **** 
+  23:Src/yolo_postproc.c **** /* Match the training-time decode clamp range. */
+  24:Src/yolo_postproc.c **** #define TWTH_CLAMP_MIN  (-4.0f)
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 2
+
+
+  25:Src/yolo_postproc.c **** #define TWTH_CLAMP_MAX  ( 4.0f)
+  26:Src/yolo_postproc.c **** 
+  27:Src/yolo_postproc.c **** /* Pre-NMS candidate cap. 6300 total cells; in practice <100 survive a 0.5
+  28:Src/yolo_postproc.c ****  * objectness threshold even on busy scenes. 128 leaves headroom. */
+  29:Src/yolo_postproc.c **** #define PRENMS_CAP  128
+  30:Src/yolo_postproc.c **** 
+  31:Src/yolo_postproc.c **** /* --- helpers -------------------------------------------------------------- */
+  32:Src/yolo_postproc.c **** 
+  33:Src/yolo_postproc.c **** static inline float sigmoidf(float x) {
+  34:Src/yolo_postproc.c ****     return 1.0f / (1.0f + expf(-x));
+  35:Src/yolo_postproc.c **** }
+  36:Src/yolo_postproc.c **** 
+  37:Src/yolo_postproc.c **** static inline float clampf(float v, float lo, float hi) {
+  38:Src/yolo_postproc.c ****     return v < lo ? lo : (v > hi ? hi : v);
+  39:Src/yolo_postproc.c **** }
+  40:Src/yolo_postproc.c **** 
+  41:Src/yolo_postproc.c **** /* logit(p) = ln(p/(1-p)) — inverse of sigmoid. Used to convert the
+  42:Src/yolo_postproc.c ****  * post-sigmoid confidence threshold into a pre-sigmoid (and then
+  43:Src/yolo_postproc.c ****  * quantized) threshold so the inner loop can reject cells with a single
+  44:Src/yolo_postproc.c ****  * uint8 compare. */
+  45:Src/yolo_postproc.c **** static inline float logitf(float p) {
+  46:Src/yolo_postproc.c ****     return logf(p / (1.0f - p));
+  47:Src/yolo_postproc.c **** }
+  48:Src/yolo_postproc.c **** 
+  49:Src/yolo_postproc.c **** /* --- main ----------------------------------------------------------------- */
+  50:Src/yolo_postproc.c **** 
+  51:Src/yolo_postproc.c **** int yolo_postprocess(
+  52:Src/yolo_postproc.c ****     const uint8_t * const *heads,
+  53:Src/yolo_postproc.c ****     int          n_heads,
+  54:Src/yolo_postproc.c ****     const float *scales,
+  55:Src/yolo_postproc.c ****     const int   *zps,
+  56:Src/yolo_postproc.c ****     const int   *strides,
+  57:Src/yolo_postproc.c ****     const int   *grid_w,
+  58:Src/yolo_postproc.c ****     const int   *grid_h,
+  59:Src/yolo_postproc.c ****     float conf_thresh,
+  60:Src/yolo_postproc.c ****     float iou_thresh,
+  61:Src/yolo_postproc.c ****     yolo_box_t *out,
+  62:Src/yolo_postproc.c ****     int out_cap)
+  63:Src/yolo_postproc.c **** {
+  35              		.loc 1 63 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 20, pretend = 0, frame = 2728
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  64:Src/yolo_postproc.c ****     if (out_cap <= 0 || !out) return 0;
+  39              		.loc 1 64 5 view .LVU1
+  63:Src/yolo_postproc.c ****     if (out_cap <= 0 || !out) return 0;
+  40              		.loc 1 63 1 is_stmt 0 view .LVU2
+  41 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  42              		.cfi_def_cfa_offset 36
+  43              		.cfi_offset 4, -36
+  44              		.cfi_offset 5, -32
+  45              		.cfi_offset 6, -28
+  46              		.cfi_offset 7, -24
+  47              		.cfi_offset 8, -20
+  48              		.cfi_offset 9, -16
+  49              		.cfi_offset 10, -12
+  50              		.cfi_offset 11, -8
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 3
+
+
+  51              		.cfi_offset 14, -4
+  52 0004 2DED108B 		vpush.64	{d8, d9, d10, d11, d12, d13, d14, d15}
+  53              		.cfi_def_cfa_offset 100
+  54              		.cfi_offset 80, -100
+  55              		.cfi_offset 81, -96
+  56              		.cfi_offset 82, -92
+  57              		.cfi_offset 83, -88
+  58              		.cfi_offset 84, -84
+  59              		.cfi_offset 85, -80
+  60              		.cfi_offset 86, -76
+  61              		.cfi_offset 87, -72
+  62              		.cfi_offset 88, -68
+  63              		.cfi_offset 89, -64
+  64              		.cfi_offset 90, -60
+  65              		.cfi_offset 91, -56
+  66              		.cfi_offset 92, -52
+  67              		.cfi_offset 93, -48
+  68              		.cfi_offset 94, -44
+  69              		.cfi_offset 95, -40
+  70 0008 ADF6AC2D 		subw	sp, sp, #2732
+  71              		.cfi_def_cfa_offset 2832
+  63:Src/yolo_postproc.c ****     if (out_cap <= 0 || !out) return 0;
+  72              		.loc 1 63 1 view .LVU3
+  73 000c 0993     		str	r3, [sp, #36]
+  74              		.loc 1 64 8 view .LVU4
+  75 000e DDF8203B 		ldr	r3, [sp, #2848]
+  76              	.LVL1:
+  63:Src/yolo_postproc.c ****     if (out_cap <= 0 || !out) return 0;
+  77              		.loc 1 63 1 view .LVU5
+  78 0012 1746     		mov	r7, r2
+  79              		.loc 1 64 8 view .LVU6
+  80 0014 002B     		cmp	r3, #0
+  63:Src/yolo_postproc.c ****     if (out_cap <= 0 || !out) return 0;
+  81              		.loc 1 63 1 view .LVU7
+  82 0016 B0EE60CA 		vmov.f32	s24, s1
+  83 001a CDE90701 		strd	r0, r1, [sp, #28]
+  84              		.loc 1 64 8 view .LVU8
+  85 001e 06DC     		bgt	.L2
+  86              	.LVL2:
+  87              	.L4:
+  88              		.loc 1 64 38 view .LVU9
+  89 0020 0020     		movs	r0, #0
+  90              	.L1:
+  65:Src/yolo_postproc.c ****     conf_thresh = clampf(conf_thresh, 1e-4f, 0.9999f);
+  66:Src/yolo_postproc.c **** 
+  67:Src/yolo_postproc.c ****     yolo_box_t cand[PRENMS_CAP];
+  68:Src/yolo_postproc.c ****     int n_cand = 0;
+  69:Src/yolo_postproc.c **** 
+  70:Src/yolo_postproc.c ****     const float logit_thr = logitf(conf_thresh);
+  71:Src/yolo_postproc.c **** 
+  72:Src/yolo_postproc.c ****     for (int h = 0; h < n_heads; ++h) {
+  73:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+  74:Src/yolo_postproc.c ****         if (!buf) continue;
+  75:Src/yolo_postproc.c **** 
+  76:Src/yolo_postproc.c ****         const int H = grid_h[h];
+  77:Src/yolo_postproc.c ****         const int W = grid_w[h];
+  78:Src/yolo_postproc.c ****         const int HW = H * W;
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 4
+
+
+  79:Src/yolo_postproc.c ****         const float scale = scales[h];          /* per-head, from generated macros */
+  80:Src/yolo_postproc.c ****         const int   zp    = zps[h];
+  81:Src/yolo_postproc.c ****         const float stride = (float)strides[h];
+  82:Src/yolo_postproc.c **** 
+  83:Src/yolo_postproc.c ****         /* The NPU outputs are SIGNED int8 (QLinear int8). They MUST be read as
+  84:Src/yolo_postproc.c ****          * int8_t: reading as uint8 turns a negative logit (e.g. -2 = 0xFE) into
+  85:Src/yolo_postproc.c ****          * +254, which dequantizes to a huge value and saturates sigmoid to 1.0.
+  86:Src/yolo_postproc.c ****          * That was the "8 boxes @ score=1.000 on every frame" bug — worst on the
+  87:Src/yolo_postproc.c ****          * zero_point=0 heads (p16/p32), where most objectness logits are negative. */
+  88:Src/yolo_postproc.c ****         /* Objectness threshold (signed): q >= q_thr iff tobj_float >= logit_thr,
+  89:Src/yolo_postproc.c ****          * tobj_float = (q - zp) * scale  =>  q = zp + logit_thr / scale. */
+  90:Src/yolo_postproc.c ****         const float q_thr_f = (float)zp + logit_thr / scale;
+  91:Src/yolo_postproc.c ****         int q_thr;
+  92:Src/yolo_postproc.c ****         if      (q_thr_f <= -128.0f)  q_thr = -128;
+  93:Src/yolo_postproc.c ****         else if (q_thr_f >=  127.0f)  q_thr =  128;   /* never matches */
+  94:Src/yolo_postproc.c ****         else                          q_thr = (int)ceilf(q_thr_f);
+  95:Src/yolo_postproc.c **** 
+  96:Src/yolo_postproc.c ****         const int8_t *p_tobj = (const int8_t *)buf + 4 * HW;
+  97:Src/yolo_postproc.c ****         const int8_t *p_tx   = (const int8_t *)buf + 0 * HW;
+  98:Src/yolo_postproc.c ****         const int8_t *p_ty   = (const int8_t *)buf + 1 * HW;
+  99:Src/yolo_postproc.c ****         const int8_t *p_tw   = (const int8_t *)buf + 2 * HW;
+ 100:Src/yolo_postproc.c ****         const int8_t *p_th   = (const int8_t *)buf + 3 * HW;
+ 101:Src/yolo_postproc.c **** 
+ 102:Src/yolo_postproc.c ****         for (int y = 0; y < H; ++y) {
+ 103:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 104:Src/yolo_postproc.c ****                 const int idx = y * W + x;
+ 105:Src/yolo_postproc.c ****                 const int q = p_tobj[idx];          /* signed int8 objectness */
+ 106:Src/yolo_postproc.c ****                 if (q < q_thr) continue;
+ 107:Src/yolo_postproc.c **** 
+ 108:Src/yolo_postproc.c ****                 const float tx = ((float)p_tx[idx] - zp) * scale;
+ 109:Src/yolo_postproc.c ****                 const float ty = ((float)p_ty[idx] - zp) * scale;
+ 110:Src/yolo_postproc.c ****                 const float tw = ((float)p_tw[idx] - zp) * scale;
+ 111:Src/yolo_postproc.c ****                 const float th = ((float)p_th[idx] - zp) * scale;
+ 112:Src/yolo_postproc.c ****                 const float to = ((float)q        - zp) * scale;
+ 113:Src/yolo_postproc.c **** 
+ 114:Src/yolo_postproc.c ****                 const float cx = (sigmoidf(tx) + (float)x) * stride;
+ 115:Src/yolo_postproc.c ****                 const float cy = (sigmoidf(ty) + (float)y) * stride;
+ 116:Src/yolo_postproc.c ****                 const float pw = expf(clampf(tw, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 117:Src/yolo_postproc.c ****                 const float ph = expf(clampf(th, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 118:Src/yolo_postproc.c **** 
+ 119:Src/yolo_postproc.c ****                 yolo_box_t b;
+ 120:Src/yolo_postproc.c ****                 b.x1 = clampf(cx - 0.5f * pw, 0.0f, (float)YOLO_INPUT_W);
+ 121:Src/yolo_postproc.c ****                 b.y1 = clampf(cy - 0.5f * ph, 0.0f, (float)YOLO_INPUT_H);
+ 122:Src/yolo_postproc.c ****                 b.x2 = clampf(cx + 0.5f * pw, 0.0f, (float)YOLO_INPUT_W);
+ 123:Src/yolo_postproc.c ****                 b.y2 = clampf(cy + 0.5f * ph, 0.0f, (float)YOLO_INPUT_H);
+ 124:Src/yolo_postproc.c ****                 b.score = sigmoidf(to);
+ 125:Src/yolo_postproc.c **** 
+ 126:Src/yolo_postproc.c ****                 if (n_cand < PRENMS_CAP) {
+ 127:Src/yolo_postproc.c ****                     cand[n_cand++] = b;
+ 128:Src/yolo_postproc.c ****                 } else {
+ 129:Src/yolo_postproc.c ****                     /* Buffer full — evict the lowest-scoring entry if this one is better.
+ 130:Src/yolo_postproc.c ****                      * Linear scan is fine; PRENMS_CAP is small. */
+ 131:Src/yolo_postproc.c ****                     int worst = 0;
+ 132:Src/yolo_postproc.c ****                     for (int k = 1; k < PRENMS_CAP; ++k) {
+ 133:Src/yolo_postproc.c ****                         if (cand[k].score < cand[worst].score) worst = k;
+ 134:Src/yolo_postproc.c ****                     }
+ 135:Src/yolo_postproc.c ****                     if (b.score > cand[worst].score) cand[worst] = b;
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 5
+
+
+ 136:Src/yolo_postproc.c ****                 }
+ 137:Src/yolo_postproc.c ****             }
+ 138:Src/yolo_postproc.c ****         }
+ 139:Src/yolo_postproc.c ****     }
+ 140:Src/yolo_postproc.c **** 
+ 141:Src/yolo_postproc.c ****     if (n_cand == 0) return 0;
+ 142:Src/yolo_postproc.c **** 
+ 143:Src/yolo_postproc.c ****     /* Sort candidates by score desc (insertion sort, small n). */
+ 144:Src/yolo_postproc.c ****     for (int i = 1; i < n_cand; ++i) {
+ 145:Src/yolo_postproc.c ****         yolo_box_t key = cand[i];
+ 146:Src/yolo_postproc.c ****         int j = i - 1;
+ 147:Src/yolo_postproc.c ****         while (j >= 0 && cand[j].score < key.score) {
+ 148:Src/yolo_postproc.c ****             cand[j + 1] = cand[j];
+ 149:Src/yolo_postproc.c ****             --j;
+ 150:Src/yolo_postproc.c ****         }
+ 151:Src/yolo_postproc.c ****         cand[j + 1] = key;
+ 152:Src/yolo_postproc.c ****     }
+ 153:Src/yolo_postproc.c **** 
+ 154:Src/yolo_postproc.c ****     /* Greedy NMS. */
+ 155:Src/yolo_postproc.c ****     uint8_t suppressed[PRENMS_CAP] = {0};
+ 156:Src/yolo_postproc.c ****     int n_out = 0;
+ 157:Src/yolo_postproc.c ****     for (int i = 0; i < n_cand && n_out < out_cap; ++i) {
+ 158:Src/yolo_postproc.c ****         if (suppressed[i]) continue;
+ 159:Src/yolo_postproc.c ****         const yolo_box_t *bi = &cand[i];
+ 160:Src/yolo_postproc.c ****         out[n_out++] = *bi;
+ 161:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 162:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 163:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 164:Src/yolo_postproc.c ****             const yolo_box_t *bj = &cand[j];
+ 165:Src/yolo_postproc.c ****             const float xx1 = bi->x1 > bj->x1 ? bi->x1 : bj->x1;
+ 166:Src/yolo_postproc.c ****             const float yy1 = bi->y1 > bj->y1 ? bi->y1 : bj->y1;
+ 167:Src/yolo_postproc.c ****             const float xx2 = bi->x2 < bj->x2 ? bi->x2 : bj->x2;
+ 168:Src/yolo_postproc.c ****             const float yy2 = bi->y2 < bj->y2 ? bi->y2 : bj->y2;
+ 169:Src/yolo_postproc.c ****             const float iw = xx2 - xx1; if (iw <= 0.0f) continue;
+ 170:Src/yolo_postproc.c ****             const float ih = yy2 - yy1; if (ih <= 0.0f) continue;
+ 171:Src/yolo_postproc.c ****             const float inter = iw * ih;
+ 172:Src/yolo_postproc.c ****             const float aj = (bj->x2 - bj->x1) * (bj->y2 - bj->y1);
+ 173:Src/yolo_postproc.c ****             const float uni = ai + aj - inter;
+ 174:Src/yolo_postproc.c ****             if (uni > 0.0f && (inter / uni) >= iou_thresh) suppressed[j] = 1;
+ 175:Src/yolo_postproc.c ****         }
+ 176:Src/yolo_postproc.c ****     }
+ 177:Src/yolo_postproc.c ****     return n_out;
+ 178:Src/yolo_postproc.c **** }
+  91              		.loc 1 178 1 view .LVU10
+  92 0022 0DF6AC2D 		addw	sp, sp, #2732
+  93              		.cfi_remember_state
+  94              		.cfi_def_cfa_offset 100
+  95              		@ sp needed
+  96 0026 BDEC108B 		vldm	sp!, {d8-d15}
+  97              		.cfi_restore 94
+  98              		.cfi_restore 95
+  99              		.cfi_restore 92
+ 100              		.cfi_restore 93
+ 101              		.cfi_restore 90
+ 102              		.cfi_restore 91
+ 103              		.cfi_restore 88
+ 104              		.cfi_restore 89
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 6
+
+
+ 105              		.cfi_restore 86
+ 106              		.cfi_restore 87
+ 107              		.cfi_restore 84
+ 108              		.cfi_restore 85
+ 109              		.cfi_restore 82
+ 110              		.cfi_restore 83
+ 111              		.cfi_restore 80
+ 112              		.cfi_restore 81
+ 113              		.cfi_def_cfa_offset 36
+ 114              	.LVL3:
+ 115              		.loc 1 178 1 view .LVU11
+ 116 002a BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 117              	.LVL4:
+ 118              	.L2:
+ 119              		.cfi_restore_state
+  64:Src/yolo_postproc.c ****     conf_thresh = clampf(conf_thresh, 1e-4f, 0.9999f);
+ 120              		.loc 1 64 22 discriminator 2 view .LVU12
+ 121 002e DDF81C3B 		ldr	r3, [sp, #2844]
+ 122 0032 002B     		cmp	r3, #0
+ 123 0034 F4D0     		beq	.L4
+  65:Src/yolo_postproc.c ****     conf_thresh = clampf(conf_thresh, 1e-4f, 0.9999f);
+ 124              		.loc 1 65 5 is_stmt 1 view .LVU13
+ 125              	.LVL5:
+ 126              	.LBB64:
+ 127              	.LBI64:
+  37:Src/yolo_postproc.c ****     return v < lo ? lo : (v > hi ? hi : v);
+ 128              		.loc 1 37 21 view .LVU14
+ 129              	.LBB65:
+  38:Src/yolo_postproc.c **** }
+ 130              		.loc 1 38 5 view .LVU15
+  38:Src/yolo_postproc.c **** }
+ 131              		.loc 1 38 24 is_stmt 0 view .LVU16
+ 132 0036 DFEDDA7A 		vldr.32	s15, .L98
+ 133 003a B4EEE70A 		vcmpe.f32	s0, s15
+ 134 003e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 135 0042 6BD4     		bmi	.L53
+  38:Src/yolo_postproc.c **** }
+ 136              		.loc 1 38 39 view .LVU17
+ 137 0044 DFEDD77A 		vldr.32	s15, .L98+4
+ 138 0048 B4EE670A 		vcmp.f32	s0, s15
+ 139 004c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 140 0050 37FE800A 		vselgt.f32	s0, s15, s0
+ 141              	.LVL6:
+ 142              	.L5:
+  38:Src/yolo_postproc.c **** }
+ 143              		.loc 1 38 39 view .LVU18
+ 144              	.LBE65:
+ 145              	.LBE64:
+  67:Src/yolo_postproc.c ****     int n_cand = 0;
+ 146              		.loc 1 67 5 is_stmt 1 view .LVU19
+  68:Src/yolo_postproc.c **** 
+ 147              		.loc 1 68 5 view .LVU20
+  70:Src/yolo_postproc.c **** 
+ 148              		.loc 1 70 5 view .LVU21
+ 149              	.LBB67:
+ 150              	.LBI67:
+  45:Src/yolo_postproc.c ****     return logf(p / (1.0f - p));
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 7
+
+
+ 151              		.loc 1 45 21 view .LVU22
+ 152              	.LBB68:
+  46:Src/yolo_postproc.c **** }
+ 153              		.loc 1 46 5 view .LVU23
+  46:Src/yolo_postproc.c **** }
+ 154              		.loc 1 46 27 is_stmt 0 view .LVU24
+ 155 0054 B7EE00AA 		vmov.f32	s20, #1.0e+0
+ 156 0058 7AEE407A 		vsub.f32	s15, s20, s0
+  46:Src/yolo_postproc.c **** }
+ 157              		.loc 1 46 12 view .LVU25
+ 158 005c 80EE270A 		vdiv.f32	s0, s0, s15
+ 159              	.LVL7:
+  46:Src/yolo_postproc.c **** }
+ 160              		.loc 1 46 12 view .LVU26
+ 161 0060 FFF7FEFF 		bl	logf
+ 162              	.LVL8:
+  46:Src/yolo_postproc.c **** }
+ 163              		.loc 1 46 12 view .LVU27
+ 164              	.LBE68:
+ 165              	.LBE67:
+ 166              	.LBB70:
+  72:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+ 167              		.loc 1 72 14 view .LVU28
+ 168 0064 0025     		movs	r5, #0
+ 169              	.LBE70:
+ 170              	.LBB148:
+ 171              	.LBB69:
+  46:Src/yolo_postproc.c **** }
+ 172              		.loc 1 46 12 view .LVU29
+ 173 0066 F0EE40CA 		vmov.f32	s25, s0
+ 174              	.LVL9:
+  46:Src/yolo_postproc.c **** }
+ 175              		.loc 1 46 12 view .LVU30
+ 176              	.LBE69:
+ 177              	.LBE148:
+  72:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+ 178              		.loc 1 72 5 is_stmt 1 view .LVU31
+ 179              	.LBB149:
+  72:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+ 180              		.loc 1 72 10 view .LVU32
+  72:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+ 181              		.loc 1 72 10 is_stmt 0 view .LVU33
+ 182              	.LBE149:
+  68:Src/yolo_postproc.c **** 
+ 183              		.loc 1 68 9 view .LVU34
+ 184 006a 2C46     		mov	r4, r5
+ 185              	.LBB150:
+ 186              	.LBB71:
+ 187              	.LBB72:
+ 188              	.LBB73:
+ 189              	.LBB74:
+ 190              	.LBB75:
+ 191              	.LBB76:
+  38:Src/yolo_postproc.c **** }
+ 192              		.loc 1 38 24 view .LVU35
+ 193 006c B9EE00DA 		vmov.f32	s26, #-4.0e+0
+ 194              	.LVL10:
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 8
+
+
+ 195              	.L7:
+  38:Src/yolo_postproc.c **** }
+ 196              		.loc 1 38 24 view .LVU36
+ 197              	.LBE76:
+ 198              	.LBE75:
+ 199              	.LBE74:
+ 200              	.LBE73:
+ 201              	.LBE72:
+ 202              	.LBE71:
+  72:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+ 203              		.loc 1 72 23 is_stmt 1 discriminator 1 view .LVU37
+ 204 0070 089B     		ldr	r3, [sp, #32]
+ 205 0072 9D42     		cmp	r5, r3
+ 206 0074 55DB     		blt	.L32
+ 207              	.LBE150:
+ 141:Src/yolo_postproc.c **** 
+ 208              		.loc 1 141 5 view .LVU38
+ 141:Src/yolo_postproc.c **** 
+ 209              		.loc 1 141 8 is_stmt 0 view .LVU39
+ 210 0076 002C     		cmp	r4, #0
+ 211 0078 D2D0     		beq	.L4
+ 212 007a 2AAE     		add	r6, sp, #168
+ 213 007c B046     		mov	r8, r6
+ 214              	.LBB151:
+ 144:Src/yolo_postproc.c ****         yolo_box_t key = cand[i];
+ 215              		.loc 1 144 14 view .LVU40
+ 216 007e 4FF0010E 		mov	lr, #1
+ 217              	.LBB152:
+ 151:Src/yolo_postproc.c ****     }
+ 218              		.loc 1 151 21 view .LVU41
+ 219 0082 4FF0140B 		mov	fp, #20
+ 220              	.LVL11:
+ 221              	.L33:
+ 151:Src/yolo_postproc.c ****     }
+ 222              		.loc 1 151 21 view .LVU42
+ 223              	.LBE152:
+ 144:Src/yolo_postproc.c ****         yolo_box_t key = cand[i];
+ 224              		.loc 1 144 23 is_stmt 1 discriminator 1 view .LVU43
+ 225 0086 7445     		cmp	r4, lr
+ 226 0088 40F0DC81 		bne	.L37
+ 227              	.LBE151:
+ 155:Src/yolo_postproc.c ****     int n_out = 0;
+ 228              		.loc 1 155 5 view .LVU44
+ 155:Src/yolo_postproc.c ****     int n_out = 0;
+ 229              		.loc 1 155 13 is_stmt 0 view .LVU45
+ 230 008c 0027     		movs	r7, #0
+ 231 008e 7C22     		movs	r2, #124
+ 232 0090 3946     		mov	r1, r7
+ 233 0092 0BA8     		add	r0, sp, #44
+ 234 0094 0A97     		str	r7, [sp, #40]
+ 235              	.LBB155:
+ 236              	.LBB156:
+ 160:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 237              		.loc 1 160 22 view .LVU46
+ 238 0096 4FF01408 		mov	r8, #20
+ 239              	.LBE156:
+ 240              	.LBE155:
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 9
+
+
+ 155:Src/yolo_postproc.c ****     int n_out = 0;
+ 241              		.loc 1 155 13 view .LVU47
+ 242 009a FFF7FEFF 		bl	memset
+ 243              	.LVL12:
+ 156:Src/yolo_postproc.c ****     for (int i = 0; i < n_cand && n_out < out_cap; ++i) {
+ 244              		.loc 1 156 5 is_stmt 1 view .LVU48
+ 157:Src/yolo_postproc.c ****         if (suppressed[i]) continue;
+ 245              		.loc 1 157 5 view .LVU49
+ 246              	.LBB167:
+ 157:Src/yolo_postproc.c ****         if (suppressed[i]) continue;
+ 247              		.loc 1 157 10 view .LVU50
+ 157:Src/yolo_postproc.c ****         if (suppressed[i]) continue;
+ 248              		.loc 1 157 32 view .LVU51
+ 249              	.LBB164:
+ 250              	.LBB157:
+ 251              	.LBB158:
+ 174:Src/yolo_postproc.c ****         }
+ 252              		.loc 1 174 74 is_stmt 0 view .LVU52
+ 253 009e 4FF00109 		mov	r9, #1
+ 254              	.LBE158:
+ 255              	.LBE157:
+ 256              	.LBE164:
+ 257              	.LBE167:
+ 156:Src/yolo_postproc.c ****     for (int i = 0; i < n_cand && n_out < out_cap; ++i) {
+ 258              		.loc 1 156 9 view .LVU53
+ 259 00a2 3846     		mov	r0, r7
+ 260 00a4 0DF1280C 		add	ip, sp, #40
+ 261              	.LVL13:
+ 262              	.L52:
+ 263              	.LBB168:
+ 264              	.LBB165:
+ 158:Src/yolo_postproc.c ****         const yolo_box_t *bi = &cand[i];
+ 265              		.loc 1 158 9 is_stmt 1 view .LVU54
+ 158:Src/yolo_postproc.c ****         const yolo_box_t *bi = &cand[i];
+ 266              		.loc 1 158 12 is_stmt 0 view .LVU55
+ 267 00a8 9CF80030 		ldrb	r3, [ip]	@ zero_extendqisi2
+ 268              	.LBB160:
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 269              		.loc 1 162 18 view .LVU56
+ 270 00ac 0137     		adds	r7, r7, #1
+ 271              	.LVL14:
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 272              		.loc 1 162 18 view .LVU57
+ 273              	.LBE160:
+ 158:Src/yolo_postproc.c ****         const yolo_box_t *bi = &cand[i];
+ 274              		.loc 1 158 12 view .LVU58
+ 275 00ae 53BB     		cbnz	r3, .L38
+ 159:Src/yolo_postproc.c ****         out[n_out++] = *bi;
+ 276              		.loc 1 159 9 is_stmt 1 view .LVU59
+ 277              	.LVL15:
+ 160:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 278              		.loc 1 160 9 view .LVU60
+ 161:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 279              		.loc 1 161 29 is_stmt 0 view .LVU61
+ 280 00b0 D6ED025A 		vldr.32	s11, [r6, #8]
+ 161:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 281              		.loc 1 161 38 view .LVU62
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 10
+
+
+ 282 00b4 96ED005A 		vldr.32	s10, [r6]
+ 161:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 283              		.loc 1 161 49 view .LVU63
+ 284 00b8 D6ED034A 		vldr.32	s9, [r6, #12]
+ 161:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 285              		.loc 1 161 58 view .LVU64
+ 286 00bc 96ED014A 		vldr.32	s8, [r6, #4]
+ 160:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 287              		.loc 1 160 22 view .LVU65
+ 288 00c0 B646     		mov	lr, r6
+ 161:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 289              		.loc 1 161 34 view .LVU66
+ 290 00c2 75EEC53A 		vsub.f32	s7, s11, s10
+ 161:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 291              		.loc 1 161 54 view .LVU67
+ 292 00c6 74EEC47A 		vsub.f32	s15, s9, s8
+ 160:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 293              		.loc 1 160 22 view .LVU68
+ 294 00ca DDF81C3B 		ldr	r3, [sp, #2844]
+ 160:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 295              		.loc 1 160 18 view .LVU69
+ 296 00ce 00F1010A 		add	r10, r0, #1
+ 297              	.LVL16:
+ 160:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 298              		.loc 1 160 22 view .LVU70
+ 299 00d2 08FB0035 		mla	r5, r8, r0, r3
+ 300 00d6 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 301 00da 0FC5     		stmia	r5!, {r0, r1, r2, r3}
+ 302 00dc DEF80030 		ldr	r3, [lr]
+ 303 00e0 A742     		cmp	r7, r4
+ 304 00e2 2B60     		str	r3, [r5]
+ 161:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 305              		.loc 1 161 9 is_stmt 1 view .LVU71
+ 306              	.LBB161:
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 307              		.loc 1 162 18 is_stmt 0 view .LVU72
+ 308 00e4 A4EB0703 		sub	r3, r4, r7
+ 309              	.LBE161:
+ 161:Src/yolo_postproc.c ****         for (int j = i + 1; j < n_cand; ++j) {
+ 310              		.loc 1 161 21 view .LVU73
+ 311 00e8 63EEA73A 		vmul.f32	s7, s7, s15
+ 312              	.LVL17:
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 313              		.loc 1 162 9 is_stmt 1 view .LVU74
+ 314              	.LBB162:
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 315              		.loc 1 162 14 view .LVU75
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 316              		.loc 1 162 9 is_stmt 0 view .LVU76
+ 317 00ec 3246     		mov	r2, r6
+ 318 00ee 6146     		mov	r1, ip
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 319              		.loc 1 162 18 view .LVU77
+ 320 00f0 03F10103 		add	r3, r3, #1
+ 321 00f4 02DC     		bgt	.L91
+ 322 00f6 B4F1004F 		cmp	r4, #-2147483648
+ 323 00fa 00D1     		bne	.L39
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 11
+
+
+ 324              	.L91:
+ 325 00fc 0123     		movs	r3, #1
+ 326              	.LVL18:
+ 327              	.L39:
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 328              		.loc 1 162 31 is_stmt 1 discriminator 1 view .LVU78
+ 329 00fe 013B     		subs	r3, r3, #1
+ 330 0100 40F0D181 		bne	.L51
+ 331              	.LBE162:
+ 160:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 332              		.loc 1 160 18 is_stmt 0 view .LVU79
+ 333 0104 5046     		mov	r0, r10
+ 334              	.LVL19:
+ 335              	.L38:
+ 160:Src/yolo_postproc.c ****         const float ai = (bi->x2 - bi->x1) * (bi->y2 - bi->y1);
+ 336              		.loc 1 160 18 view .LVU80
+ 337              	.LBE165:
+ 157:Src/yolo_postproc.c ****         if (suppressed[i]) continue;
+ 338              		.loc 1 157 52 is_stmt 1 discriminator 2 view .LVU81
+ 157:Src/yolo_postproc.c ****         if (suppressed[i]) continue;
+ 339              		.loc 1 157 32 discriminator 2 view .LVU82
+ 340 0106 BC42     		cmp	r4, r7
+ 341 0108 8BD0     		beq	.L1
+ 157:Src/yolo_postproc.c ****         if (suppressed[i]) continue;
+ 342              		.loc 1 157 32 is_stmt 0 discriminator 3 view .LVU83
+ 343 010a DDF8203B 		ldr	r3, [sp, #2848]
+ 344 010e 0CF1010C 		add	ip, ip, #1
+ 345 0112 9842     		cmp	r0, r3
+ 346 0114 06F11406 		add	r6, r6, #20
+ 347 0118 C6DB     		blt	.L52
+ 348 011a 82E7     		b	.L1
+ 349              	.LVL20:
+ 350              	.L53:
+ 157:Src/yolo_postproc.c ****         if (suppressed[i]) continue;
+ 351              		.loc 1 157 32 discriminator 3 view .LVU84
+ 352              	.LBE168:
+ 353              	.LBB169:
+ 354              	.LBB66:
+  38:Src/yolo_postproc.c **** }
+ 355              		.loc 1 38 24 view .LVU85
+ 356 011c B0EE670A 		vmov.f32	s0, s15
+ 357              	.LVL21:
+  38:Src/yolo_postproc.c **** }
+ 358              		.loc 1 38 24 view .LVU86
+ 359 0120 98E7     		b	.L5
+ 360              	.LVL22:
+ 361              	.L32:
+  38:Src/yolo_postproc.c **** }
+ 362              		.loc 1 38 24 view .LVU87
+ 363              	.LBE66:
+ 364              	.LBE169:
+ 365              	.LBB170:
+ 366              	.LBB147:
+  73:Src/yolo_postproc.c ****         if (!buf) continue;
+ 367              		.loc 1 73 9 is_stmt 1 view .LVU88
+  73:Src/yolo_postproc.c ****         if (!buf) continue;
+ 368              		.loc 1 73 24 is_stmt 0 view .LVU89
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 12
+
+
+ 369 0122 079B     		ldr	r3, [sp, #28]
+ 370 0124 53F82530 		ldr	r3, [r3, r5, lsl #2]
+ 371 0128 0293     		str	r3, [sp, #8]
+ 372              	.LVL23:
+  74:Src/yolo_postproc.c **** 
+ 373              		.loc 1 74 9 is_stmt 1 view .LVU90
+  74:Src/yolo_postproc.c **** 
+ 374              		.loc 1 74 12 is_stmt 0 view .LVU91
+ 375 012a 002B     		cmp	r3, #0
+ 376 012c 00F08781 		beq	.L8
+  76:Src/yolo_postproc.c ****         const int W = grid_w[h];
+ 377              		.loc 1 76 9 is_stmt 1 view .LVU92
+  76:Src/yolo_postproc.c ****         const int W = grid_w[h];
+ 378              		.loc 1 76 19 is_stmt 0 view .LVU93
+ 379 0130 DDF8183B 		ldr	r3, [sp, #2840]
+ 380              	.LVL24:
+  79:Src/yolo_postproc.c ****         const int   zp    = zps[h];
+ 381              		.loc 1 79 21 view .LVU94
+ 382 0134 D7ED00AA 		vldr.32	s21, [r7]
+  76:Src/yolo_postproc.c ****         const int W = grid_w[h];
+ 383              		.loc 1 76 19 view .LVU95
+ 384 0138 53F82530 		ldr	r3, [r3, r5, lsl #2]
+  92:Src/yolo_postproc.c ****         else if (q_thr_f >=  127.0f)  q_thr =  128;   /* never matches */
+ 385              		.loc 1 92 17 view .LVU96
+ 386 013c 9FED9A7A 		vldr.32	s14, .L98+8
+  76:Src/yolo_postproc.c ****         const int W = grid_w[h];
+ 387              		.loc 1 76 19 view .LVU97
+ 388 0140 0393     		str	r3, [sp, #12]
+ 389              	.LVL25:
+  77:Src/yolo_postproc.c ****         const int HW = H * W;
+ 390              		.loc 1 77 9 is_stmt 1 view .LVU98
+  77:Src/yolo_postproc.c ****         const int HW = H * W;
+ 391              		.loc 1 77 19 is_stmt 0 view .LVU99
+ 392 0142 DDF8143B 		ldr	r3, [sp, #2836]
+ 393              	.LVL26:
+  77:Src/yolo_postproc.c ****         const int HW = H * W;
+ 394              		.loc 1 77 19 view .LVU100
+ 395 0146 53F82560 		ldr	r6, [r3, r5, lsl #2]
+ 396              	.LVL27:
+  78:Src/yolo_postproc.c ****         const float scale = scales[h];          /* per-head, from generated macros */
+ 397              		.loc 1 78 9 is_stmt 1 view .LVU101
+  78:Src/yolo_postproc.c ****         const float scale = scales[h];          /* per-head, from generated macros */
+ 398              		.loc 1 78 19 is_stmt 0 view .LVU102
+ 399 014a 039B     		ldr	r3, [sp, #12]
+ 400 014c 06FB03F9 		mul	r9, r6, r3
+ 401              	.LVL28:
+  79:Src/yolo_postproc.c ****         const int   zp    = zps[h];
+ 402              		.loc 1 79 9 is_stmt 1 view .LVU103
+  80:Src/yolo_postproc.c ****         const float stride = (float)strides[h];
+ 403              		.loc 1 80 9 view .LVU104
+  81:Src/yolo_postproc.c **** 
+ 404              		.loc 1 81 9 view .LVU105
+  81:Src/yolo_postproc.c **** 
+ 405              		.loc 1 81 21 is_stmt 0 view .LVU106
+ 406 0150 DDF8103B 		ldr	r3, [sp, #2832]
+ 407 0154 53F82530 		ldr	r3, [r3, r5, lsl #2]
+ 408 0158 07EE903A 		vmov	s15, r3	@ int
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 13
+
+
+  90:Src/yolo_postproc.c ****         int q_thr;
+ 409              		.loc 1 90 31 view .LVU107
+ 410 015c 099B     		ldr	r3, [sp, #36]
+  81:Src/yolo_postproc.c **** 
+ 411              		.loc 1 81 21 view .LVU108
+ 412 015e B8EEE7BA 		vcvt.f32.s32	s22, s15
+ 413              	.LVL29:
+  90:Src/yolo_postproc.c ****         int q_thr;
+ 414              		.loc 1 90 9 is_stmt 1 view .LVU109
+  90:Src/yolo_postproc.c ****         int q_thr;
+ 415              		.loc 1 90 31 is_stmt 0 view .LVU110
+ 416 0162 53F82530 		ldr	r3, [r3, r5, lsl #2]
+ 417 0166 07EE903A 		vmov	s15, r3	@ int
+ 418 016a B8EEE79A 		vcvt.f32.s32	s18, s15
+  90:Src/yolo_postproc.c ****         int q_thr;
+ 419              		.loc 1 90 53 view .LVU111
+ 420 016e CCEEAA7A 		vdiv.f32	s15, s25, s21
+  90:Src/yolo_postproc.c ****         int q_thr;
+ 421              		.loc 1 90 21 view .LVU112
+ 422 0172 77EE897A 		vadd.f32	s15, s15, s18
+ 423              	.LVL30:
+  91:Src/yolo_postproc.c ****         if      (q_thr_f <= -128.0f)  q_thr = -128;
+ 424              		.loc 1 91 9 is_stmt 1 view .LVU113
+  92:Src/yolo_postproc.c ****         else if (q_thr_f >=  127.0f)  q_thr =  128;   /* never matches */
+ 425              		.loc 1 92 9 view .LVU114
+  92:Src/yolo_postproc.c ****         else if (q_thr_f >=  127.0f)  q_thr =  128;   /* never matches */
+ 426              		.loc 1 92 17 is_stmt 0 view .LVU115
+ 427 0176 F4EEC77A 		vcmpe.f32	s15, s14
+ 428 017a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  90:Src/yolo_postproc.c ****         int q_thr;
+ 429              		.loc 1 90 31 view .LVU116
+ 430 017e 0093     		str	r3, [sp]
+  92:Src/yolo_postproc.c ****         else if (q_thr_f >=  127.0f)  q_thr =  128;   /* never matches */
+ 431              		.loc 1 92 17 view .LVU117
+ 432 0180 26D9     		bls	.L54
+  93:Src/yolo_postproc.c ****         else                          q_thr = (int)ceilf(q_thr_f);
+ 433              		.loc 1 93 14 is_stmt 1 view .LVU118
+  93:Src/yolo_postproc.c ****         else                          q_thr = (int)ceilf(q_thr_f);
+ 434              		.loc 1 93 17 is_stmt 0 view .LVU119
+ 435 0182 9FED8A7A 		vldr.32	s14, .L98+12
+ 436 0186 F4EEC77A 		vcmpe.f32	s15, s14
+ 437 018a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 438 018e 23DA     		bge	.L55
+  94:Src/yolo_postproc.c **** 
+ 439              		.loc 1 94 39 is_stmt 1 view .LVU120
+  94:Src/yolo_postproc.c **** 
+ 440              		.loc 1 94 52 is_stmt 0 view .LVU121
+ 441 0190 FAFE677A 		vrintp.f32	s15, s15
+ 442              	.LVL31:
+  94:Src/yolo_postproc.c **** 
+ 443              		.loc 1 94 45 view .LVU122
+ 444 0194 FDEEE77A 		vcvt.s32.f32	s15, s15
+ 445 0198 CDED017A 		vstr.32	s15, [sp, #4]	@ int
+ 446              	.LVL32:
+ 447              	.L9:
+  96:Src/yolo_postproc.c ****         const int8_t *p_tx   = (const int8_t *)buf + 0 * HW;
+ 448              		.loc 1 96 9 is_stmt 1 view .LVU123
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 14
+
+
+ 449              	.LBB144:
+ 102:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 450              		.loc 1 102 9 is_stmt 0 view .LVU124
+ 451 019c 4FF0000A 		mov	r10, #0
+ 452              	.LBE144:
+  96:Src/yolo_postproc.c ****         const int8_t *p_tx   = (const int8_t *)buf + 0 * HW;
+ 453              		.loc 1 96 56 view .LVU125
+ 454 01a0 4FEA8903 		lsl	r3, r9, #2
+ 455 01a4 0493     		str	r3, [sp, #16]
+ 456              	.LVL33:
+  97:Src/yolo_postproc.c ****         const int8_t *p_ty   = (const int8_t *)buf + 1 * HW;
+ 457              		.loc 1 97 9 is_stmt 1 view .LVU126
+  98:Src/yolo_postproc.c ****         const int8_t *p_tw   = (const int8_t *)buf + 2 * HW;
+ 458              		.loc 1 98 9 view .LVU127
+  99:Src/yolo_postproc.c ****         const int8_t *p_th   = (const int8_t *)buf + 3 * HW;
+ 459              		.loc 1 99 9 view .LVU128
+  99:Src/yolo_postproc.c ****         const int8_t *p_th   = (const int8_t *)buf + 3 * HW;
+ 460              		.loc 1 99 56 is_stmt 0 view .LVU129
+ 461 01a6 4FEA4903 		lsl	r3, r9, #1
+ 462              	.LVL34:
+  99:Src/yolo_postproc.c ****         const int8_t *p_th   = (const int8_t *)buf + 3 * HW;
+ 463              		.loc 1 99 56 view .LVU130
+ 464 01aa 0593     		str	r3, [sp, #20]
+ 465              	.LVL35:
+ 100:Src/yolo_postproc.c **** 
+ 466              		.loc 1 100 9 is_stmt 1 view .LVU131
+ 100:Src/yolo_postproc.c **** 
+ 467              		.loc 1 100 56 is_stmt 0 view .LVU132
+ 468 01ac 09EB4903 		add	r3, r9, r9, lsl #1
+ 469              	.LVL36:
+ 100:Src/yolo_postproc.c **** 
+ 470              		.loc 1 100 56 view .LVU133
+ 471 01b0 0693     		str	r3, [sp, #24]
+ 472              	.LVL37:
+ 102:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 473              		.loc 1 102 9 is_stmt 1 view .LVU134
+ 474              	.LBB145:
+ 102:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 475              		.loc 1 102 14 view .LVU135
+ 102:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 476              		.loc 1 102 18 is_stmt 0 view .LVU136
+ 477 01b2 CDF800A0 		str	r10, [sp]
+ 478              	.LVL38:
+ 479              	.L10:
+ 102:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 480              		.loc 1 102 27 is_stmt 1 discriminator 1 view .LVU137
+ 481 01b6 009B     		ldr	r3, [sp]
+ 482 01b8 039A     		ldr	r2, [sp, #12]
+ 483 01ba 9342     		cmp	r3, r2
+ 484 01bc 80F23F81 		bge	.L8
+ 102:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 485              		.loc 1 102 27 is_stmt 0 discriminator 1 view .LVU138
+ 486 01c0 029B     		ldr	r3, [sp, #8]
+ 487              	.LBB141:
+ 103:Src/yolo_postproc.c ****                 const int idx = y * W + x;
+ 488              		.loc 1 103 22 view .LVU139
+ 489 01c2 4FF0000B 		mov	fp, #0
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 15
+
+
+ 490              	.LBB138:
+ 491              	.LBB81:
+ 492              	.LBB82:
+  38:Src/yolo_postproc.c **** }
+ 493              		.loc 1 38 39 view .LVU140
+ 494 01c6 DFED7ABA 		vldr.32	s23, .L98+16
+ 495 01ca 03EB0A08 		add	r8, r3, r10
+ 496 01ce DFE0     		b	.L31
+ 497              	.LVL39:
+ 498              	.L54:
+  38:Src/yolo_postproc.c **** }
+ 499              		.loc 1 38 39 view .LVU141
+ 500              	.LBE82:
+ 501              	.LBE81:
+ 502              	.LBE138:
+ 503              	.LBE141:
+ 504              	.LBE145:
+  92:Src/yolo_postproc.c ****         else if (q_thr_f >=  127.0f)  q_thr =  128;   /* never matches */
+ 505              		.loc 1 92 45 view .LVU142
+ 506 01d0 6FF07F03 		mvn	r3, #127
+ 507              	.L97:
+  93:Src/yolo_postproc.c ****         else                          q_thr = (int)ceilf(q_thr_f);
+ 508              		.loc 1 93 45 view .LVU143
+ 509 01d4 0193     		str	r3, [sp, #4]
+ 510 01d6 E1E7     		b	.L9
+ 511              	.L55:
+ 512 01d8 8023     		movs	r3, #128
+ 513 01da FBE7     		b	.L97
+ 514              	.LVL40:
+ 515              	.L30:
+ 516              	.LBB146:
+ 517              	.LBB142:
+ 518              	.LBB139:
+ 104:Src/yolo_postproc.c ****                 const int q = p_tobj[idx];          /* signed int8 objectness */
+ 519              		.loc 1 104 17 is_stmt 1 view .LVU144
+ 105:Src/yolo_postproc.c ****                 if (q < q_thr) continue;
+ 520              		.loc 1 105 17 view .LVU145
+ 105:Src/yolo_postproc.c ****                 if (q < q_thr) continue;
+ 521              		.loc 1 105 37 is_stmt 0 view .LVU146
+ 522 01dc 049B     		ldr	r3, [sp, #16]
+ 106:Src/yolo_postproc.c **** 
+ 523              		.loc 1 106 20 view .LVU147
+ 524 01de 019A     		ldr	r2, [sp, #4]
+ 105:Src/yolo_postproc.c ****                 if (q < q_thr) continue;
+ 525              		.loc 1 105 37 view .LVU148
+ 526 01e0 18F90330 		ldrsb	r3, [r8, r3]
+ 527              	.LVL41:
+ 106:Src/yolo_postproc.c **** 
+ 528              		.loc 1 106 17 is_stmt 1 view .LVU149
+ 106:Src/yolo_postproc.c **** 
+ 529              		.loc 1 106 20 is_stmt 0 view .LVU150
+ 530 01e4 9A42     		cmp	r2, r3
+ 531 01e6 00F3CF80 		bgt	.L12
+ 108:Src/yolo_postproc.c ****                 const float ty = ((float)p_ty[idx] - zp) * scale;
+ 532              		.loc 1 108 17 is_stmt 1 view .LVU151
+ 533              	.LVL42:
+ 109:Src/yolo_postproc.c ****                 const float tw = ((float)p_tw[idx] - zp) * scale;
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 16
+
+
+ 534              		.loc 1 109 17 view .LVU152
+ 112:Src/yolo_postproc.c **** 
+ 535              		.loc 1 112 35 is_stmt 0 view .LVU153
+ 536 01ea 07EE903A 		vmov	s15, r3	@ int
+ 108:Src/yolo_postproc.c ****                 const float ty = ((float)p_ty[idx] - zp) * scale;
+ 537              		.loc 1 108 35 view .LVU154
+ 538 01ee 98F90030 		ldrsb	r3, [r8]
+ 539              	.LVL43:
+ 109:Src/yolo_postproc.c ****                 const float tw = ((float)p_tw[idx] - zp) * scale;
+ 540              		.loc 1 109 35 view .LVU155
+ 541 01f2 18F90920 		ldrsb	r2, [r8, r9]
+ 108:Src/yolo_postproc.c ****                 const float ty = ((float)p_ty[idx] - zp) * scale;
+ 542              		.loc 1 108 35 view .LVU156
+ 543 01f6 00EE103A 		vmov	s0, r3	@ int
+ 544 01fa B8EEC00A 		vcvt.f32.s32	s0, s0
+ 109:Src/yolo_postproc.c ****                 const float tw = ((float)p_tw[idx] - zp) * scale;
+ 545              		.loc 1 109 35 view .LVU157
+ 546 01fe 08EE902A 		vmov	s17, r2	@ int
+ 108:Src/yolo_postproc.c ****                 const float ty = ((float)p_ty[idx] - zp) * scale;
+ 547              		.loc 1 108 52 view .LVU158
+ 548 0202 30EE490A 		vsub.f32	s0, s0, s18
+ 110:Src/yolo_postproc.c ****                 const float th = ((float)p_th[idx] - zp) * scale;
+ 549              		.loc 1 110 35 view .LVU159
+ 550 0206 059A     		ldr	r2, [sp, #20]
+ 109:Src/yolo_postproc.c ****                 const float tw = ((float)p_tw[idx] - zp) * scale;
+ 551              		.loc 1 109 35 view .LVU160
+ 552 0208 F8EEE88A 		vcvt.f32.s32	s17, s17
+ 110:Src/yolo_postproc.c ****                 const float th = ((float)p_th[idx] - zp) * scale;
+ 553              		.loc 1 110 35 view .LVU161
+ 554 020c 18F90220 		ldrsb	r2, [r8, r2]
+ 555              	.LBB85:
+ 556              	.LBB86:
+  34:Src/yolo_postproc.c **** }
+ 557              		.loc 1 34 27 view .LVU162
+ 558 0210 2AEEC00A 		vnmul.f32	s0, s21, s0
+ 559              	.LBE86:
+ 560              	.LBE85:
+ 110:Src/yolo_postproc.c ****                 const float th = ((float)p_th[idx] - zp) * scale;
+ 561              		.loc 1 110 35 view .LVU163
+ 562 0214 0EEE902A 		vmov	s29, r2	@ int
+ 111:Src/yolo_postproc.c ****                 const float to = ((float)q        - zp) * scale;
+ 563              		.loc 1 111 35 view .LVU164
+ 564 0218 069A     		ldr	r2, [sp, #24]
+ 112:Src/yolo_postproc.c **** 
+ 565              		.loc 1 112 35 view .LVU165
+ 566 021a F8EEE79A 		vcvt.f32.s32	s19, s15
+ 111:Src/yolo_postproc.c ****                 const float to = ((float)q        - zp) * scale;
+ 567              		.loc 1 111 35 view .LVU166
+ 568 021e 18F90220 		ldrsb	r2, [r8, r2]
+ 109:Src/yolo_postproc.c ****                 const float tw = ((float)p_tw[idx] - zp) * scale;
+ 569              		.loc 1 109 52 view .LVU167
+ 570 0222 78EEC98A 		vsub.f32	s17, s17, s18
+ 111:Src/yolo_postproc.c ****                 const float to = ((float)q        - zp) * scale;
+ 571              		.loc 1 111 35 view .LVU168
+ 572 0226 08EE102A 		vmov	s16, r2	@ int
+ 573              	.LBB91:
+ 574              	.LBB87:
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 17
+
+
+  34:Src/yolo_postproc.c **** }
+ 575              		.loc 1 34 27 view .LVU169
+ 576 022a FFF7FEFF 		bl	expf
+ 577              	.LVL44:
+  34:Src/yolo_postproc.c **** }
+ 578              		.loc 1 34 27 view .LVU170
+ 579              	.LBE87:
+ 580              	.LBE91:
+ 114:Src/yolo_postproc.c ****                 const float cy = (sigmoidf(ty) + (float)y) * stride;
+ 581              		.loc 1 114 50 view .LVU171
+ 582 022e 07EE90BA 		vmov	s15, fp	@ int
+ 583              	.LBB92:
+ 584              	.LBB88:
+  34:Src/yolo_postproc.c **** }
+ 585              		.loc 1 34 25 view .LVU172
+ 586 0232 30EE0A0A 		vadd.f32	s0, s0, s20
+ 587              	.LBE88:
+ 588              	.LBE92:
+ 109:Src/yolo_postproc.c ****                 const float tw = ((float)p_tw[idx] - zp) * scale;
+ 589              		.loc 1 109 29 view .LVU173
+ 590 0236 68EEAA8A 		vmul.f32	s17, s17, s21
+ 591              	.LVL45:
+ 110:Src/yolo_postproc.c ****                 const float th = ((float)p_th[idx] - zp) * scale;
+ 592              		.loc 1 110 17 is_stmt 1 view .LVU174
+ 114:Src/yolo_postproc.c ****                 const float cy = (sigmoidf(ty) + (float)y) * stride;
+ 593              		.loc 1 114 50 is_stmt 0 view .LVU175
+ 594 023a F8EEE77A 		vcvt.f32.s32	s15, s15
+ 595              	.LBB93:
+ 596              	.LBB89:
+  34:Src/yolo_postproc.c **** }
+ 597              		.loc 1 34 17 view .LVU176
+ 598 023e 8AEE00EA 		vdiv.f32	s28, s20, s0
+ 599              	.LBE89:
+ 600              	.LBE93:
+ 110:Src/yolo_postproc.c ****                 const float th = ((float)p_th[idx] - zp) * scale;
+ 601              		.loc 1 110 35 view .LVU177
+ 602 0242 F8EEEEEA 		vcvt.f32.s32	s29, s29
+ 603              	.LBB94:
+ 604              	.LBB95:
+  34:Src/yolo_postproc.c **** }
+ 605              		.loc 1 34 27 view .LVU178
+ 606 0246 B1EE680A 		vneg.f32	s0, s17
+ 607              	.LBE95:
+ 608              	.LBE94:
+ 114:Src/yolo_postproc.c ****                 const float cy = (sigmoidf(ty) + (float)y) * stride;
+ 609              		.loc 1 114 48 view .LVU179
+ 610 024a 3EEE27EA 		vadd.f32	s28, s28, s15
+ 110:Src/yolo_postproc.c ****                 const float th = ((float)p_th[idx] - zp) * scale;
+ 611              		.loc 1 110 52 view .LVU180
+ 612 024e 7EEEC9EA 		vsub.f32	s29, s29, s18
+ 613              	.LBB100:
+ 614              	.LBB96:
+  34:Src/yolo_postproc.c **** }
+ 615              		.loc 1 34 27 view .LVU181
+ 616 0252 FFF7FEFF 		bl	expf
+ 617              	.LVL46:
+ 618              	.LBE96:
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 18
+
+
+ 619              	.LBE100:
+ 110:Src/yolo_postproc.c ****                 const float th = ((float)p_th[idx] - zp) * scale;
+ 620              		.loc 1 110 29 view .LVU182
+ 621 0256 6EEEAAEA 		vmul.f32	s29, s29, s21
+ 622              	.LVL47:
+ 111:Src/yolo_postproc.c ****                 const float to = ((float)q        - zp) * scale;
+ 623              		.loc 1 111 17 is_stmt 1 view .LVU183
+ 624              	.LBB101:
+ 625              	.LBB97:
+  34:Src/yolo_postproc.c **** }
+ 626              		.loc 1 34 25 is_stmt 0 view .LVU184
+ 627 025a 30EE0A0A 		vadd.f32	s0, s0, s20
+ 628              	.LBE97:
+ 629              	.LBE101:
+ 115:Src/yolo_postproc.c ****                 const float pw = expf(clampf(tw, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 630              		.loc 1 115 50 view .LVU185
+ 631 025e DDED007A 		vldr.32	s15, [sp]	@ int
+ 111:Src/yolo_postproc.c ****                 const float to = ((float)q        - zp) * scale;
+ 632              		.loc 1 111 35 view .LVU186
+ 633 0262 B8EEC88A 		vcvt.f32.s32	s16, s16
+ 634              	.LBB102:
+ 635              	.LBB98:
+  34:Src/yolo_postproc.c **** }
+ 636              		.loc 1 34 17 view .LVU187
+ 637 0266 CAEE00DA 		vdiv.f32	s27, s20, s0
+ 638              	.LBE98:
+ 639              	.LBE102:
+ 115:Src/yolo_postproc.c ****                 const float pw = expf(clampf(tw, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 640              		.loc 1 115 50 view .LVU188
+ 641 026a F8EEE77A 		vcvt.f32.s32	s15, s15
+ 642              	.LBB103:
+ 643              	.LBB77:
+  38:Src/yolo_postproc.c **** }
+ 644              		.loc 1 38 24 view .LVU189
+ 645 026e F4EECDEA 		vcmpe.f32	s29, s26
+ 646              	.LBE77:
+ 647              	.LBE103:
+ 111:Src/yolo_postproc.c ****                 const float to = ((float)q        - zp) * scale;
+ 648              		.loc 1 111 52 view .LVU190
+ 649 0272 38EE498A 		vsub.f32	s16, s16, s18
+ 112:Src/yolo_postproc.c **** 
+ 650              		.loc 1 112 51 view .LVU191
+ 651 0276 79EEC99A 		vsub.f32	s19, s19, s18
+ 115:Src/yolo_postproc.c ****                 const float pw = expf(clampf(tw, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 652              		.loc 1 115 48 view .LVU192
+ 653 027a 7DEEA7DA 		vadd.f32	s27, s27, s15
+ 654              	.LBB104:
+ 655              	.LBB78:
+  38:Src/yolo_postproc.c **** }
+ 656              		.loc 1 38 24 view .LVU193
+ 657 027e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 658              	.LBE78:
+ 659              	.LBE104:
+ 111:Src/yolo_postproc.c ****                 const float to = ((float)q        - zp) * scale;
+ 660              		.loc 1 111 29 view .LVU194
+ 661 0282 28EE2A8A 		vmul.f32	s16, s16, s21
+ 662              	.LVL48:
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 19
+
+
+ 112:Src/yolo_postproc.c **** 
+ 663              		.loc 1 112 17 is_stmt 1 view .LVU195
+ 112:Src/yolo_postproc.c **** 
+ 664              		.loc 1 112 29 is_stmt 0 view .LVU196
+ 665 0286 69EEAA9A 		vmul.f32	s19, s19, s21
+ 666              	.LVL49:
+ 114:Src/yolo_postproc.c ****                 const float cy = (sigmoidf(ty) + (float)y) * stride;
+ 667              		.loc 1 114 17 is_stmt 1 view .LVU197
+ 668              	.LBB105:
+ 669              	.LBI85:
+  33:Src/yolo_postproc.c ****     return 1.0f / (1.0f + expf(-x));
+ 670              		.loc 1 33 21 view .LVU198
+ 671              	.LBB90:
+  34:Src/yolo_postproc.c **** }
+ 672              		.loc 1 34 5 view .LVU199
+ 673              	.LBE90:
+ 674              	.LBE105:
+ 114:Src/yolo_postproc.c ****                 const float cy = (sigmoidf(ty) + (float)y) * stride;
+ 675              		.loc 1 114 29 is_stmt 0 view .LVU200
+ 676 028a 2EEE0BEA 		vmul.f32	s28, s28, s22
+ 677              	.LVL50:
+ 115:Src/yolo_postproc.c ****                 const float pw = expf(clampf(tw, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 678              		.loc 1 115 17 is_stmt 1 view .LVU201
+ 679              	.LBB106:
+ 680              	.LBI94:
+  33:Src/yolo_postproc.c ****     return 1.0f / (1.0f + expf(-x));
+ 681              		.loc 1 33 21 view .LVU202
+ 682              	.LBB99:
+  34:Src/yolo_postproc.c **** }
+ 683              		.loc 1 34 5 view .LVU203
+  34:Src/yolo_postproc.c **** }
+ 684              		.loc 1 34 5 is_stmt 0 view .LVU204
+ 685              	.LBE99:
+ 686              	.LBE106:
+ 115:Src/yolo_postproc.c ****                 const float pw = expf(clampf(tw, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 687              		.loc 1 115 29 view .LVU205
+ 688 028e 6DEE8BDA 		vmul.f32	s27, s27, s22
+ 689              	.LVL51:
+ 116:Src/yolo_postproc.c ****                 const float ph = expf(clampf(th, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 690              		.loc 1 116 17 is_stmt 1 view .LVU206
+ 691              	.LBB107:
+ 692              	.LBI75:
+  37:Src/yolo_postproc.c ****     return v < lo ? lo : (v > hi ? hi : v);
+ 693              		.loc 1 37 21 view .LVU207
+ 694              	.LBB79:
+  38:Src/yolo_postproc.c **** }
+ 695              		.loc 1 38 5 view .LVU208
+  38:Src/yolo_postproc.c **** }
+ 696              		.loc 1 38 24 is_stmt 0 view .LVU209
+ 697 0292 00F19380 		bmi	.L56
+  38:Src/yolo_postproc.c **** }
+ 698              		.loc 1 38 39 view .LVU210
+ 699 0296 F1EE007A 		vmov.f32	s15, #4.0e+0
+ 700 029a F4EE67EA 		vcmp.f32	s29, s15
+ 701 029e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 702 02a2 77FEAEEA 		vselgt.f32	s29, s15, s29
+ 703              	.LVL52:
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 20
+
+
+ 704              	.L13:
+  38:Src/yolo_postproc.c **** }
+ 705              		.loc 1 38 39 view .LVU211
+ 706              	.LBE79:
+ 707              	.LBE107:
+ 116:Src/yolo_postproc.c ****                 const float ph = expf(clampf(th, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 708              		.loc 1 116 34 view .LVU212
+ 709 02a6 B0EE6E0A 		vmov.f32	s0, s29
+ 710 02aa FFF7FEFF 		bl	expf
+ 711              	.LVL53:
+ 712              	.LBB108:
+ 713              	.LBB109:
+  38:Src/yolo_postproc.c **** }
+ 714              		.loc 1 38 24 view .LVU213
+ 715 02ae B4EECD8A 		vcmpe.f32	s16, s26
+ 716 02b2 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 717              	.LBE109:
+ 718              	.LBE108:
+ 116:Src/yolo_postproc.c ****                 const float ph = expf(clampf(th, TWTH_CLAMP_MIN, TWTH_CLAMP_MAX)) * stride;
+ 719              		.loc 1 116 29 view .LVU214
+ 720 02b6 60EE0B8A 		vmul.f32	s17, s0, s22
+ 721              	.LVL54:
+ 117:Src/yolo_postproc.c **** 
+ 722              		.loc 1 117 17 is_stmt 1 view .LVU215
+ 723              	.LBB112:
+ 724              	.LBI108:
+  37:Src/yolo_postproc.c ****     return v < lo ? lo : (v > hi ? hi : v);
+ 725              		.loc 1 37 21 view .LVU216
+ 726              	.LBB110:
+  38:Src/yolo_postproc.c **** }
+ 727              		.loc 1 38 5 view .LVU217
+  38:Src/yolo_postproc.c **** }
+ 728              		.loc 1 38 24 is_stmt 0 view .LVU218
+ 729 02ba 00F18280 		bmi	.L57
+  38:Src/yolo_postproc.c **** }
+ 730              		.loc 1 38 39 view .LVU219
+ 731 02be F1EE007A 		vmov.f32	s15, #4.0e+0
+ 732 02c2 B4EE678A 		vcmp.f32	s16, s15
+ 733 02c6 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 734 02ca 37FE888A 		vselgt.f32	s16, s15, s16
+ 735              	.LVL55:
+ 736              	.L15:
+  38:Src/yolo_postproc.c **** }
+ 737              		.loc 1 38 39 view .LVU220
+ 738              	.LBE110:
+ 739              	.LBE112:
+ 117:Src/yolo_postproc.c **** 
+ 740              		.loc 1 117 34 view .LVU221
+ 741 02ce B0EE480A 		vmov.f32	s0, s16
+ 742 02d2 FFF7FEFF 		bl	expf
+ 743              	.LVL56:
+ 120:Src/yolo_postproc.c ****                 b.y1 = clampf(cy - 0.5f * ph, 0.0f, (float)YOLO_INPUT_H);
+ 744              		.loc 1 120 41 view .LVU222
+ 745 02d6 F6EE007A 		vmov.f32	s15, #5.0e-1
+ 746 02da 68EEA78A 		vmul.f32	s17, s17, s15
+ 747              	.LVL57:
+ 120:Src/yolo_postproc.c ****                 b.y1 = clampf(cy - 0.5f * ph, 0.0f, (float)YOLO_INPUT_H);
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 21
+
+
+ 748              		.loc 1 120 24 view .LVU223
+ 749 02de 3EEE68FA 		vsub.f32	s30, s28, s17
+ 750              	.LBB113:
+ 751              	.LBB114:
+  38:Src/yolo_postproc.c **** }
+ 752              		.loc 1 38 24 view .LVU224
+ 753 02e2 B5EEC0FA 		vcmpe.f32	s30, #0
+ 754 02e6 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 755              	.LBE114:
+ 756              	.LBE113:
+ 117:Src/yolo_postproc.c **** 
+ 757              		.loc 1 117 29 view .LVU225
+ 758 02ea 20EE0B8A 		vmul.f32	s16, s0, s22
+ 759              	.LVL58:
+ 119:Src/yolo_postproc.c ****                 b.x1 = clampf(cx - 0.5f * pw, 0.0f, (float)YOLO_INPUT_W);
+ 760              		.loc 1 119 17 is_stmt 1 view .LVU226
+ 120:Src/yolo_postproc.c ****                 b.y1 = clampf(cy - 0.5f * ph, 0.0f, (float)YOLO_INPUT_H);
+ 761              		.loc 1 120 17 view .LVU227
+ 762              	.LBB117:
+ 763              	.LBI113:
+  37:Src/yolo_postproc.c ****     return v < lo ? lo : (v > hi ? hi : v);
+ 764              		.loc 1 37 21 view .LVU228
+ 765              	.LBB115:
+  38:Src/yolo_postproc.c **** }
+ 766              		.loc 1 38 5 view .LVU229
+  38:Src/yolo_postproc.c **** }
+ 767              		.loc 1 38 24 is_stmt 0 view .LVU230
+ 768 02ee 6BD4     		bmi	.L58
+  38:Src/yolo_postproc.c **** }
+ 769              		.loc 1 38 39 view .LVU231
+ 770 02f0 9FED307A 		vldr.32	s14, .L98+20
+ 771 02f4 B4EE47FA 		vcmp.f32	s30, s14
+ 772 02f8 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 773 02fc 37FE0FFA 		vselgt.f32	s30, s14, s30
+ 774              	.LVL59:
+ 775              	.L17:
+  38:Src/yolo_postproc.c **** }
+ 776              		.loc 1 38 39 view .LVU232
+ 777              	.LBE115:
+ 778              	.LBE117:
+ 121:Src/yolo_postproc.c ****                 b.x2 = clampf(cx + 0.5f * pw, 0.0f, (float)YOLO_INPUT_W);
+ 779              		.loc 1 121 17 is_stmt 1 view .LVU233
+ 121:Src/yolo_postproc.c ****                 b.x2 = clampf(cx + 0.5f * pw, 0.0f, (float)YOLO_INPUT_W);
+ 780              		.loc 1 121 41 is_stmt 0 view .LVU234
+ 781 0300 28EE278A 		vmul.f32	s16, s16, s15
+ 782              	.LVL60:
+ 121:Src/yolo_postproc.c ****                 b.x2 = clampf(cx + 0.5f * pw, 0.0f, (float)YOLO_INPUT_W);
+ 783              		.loc 1 121 24 view .LVU235
+ 784 0304 7DEEC8EA 		vsub.f32	s29, s27, s16
+ 785              	.LVL61:
+ 786              	.LBB118:
+ 787              	.LBI118:
+  37:Src/yolo_postproc.c ****     return v < lo ? lo : (v > hi ? hi : v);
+ 788              		.loc 1 37 21 is_stmt 1 view .LVU236
+ 789              	.LBB119:
+  38:Src/yolo_postproc.c **** }
+ 790              		.loc 1 38 5 view .LVU237
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 22
+
+
+  38:Src/yolo_postproc.c **** }
+ 791              		.loc 1 38 24 is_stmt 0 view .LVU238
+ 792 0308 F5EEC0EA 		vcmpe.f32	s29, #0
+ 793 030c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 794 0310 5DD4     		bmi	.L59
+  38:Src/yolo_postproc.c **** }
+ 795              		.loc 1 38 39 view .LVU239
+ 796 0312 F4EE6BEA 		vcmp.f32	s29, s23
+ 797 0316 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 798 031a 7BFEAEEA 		vselgt.f32	s29, s23, s29
+ 799              	.LVL62:
+ 800              	.L19:
+  38:Src/yolo_postproc.c **** }
+ 801              		.loc 1 38 39 view .LVU240
+ 802              	.LBE119:
+ 803              	.LBE118:
+ 122:Src/yolo_postproc.c ****                 b.y2 = clampf(cy + 0.5f * ph, 0.0f, (float)YOLO_INPUT_H);
+ 804              		.loc 1 122 17 is_stmt 1 view .LVU241
+ 122:Src/yolo_postproc.c ****                 b.y2 = clampf(cy + 0.5f * ph, 0.0f, (float)YOLO_INPUT_H);
+ 805              		.loc 1 122 24 is_stmt 0 view .LVU242
+ 806 031e 78EE8E8A 		vadd.f32	s17, s17, s28
+ 807              	.LVL63:
+ 808              	.LBB121:
+ 809              	.LBI121:
+  37:Src/yolo_postproc.c ****     return v < lo ? lo : (v > hi ? hi : v);
+ 810              		.loc 1 37 21 is_stmt 1 view .LVU243
+ 811              	.LBB122:
+  38:Src/yolo_postproc.c **** }
+ 812              		.loc 1 38 5 view .LVU244
+  38:Src/yolo_postproc.c **** }
+ 813              		.loc 1 38 24 is_stmt 0 view .LVU245
+ 814 0322 F5EEC08A 		vcmpe.f32	s17, #0
+ 815 0326 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 816 032a 53D4     		bmi	.L60
+  38:Src/yolo_postproc.c **** }
+ 817              		.loc 1 38 39 view .LVU246
+ 818 032c DFED217A 		vldr.32	s15, .L98+20
+ 819 0330 F4EE678A 		vcmp.f32	s17, s15
+ 820 0334 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 821 0338 77FEA88A 		vselgt.f32	s17, s15, s17
+ 822              	.LVL64:
+ 823              	.L21:
+  38:Src/yolo_postproc.c **** }
+ 824              		.loc 1 38 39 view .LVU247
+ 825              	.LBE122:
+ 826              	.LBE121:
+ 123:Src/yolo_postproc.c ****                 b.score = sigmoidf(to);
+ 827              		.loc 1 123 17 is_stmt 1 view .LVU248
+ 123:Src/yolo_postproc.c ****                 b.score = sigmoidf(to);
+ 828              		.loc 1 123 24 is_stmt 0 view .LVU249
+ 829 033c 38EE2D8A 		vadd.f32	s16, s16, s27
+ 830              	.LVL65:
+ 831              	.LBB124:
+ 832              	.LBI81:
+  37:Src/yolo_postproc.c ****     return v < lo ? lo : (v > hi ? hi : v);
+ 833              		.loc 1 37 21 is_stmt 1 view .LVU250
+ 834              	.LBB83:
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 23
+
+
+  38:Src/yolo_postproc.c **** }
+ 835              		.loc 1 38 5 view .LVU251
+  38:Src/yolo_postproc.c **** }
+ 836              		.loc 1 38 24 is_stmt 0 view .LVU252
+ 837 0340 B5EEC08A 		vcmpe.f32	s16, #0
+ 838 0344 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 839 0348 47D4     		bmi	.L61
+  38:Src/yolo_postproc.c **** }
+ 840              		.loc 1 38 39 view .LVU253
+ 841 034a B4EE6B8A 		vcmp.f32	s16, s23
+ 842 034e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 843 0352 3BFE888A 		vselgt.f32	s16, s23, s16
+ 844              	.LVL66:
+ 845              	.L23:
+  38:Src/yolo_postproc.c **** }
+ 846              		.loc 1 38 39 view .LVU254
+ 847              	.LBE83:
+ 848              	.LBE124:
+ 124:Src/yolo_postproc.c **** 
+ 849              		.loc 1 124 17 is_stmt 1 view .LVU255
+ 850              	.LBB125:
+ 851              	.LBI125:
+  33:Src/yolo_postproc.c ****     return 1.0f / (1.0f + expf(-x));
+ 852              		.loc 1 33 21 view .LVU256
+ 853              	.LBB126:
+  34:Src/yolo_postproc.c **** }
+ 854              		.loc 1 34 5 view .LVU257
+  34:Src/yolo_postproc.c **** }
+ 855              		.loc 1 34 27 is_stmt 0 view .LVU258
+ 856 0356 B1EE690A 		vneg.f32	s0, s19
+ 857              	.LVL67:
+  34:Src/yolo_postproc.c **** }
+ 858              		.loc 1 34 27 view .LVU259
+ 859 035a FFF7FEFF 		bl	expf
+ 860              	.LVL68:
+  34:Src/yolo_postproc.c **** }
+ 861              		.loc 1 34 25 view .LVU260
+ 862 035e 30EE0A0A 		vadd.f32	s0, s0, s20
+ 863              	.LBE126:
+ 864              	.LBE125:
+ 126:Src/yolo_postproc.c ****                     cand[n_cand++] = b;
+ 865              		.loc 1 126 20 view .LVU261
+ 866 0362 7F2C     		cmp	r4, #127
+ 867              	.LBB128:
+ 868              	.LBB127:
+  34:Src/yolo_postproc.c **** }
+ 869              		.loc 1 34 17 view .LVU262
+ 870 0364 CAEE007A 		vdiv.f32	s15, s20, s0
+ 871              	.LVL69:
+  34:Src/yolo_postproc.c **** }
+ 872              		.loc 1 34 17 view .LVU263
+ 873              	.LBE127:
+ 874              	.LBE128:
+ 126:Src/yolo_postproc.c ****                     cand[n_cand++] = b;
+ 875              		.loc 1 126 17 is_stmt 1 view .LVU264
+ 126:Src/yolo_postproc.c ****                     cand[n_cand++] = b;
+ 876              		.loc 1 126 20 is_stmt 0 view .LVU265
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 24
+
+
+ 877 0368 3ADC     		bgt	.L25
+ 127:Src/yolo_postproc.c ****                 } else {
+ 878              		.loc 1 127 21 is_stmt 1 view .LVU266
+ 879              	.LVL70:
+ 127:Src/yolo_postproc.c ****                 } else {
+ 880              		.loc 1 127 36 is_stmt 0 view .LVU267
+ 881 036a 1423     		movs	r3, #20
+ 882 036c 2AAA     		add	r2, sp, #168
+ 883 036e 03FB0423 		mla	r3, r3, r4, r2
+ 884 0372 83ED00FA 		vstr.32	s30, [r3]
+ 885 0376 C3ED01EA 		vstr.32	s29, [r3, #4]
+ 886 037a C3ED028A 		vstr.32	s17, [r3, #8]
+ 887 037e 83ED038A 		vstr.32	s16, [r3, #12]
+ 888 0382 C3ED047A 		vstr.32	s15, [r3, #16]
+ 127:Src/yolo_postproc.c ****                 } else {
+ 889              		.loc 1 127 32 view .LVU268
+ 890 0386 0134     		adds	r4, r4, #1
+ 891              	.LVL71:
+ 892              	.L12:
+ 127:Src/yolo_postproc.c ****                 } else {
+ 893              		.loc 1 127 32 view .LVU269
+ 894              	.LBE139:
+ 103:Src/yolo_postproc.c ****                 const int idx = y * W + x;
+ 895              		.loc 1 103 36 is_stmt 1 discriminator 2 view .LVU270
+ 896 0388 0BF1010B 		add	fp, fp, #1
+ 897              	.LVL72:
+ 103:Src/yolo_postproc.c ****                 const int idx = y * W + x;
+ 898              		.loc 1 103 36 is_stmt 0 discriminator 2 view .LVU271
+ 899 038c 08F10108 		add	r8, r8, #1
+ 900              	.LVL73:
+ 901              	.L31:
+ 103:Src/yolo_postproc.c ****                 const int idx = y * W + x;
+ 902              		.loc 1 103 31 is_stmt 1 discriminator 1 view .LVU272
+ 903 0390 B345     		cmp	fp, r6
+ 904 0392 FFF623AF 		blt	.L30
+ 103:Src/yolo_postproc.c ****                 const int idx = y * W + x;
+ 905              		.loc 1 103 31 is_stmt 0 discriminator 1 view .LVU273
+ 906              	.LBE142:
+ 102:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 907              		.loc 1 102 32 is_stmt 1 discriminator 2 view .LVU274
+ 908 0396 009B     		ldr	r3, [sp]
+ 909 0398 B244     		add	r10, r10, r6
+ 910 039a 0133     		adds	r3, r3, #1
+ 911 039c 0093     		str	r3, [sp]
+ 912              	.LVL74:
+ 102:Src/yolo_postproc.c ****             for (int x = 0; x < W; ++x) {
+ 913              		.loc 1 102 32 is_stmt 0 discriminator 2 view .LVU275
+ 914 039e 0AE7     		b	.L10
+ 915              	.L99:
+ 916              		.align	2
+ 917              	.L98:
+ 918 03a0 17B7D138 		.word	953267991
+ 919 03a4 72F97F3F 		.word	1065351538
+ 920 03a8 000000C3 		.word	-1023410176
+ 921 03ac 0000FE42 		.word	1123942400
+ 922 03b0 00009043 		.word	1133510656
+ 923 03b4 0000C043 		.word	1136656384
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 25
+
+
+ 924 03b8 00000000 		.word	0
+ 925              	.LVL75:
+ 926              	.L56:
+ 927              	.LBB143:
+ 928              	.LBB140:
+ 929              	.LBB129:
+ 930              	.LBB80:
+  38:Src/yolo_postproc.c **** }
+ 931              		.loc 1 38 24 view .LVU276
+ 932 03bc F9EE00EA 		vmov.f32	s29, #-4.0e+0
+ 933              	.LVL76:
+  38:Src/yolo_postproc.c **** }
+ 934              		.loc 1 38 24 view .LVU277
+ 935 03c0 71E7     		b	.L13
+ 936              	.LVL77:
+ 937              	.L57:
+  38:Src/yolo_postproc.c **** }
+ 938              		.loc 1 38 24 view .LVU278
+ 939              	.LBE80:
+ 940              	.LBE129:
+ 941              	.LBB130:
+ 942              	.LBB111:
+ 943 03c2 B9EE008A 		vmov.f32	s16, #-4.0e+0
+ 944              	.LVL78:
+  38:Src/yolo_postproc.c **** }
+ 945              		.loc 1 38 24 view .LVU279
+ 946 03c6 82E7     		b	.L15
+ 947              	.LVL79:
+ 948              	.L58:
+  38:Src/yolo_postproc.c **** }
+ 949              		.loc 1 38 24 view .LVU280
+ 950              	.LBE111:
+ 951              	.LBE130:
+ 952              	.LBB131:
+ 953              	.LBB116:
+ 954 03c8 1FED05FA 		vldr.32	s30, .L98+24
+ 955              	.LVL80:
+  38:Src/yolo_postproc.c **** }
+ 956              		.loc 1 38 24 view .LVU281
+ 957 03cc 98E7     		b	.L17
+ 958              	.LVL81:
+ 959              	.L59:
+  38:Src/yolo_postproc.c **** }
+ 960              		.loc 1 38 24 view .LVU282
+ 961              	.LBE116:
+ 962              	.LBE131:
+ 963              	.LBB132:
+ 964              	.LBB120:
+ 965 03ce 5FED06EA 		vldr.32	s29, .L98+24
+ 966              	.LVL82:
+  38:Src/yolo_postproc.c **** }
+ 967              		.loc 1 38 24 view .LVU283
+ 968 03d2 A4E7     		b	.L19
+ 969              	.LVL83:
+ 970              	.L60:
+  38:Src/yolo_postproc.c **** }
+ 971              		.loc 1 38 24 view .LVU284
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 26
+
+
+ 972              	.LBE120:
+ 973              	.LBE132:
+ 974              	.LBB133:
+ 975              	.LBB123:
+ 976 03d4 5FED088A 		vldr.32	s17, .L98+24
+ 977              	.LVL84:
+  38:Src/yolo_postproc.c **** }
+ 978              		.loc 1 38 24 view .LVU285
+ 979 03d8 B0E7     		b	.L21
+ 980              	.LVL85:
+ 981              	.L61:
+  38:Src/yolo_postproc.c **** }
+ 982              		.loc 1 38 24 view .LVU286
+ 983              	.LBE123:
+ 984              	.LBE133:
+ 985              	.LBB134:
+ 986              	.LBB84:
+ 987 03da 1FED098A 		vldr.32	s16, .L98+24
+ 988              	.LVL86:
+  38:Src/yolo_postproc.c **** }
+ 989              		.loc 1 38 24 view .LVU287
+ 990 03de BAE7     		b	.L23
+ 991              	.LVL87:
+ 992              	.L25:
+  38:Src/yolo_postproc.c **** }
+ 993              		.loc 1 38 24 view .LVU288
+ 994 03e0 2AAB     		add	r3, sp, #168
+ 995              	.LBE84:
+ 996              	.LBE134:
+ 997              	.LBB135:
+ 998              	.LBB136:
+ 132:Src/yolo_postproc.c ****                         if (cand[k].score < cand[worst].score) worst = k;
+ 999              		.loc 1 132 30 view .LVU289
+ 1000 03e2 0120     		movs	r0, #1
+ 1001              	.LBE136:
+ 131:Src/yolo_postproc.c ****                     for (int k = 1; k < PRENMS_CAP; ++k) {
+ 1002              		.loc 1 131 25 view .LVU290
+ 1003 03e4 0022     		movs	r2, #0
+ 1004              	.LBB137:
+ 133:Src/yolo_postproc.c ****                     }
+ 1005              		.loc 1 133 56 view .LVU291
+ 1006 03e6 9E46     		mov	lr, r3
+ 1007 03e8 7F21     		movs	r1, #127
+ 1008              	.L27:
+ 1009              	.LVL88:
+ 133:Src/yolo_postproc.c ****                     }
+ 1010              		.loc 1 133 25 is_stmt 1 view .LVU292
+ 133:Src/yolo_postproc.c ****                     }
+ 1011              		.loc 1 133 56 is_stmt 0 view .LVU293
+ 1012 03ea 4FF0140C 		mov	ip, #20
+ 1013 03ee 0CFB02EC 		mla	ip, ip, r2, lr
+ 133:Src/yolo_postproc.c ****                     }
+ 1014              		.loc 1 133 28 view .LVU294
+ 1015 03f2 D3ED096A 		vldr.32	s13, [r3, #36]
+ 1016 03f6 9CED047A 		vldr.32	s14, [ip, #16]
+ 1017 03fa F4EE476A 		vcmp.f32	s13, s14
+ 1018 03fe F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 27
+
+
+ 1019 0402 48BF     		it	mi
+ 1020 0404 0246     		movmi	r2, r0
+ 1021              	.LVL89:
+ 132:Src/yolo_postproc.c ****                         if (cand[k].score < cand[worst].score) worst = k;
+ 1022              		.loc 1 132 53 is_stmt 1 view .LVU295
+ 132:Src/yolo_postproc.c ****                         if (cand[k].score < cand[worst].score) worst = k;
+ 1023              		.loc 1 132 39 is_stmt 0 view .LVU296
+ 1024 0406 0139     		subs	r1, r1, #1
+ 132:Src/yolo_postproc.c ****                         if (cand[k].score < cand[worst].score) worst = k;
+ 1025              		.loc 1 132 53 view .LVU297
+ 1026 0408 00F10100 		add	r0, r0, #1
+ 1027              	.LVL90:
+ 132:Src/yolo_postproc.c ****                         if (cand[k].score < cand[worst].score) worst = k;
+ 1028              		.loc 1 132 39 is_stmt 1 view .LVU298
+ 1029 040c 03F11403 		add	r3, r3, #20
+ 1030 0410 EBD1     		bne	.L27
+ 1031              	.LBE137:
+ 135:Src/yolo_postproc.c ****                 }
+ 1032              		.loc 1 135 21 view .LVU299
+ 135:Src/yolo_postproc.c ****                 }
+ 1033              		.loc 1 135 46 is_stmt 0 view .LVU300
+ 1034 0412 1423     		movs	r3, #20
+ 1035 0414 2AA9     		add	r1, sp, #168
+ 1036 0416 03FB0213 		mla	r3, r3, r2, r1
+ 135:Src/yolo_postproc.c ****                 }
+ 1037              		.loc 1 135 24 view .LVU301
+ 1038 041a 93ED047A 		vldr.32	s14, [r3, #16]
+ 1039 041e B4EEE77A 		vcmpe.f32	s14, s15
+ 1040 0422 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1041 0426 AFD5     		bpl	.L12
+ 135:Src/yolo_postproc.c ****                 }
+ 1042              		.loc 1 135 54 is_stmt 1 discriminator 1 view .LVU302
+ 135:Src/yolo_postproc.c ****                 }
+ 1043              		.loc 1 135 66 is_stmt 0 discriminator 1 view .LVU303
+ 1044 0428 83ED00FA 		vstr.32	s30, [r3]
+ 1045 042c C3ED01EA 		vstr.32	s29, [r3, #4]
+ 1046 0430 C3ED028A 		vstr.32	s17, [r3, #8]
+ 1047 0434 83ED038A 		vstr.32	s16, [r3, #12]
+ 1048 0438 C3ED047A 		vstr.32	s15, [r3, #16]
+ 1049 043c A4E7     		b	.L12
+ 1050              	.LVL91:
+ 1051              	.L8:
+ 135:Src/yolo_postproc.c ****                 }
+ 1052              		.loc 1 135 66 discriminator 1 view .LVU304
+ 1053              	.LBE135:
+ 1054              	.LBE140:
+ 1055              	.LBE143:
+ 1056              	.LBE146:
+ 1057              	.LBE147:
+  72:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+ 1058              		.loc 1 72 34 is_stmt 1 discriminator 2 view .LVU305
+ 1059 043e 0135     		adds	r5, r5, #1
+ 1060              	.LVL92:
+  72:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+ 1061              		.loc 1 72 34 is_stmt 0 discriminator 2 view .LVU306
+ 1062 0440 0437     		adds	r7, r7, #4
+ 1063 0442 15E6     		b	.L7
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 28
+
+
+ 1064              	.LVL93:
+ 1065              	.L37:
+  72:Src/yolo_postproc.c ****         const uint8_t *buf = heads[h];
+ 1066              		.loc 1 72 34 discriminator 2 view .LVU307
+ 1067              	.LBE170:
+ 1068              	.LBB171:
+ 1069              	.LBB153:
+ 145:Src/yolo_postproc.c ****         int j = i - 1;
+ 1070              		.loc 1 145 9 is_stmt 1 view .LVU308
+ 145:Src/yolo_postproc.c ****         int j = i - 1;
+ 1071              		.loc 1 145 20 is_stmt 0 view .LVU309
+ 1072 0444 D8ED097A 		vldr.32	s15, [r8, #36]
+ 1073              	.LVL94:
+ 146:Src/yolo_postproc.c ****         while (j >= 0 && cand[j].score < key.score) {
+ 1074              		.loc 1 146 9 is_stmt 1 view .LVU310
+ 145:Src/yolo_postproc.c ****         int j = i - 1;
+ 1075              		.loc 1 145 20 is_stmt 0 view .LVU311
+ 1076 0448 08F11407 		add	r7, r8, #20
+ 1077 044c 08F11408 		add	r8, r8, #20
+ 146:Src/yolo_postproc.c ****         while (j >= 0 && cand[j].score < key.score) {
+ 1078              		.loc 1 146 13 view .LVU312
+ 1079 0450 C146     		mov	r9, r8
+ 145:Src/yolo_postproc.c ****         int j = i - 1;
+ 1080              		.loc 1 145 20 view .LVU313
+ 1081 0452 0FCF     		ldmia	r7!, {r0, r1, r2, r3}
+ 146:Src/yolo_postproc.c ****         while (j >= 0 && cand[j].score < key.score) {
+ 1082              		.loc 1 146 13 view .LVU314
+ 1083 0454 F246     		mov	r10, lr
+ 145:Src/yolo_postproc.c ****         int j = i - 1;
+ 1084              		.loc 1 145 20 view .LVU315
+ 1085 0456 0AAD     		add	r5, sp, #40
+ 1086 0458 0FC5     		stmia	r5!, {r0, r1, r2, r3}
+ 1087 045a 3B68     		ldr	r3, [r7]
+ 1088 045c 2B60     		str	r3, [r5]
+ 146:Src/yolo_postproc.c ****         while (j >= 0 && cand[j].score < key.score) {
+ 1089              		.loc 1 146 13 view .LVU316
+ 1090 045e 0EF1FF35 		add	r5, lr, #-1
+ 1091              	.LVL95:
+ 147:Src/yolo_postproc.c ****             cand[j + 1] = cand[j];
+ 1092              		.loc 1 147 9 is_stmt 1 view .LVU317
+ 147:Src/yolo_postproc.c ****             cand[j + 1] = cand[j];
+ 1093              		.loc 1 147 23 view .LVU318
+ 1094              	.L34:
+ 147:Src/yolo_postproc.c ****             cand[j + 1] = cand[j];
+ 1095              		.loc 1 147 23 is_stmt 0 discriminator 1 view .LVU319
+ 1096 0462 19ED017A 		vldr.32	s14, [r9, #-4]
+ 1097 0466 B4EEE77A 		vcmpe.f32	s14, s15
+ 1098 046a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1099 046e 0FD5     		bpl	.L35
+ 148:Src/yolo_postproc.c ****             --j;
+ 1100              		.loc 1 148 13 is_stmt 1 view .LVU320
+ 148:Src/yolo_postproc.c ****             --j;
+ 1101              		.loc 1 148 25 is_stmt 0 view .LVU321
+ 1102 0470 4F46     		mov	r7, r9
+ 1103 0472 A9F1140C 		sub	ip, r9, #20
+ 1104 0476 BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 1105 047a 0FC7     		stmia	r7!, {r0, r1, r2, r3}
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 29
+
+
+ 1106 047c DCF80030 		ldr	r3, [ip]
+ 147:Src/yolo_postproc.c ****             cand[j + 1] = cand[j];
+ 1107              		.loc 1 147 23 view .LVU322
+ 1108 0480 BAF1010A 		subs	r10, r10, #1
+ 148:Src/yolo_postproc.c ****             --j;
+ 1109              		.loc 1 148 25 view .LVU323
+ 1110 0484 3B60     		str	r3, [r7]
+ 149:Src/yolo_postproc.c ****         }
+ 1111              		.loc 1 149 13 is_stmt 1 view .LVU324
+ 1112 0486 05F1FF35 		add	r5, r5, #-1
+ 1113              	.LVL96:
+ 147:Src/yolo_postproc.c ****             cand[j + 1] = cand[j];
+ 1114              		.loc 1 147 23 view .LVU325
+ 1115 048a A9F11409 		sub	r9, r9, #20
+ 1116 048e E8D1     		bne	.L34
+ 1117              	.L35:
+ 151:Src/yolo_postproc.c ****     }
+ 1118              		.loc 1 151 9 discriminator 2 view .LVU326
+ 151:Src/yolo_postproc.c ****     }
+ 1119              		.loc 1 151 21 is_stmt 0 discriminator 2 view .LVU327
+ 1120 0490 05FB0BB5 		mla	r5, r5, fp, fp
+ 1121              	.LVL97:
+ 151:Src/yolo_postproc.c ****     }
+ 1122              		.loc 1 151 21 discriminator 2 view .LVU328
+ 1123 0494 0AAF     		add	r7, sp, #40
+ 1124 0496 3544     		add	r5, r5, r6
+ 1125 0498 0FCF     		ldmia	r7!, {r0, r1, r2, r3}
+ 1126 049a 0FC5     		stmia	r5!, {r0, r1, r2, r3}
+ 1127 049c 3B68     		ldr	r3, [r7]
+ 1128              	.LBE153:
+ 144:Src/yolo_postproc.c ****         yolo_box_t key = cand[i];
+ 1129              		.loc 1 144 33 discriminator 2 view .LVU329
+ 1130 049e 0EF1010E 		add	lr, lr, #1
+ 1131              	.LVL98:
+ 1132              	.LBB154:
+ 151:Src/yolo_postproc.c ****     }
+ 1133              		.loc 1 151 21 discriminator 2 view .LVU330
+ 1134 04a2 2B60     		str	r3, [r5]
+ 1135              	.LVL99:
+ 151:Src/yolo_postproc.c ****     }
+ 1136              		.loc 1 151 21 discriminator 2 view .LVU331
+ 1137              	.LBE154:
+ 144:Src/yolo_postproc.c ****         yolo_box_t key = cand[i];
+ 1138              		.loc 1 144 33 is_stmt 1 discriminator 2 view .LVU332
+ 144:Src/yolo_postproc.c ****         yolo_box_t key = cand[i];
+ 1139              		.loc 1 144 33 is_stmt 0 discriminator 2 view .LVU333
+ 1140 04a4 EFE5     		b	.L33
+ 1141              	.LVL100:
+ 1142              	.L51:
+ 144:Src/yolo_postproc.c ****         yolo_box_t key = cand[i];
+ 1143              		.loc 1 144 33 discriminator 2 view .LVU334
+ 1144              	.LBE171:
+ 1145              	.LBB172:
+ 1146              	.LBB166:
+ 1147              	.LBB163:
+ 1148              	.LBB159:
+ 163:Src/yolo_postproc.c ****             const yolo_box_t *bj = &cand[j];
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 30
+
+
+ 1149              		.loc 1 163 13 is_stmt 1 view .LVU335
+ 163:Src/yolo_postproc.c ****             const yolo_box_t *bj = &cand[j];
+ 1150              		.loc 1 163 16 is_stmt 0 view .LVU336
+ 1151 04a6 4878     		ldrb	r0, [r1, #1]	@ zero_extendqisi2
+ 1152 04a8 0028     		cmp	r0, #0
+ 1153 04aa 4DD1     		bne	.L40
+ 164:Src/yolo_postproc.c ****             const float xx1 = bi->x1 > bj->x1 ? bi->x1 : bj->x1;
+ 1154              		.loc 1 164 13 is_stmt 1 view .LVU337
+ 1155              	.LVL101:
+ 165:Src/yolo_postproc.c ****             const float yy1 = bi->y1 > bj->y1 ? bi->y1 : bj->y1;
+ 1156              		.loc 1 165 13 view .LVU338
+ 165:Src/yolo_postproc.c ****             const float yy1 = bi->y1 > bj->y1 ? bi->y1 : bj->y1;
+ 1157              		.loc 1 165 42 is_stmt 0 view .LVU339
+ 1158 04ac D2ED052A 		vldr.32	s5, [r2, #20]
+ 166:Src/yolo_postproc.c ****             const float xx2 = bi->x2 < bj->x2 ? bi->x2 : bj->x2;
+ 1159              		.loc 1 166 42 view .LVU340
+ 1160 04b0 92ED063A 		vldr.32	s6, [r2, #24]
+ 165:Src/yolo_postproc.c ****             const float yy1 = bi->y1 > bj->y1 ? bi->y1 : bj->y1;
+ 1161              		.loc 1 165 56 view .LVU341
+ 1162 04b4 B4EEE25A 		vcmpe.f32	s10, s5
+ 167:Src/yolo_postproc.c ****             const float yy2 = bi->y2 < bj->y2 ? bi->y2 : bj->y2;
+ 1163              		.loc 1 167 42 view .LVU342
+ 1164 04b8 D2ED076A 		vldr.32	s13, [r2, #28]
+ 165:Src/yolo_postproc.c ****             const float yy1 = bi->y1 > bj->y1 ? bi->y1 : bj->y1;
+ 1165              		.loc 1 165 56 view .LVU343
+ 1166 04bc F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 166:Src/yolo_postproc.c ****             const float xx2 = bi->x2 < bj->x2 ? bi->x2 : bj->x2;
+ 1167              		.loc 1 166 56 view .LVU344
+ 1168 04c0 B4EEC34A 		vcmpe.f32	s8, s6
+ 165:Src/yolo_postproc.c ****             const float yy1 = bi->y1 > bj->y1 ? bi->y1 : bj->y1;
+ 1169              		.loc 1 165 56 view .LVU345
+ 1170 04c4 75FE221A 		vselgt.f32	s3, s10, s5
+ 1171              	.LVL102:
+ 166:Src/yolo_postproc.c ****             const float xx2 = bi->x2 < bj->x2 ? bi->x2 : bj->x2;
+ 1172              		.loc 1 166 13 is_stmt 1 view .LVU346
+ 166:Src/yolo_postproc.c ****             const float xx2 = bi->x2 < bj->x2 ? bi->x2 : bj->x2;
+ 1173              		.loc 1 166 56 is_stmt 0 view .LVU347
+ 1174 04c8 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 167:Src/yolo_postproc.c ****             const float yy2 = bi->y2 < bj->y2 ? bi->y2 : bj->y2;
+ 1175              		.loc 1 167 56 view .LVU348
+ 1176 04cc F4EEE65A 		vcmpe.f32	s11, s13
+ 166:Src/yolo_postproc.c ****             const float xx2 = bi->x2 < bj->x2 ? bi->x2 : bj->x2;
+ 1177              		.loc 1 166 56 view .LVU349
+ 1178 04d0 34FE032A 		vselgt.f32	s4, s8, s6
+ 1179              	.LVL103:
+ 167:Src/yolo_postproc.c ****             const float yy2 = bi->y2 < bj->y2 ? bi->y2 : bj->y2;
+ 1180              		.loc 1 167 13 is_stmt 1 view .LVU350
+ 167:Src/yolo_postproc.c ****             const float yy2 = bi->y2 < bj->y2 ? bi->y2 : bj->y2;
+ 1181              		.loc 1 167 56 is_stmt 0 view .LVU351
+ 1182 04d4 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 168:Src/yolo_postproc.c ****             const float iw = xx2 - xx1; if (iw <= 0.0f) continue;
+ 1183              		.loc 1 168 42 view .LVU352
+ 1184 04d8 92ED087A 		vldr.32	s14, [r2, #32]
+ 167:Src/yolo_postproc.c ****             const float yy2 = bi->y2 < bj->y2 ? bi->y2 : bj->y2;
+ 1185              		.loc 1 167 56 view .LVU353
+ 1186 04dc 54BF     		ite	pl
+ 1187 04de F0EE667A 		vmovpl.f32	s15, s13
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 31
+
+
+ 1188 04e2 F0EE657A 		vmovmi.f32	s15, s11
+ 1189              	.LVL104:
+ 168:Src/yolo_postproc.c ****             const float iw = xx2 - xx1; if (iw <= 0.0f) continue;
+ 1190              		.loc 1 168 13 is_stmt 1 view .LVU354
+ 168:Src/yolo_postproc.c ****             const float iw = xx2 - xx1; if (iw <= 0.0f) continue;
+ 1191              		.loc 1 168 56 is_stmt 0 view .LVU355
+ 1192 04e6 F4EEC74A 		vcmpe.f32	s9, s14
+ 169:Src/yolo_postproc.c ****             const float ih = yy2 - yy1; if (ih <= 0.0f) continue;
+ 1193              		.loc 1 169 25 view .LVU356
+ 1194 04ea 77EEE17A 		vsub.f32	s15, s15, s3
+ 1195              	.LVL105:
+ 168:Src/yolo_postproc.c ****             const float iw = xx2 - xx1; if (iw <= 0.0f) continue;
+ 1196              		.loc 1 168 56 view .LVU357
+ 1197 04ee F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1198              	.LVL106:
+ 169:Src/yolo_postproc.c ****             const float ih = yy2 - yy1; if (ih <= 0.0f) continue;
+ 1199              		.loc 1 169 44 view .LVU358
+ 1200 04f2 F5EEC07A 		vcmpe.f32	s15, #0
+ 168:Src/yolo_postproc.c ****             const float iw = xx2 - xx1; if (iw <= 0.0f) continue;
+ 1201              		.loc 1 168 56 view .LVU359
+ 1202 04f6 54BF     		ite	pl
+ 1203 04f8 B0EE476A 		vmovpl.f32	s12, s14
+ 1204 04fc B0EE646A 		vmovmi.f32	s12, s9
+ 1205              	.LVL107:
+ 169:Src/yolo_postproc.c ****             const float ih = yy2 - yy1; if (ih <= 0.0f) continue;
+ 1206              		.loc 1 169 13 is_stmt 1 view .LVU360
+ 169:Src/yolo_postproc.c ****             const float ih = yy2 - yy1; if (ih <= 0.0f) continue;
+ 1207              		.loc 1 169 41 view .LVU361
+ 169:Src/yolo_postproc.c ****             const float ih = yy2 - yy1; if (ih <= 0.0f) continue;
+ 1208              		.loc 1 169 44 is_stmt 0 view .LVU362
+ 1209 0500 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1210 0504 20D9     		bls	.L40
+ 170:Src/yolo_postproc.c ****             const float inter = iw * ih;
+ 1211              		.loc 1 170 13 is_stmt 1 view .LVU363
+ 170:Src/yolo_postproc.c ****             const float inter = iw * ih;
+ 1212              		.loc 1 170 25 is_stmt 0 view .LVU364
+ 1213 0506 36EE426A 		vsub.f32	s12, s12, s4
+ 1214              	.LVL108:
+ 170:Src/yolo_postproc.c ****             const float inter = iw * ih;
+ 1215              		.loc 1 170 41 is_stmt 1 view .LVU365
+ 170:Src/yolo_postproc.c ****             const float inter = iw * ih;
+ 1216              		.loc 1 170 44 is_stmt 0 view .LVU366
+ 1217 050a B5EEC06A 		vcmpe.f32	s12, #0
+ 1218 050e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1219 0512 19D9     		bls	.L40
+ 171:Src/yolo_postproc.c ****             const float aj = (bj->x2 - bj->x1) * (bj->y2 - bj->y1);
+ 1220              		.loc 1 171 13 is_stmt 1 view .LVU367
+ 171:Src/yolo_postproc.c ****             const float aj = (bj->x2 - bj->x1) * (bj->y2 - bj->y1);
+ 1221              		.loc 1 171 25 is_stmt 0 view .LVU368
+ 1222 0514 67EE867A 		vmul.f32	s15, s15, s12
+ 1223              	.LVL109:
+ 172:Src/yolo_postproc.c ****             const float uni = ai + aj - inter;
+ 1224              		.loc 1 172 13 is_stmt 1 view .LVU369
+ 173:Src/yolo_postproc.c ****             if (uni > 0.0f && (inter / uni) >= iou_thresh) suppressed[j] = 1;
+ 1225              		.loc 1 173 13 view .LVU370
+ 172:Src/yolo_postproc.c ****             const float uni = ai + aj - inter;
+ 1226              		.loc 1 172 58 is_stmt 0 view .LVU371
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 32
+
+
+ 1227 0518 37EE437A 		vsub.f32	s14, s14, s6
+ 1228              	.LVL110:
+ 172:Src/yolo_postproc.c ****             const float uni = ai + aj - inter;
+ 1229              		.loc 1 172 38 view .LVU372
+ 1230 051c 76EEE26A 		vsub.f32	s13, s13, s5
+ 1231              	.LVL111:
+ 173:Src/yolo_postproc.c ****             if (uni > 0.0f && (inter / uni) >= iou_thresh) suppressed[j] = 1;
+ 1232              		.loc 1 173 34 view .LVU373
+ 1233 0520 B0EE636A 		vmov.f32	s12, s7
+ 1234              	.LVL112:
+ 173:Src/yolo_postproc.c ****             if (uni > 0.0f && (inter / uni) >= iou_thresh) suppressed[j] = 1;
+ 1235              		.loc 1 173 34 view .LVU374
+ 1236 0524 A6EE876A 		vfma.f32	s12, s13, s14
+ 173:Src/yolo_postproc.c ****             if (uni > 0.0f && (inter / uni) >= iou_thresh) suppressed[j] = 1;
+ 1237              		.loc 1 173 25 view .LVU375
+ 1238 0528 36EE677A 		vsub.f32	s14, s12, s15
+ 1239              	.LVL113:
+ 174:Src/yolo_postproc.c ****         }
+ 1240              		.loc 1 174 13 is_stmt 1 view .LVU376
+ 174:Src/yolo_postproc.c ****         }
+ 1241              		.loc 1 174 16 is_stmt 0 view .LVU377
+ 1242 052c B5EEC07A 		vcmpe.f32	s14, #0
+ 1243 0530 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1244 0534 08DD     		ble	.L40
+ 174:Src/yolo_postproc.c ****         }
+ 1245              		.loc 1 174 38 discriminator 1 view .LVU378
+ 1246 0536 C7EE876A 		vdiv.f32	s13, s15, s14
+ 174:Src/yolo_postproc.c ****         }
+ 1247              		.loc 1 174 28 discriminator 1 view .LVU379
+ 1248 053a F4EECC6A 		vcmpe.f32	s13, s24
+ 1249 053e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 174:Src/yolo_postproc.c ****         }
+ 1250              		.loc 1 174 60 is_stmt 1 discriminator 1 view .LVU380
+ 174:Src/yolo_postproc.c ****         }
+ 1251              		.loc 1 174 74 is_stmt 0 discriminator 1 view .LVU381
+ 1252 0542 A8BF     		it	ge
+ 1253 0544 81F80190 		strbge	r9, [r1, #1]
+ 1254              	.LVL114:
+ 1255              	.L40:
+ 174:Src/yolo_postproc.c ****         }
+ 1256              		.loc 1 174 74 discriminator 1 view .LVU382
+ 1257              	.LBE159:
+ 162:Src/yolo_postproc.c ****             if (suppressed[j]) continue;
+ 1258              		.loc 1 162 41 is_stmt 1 discriminator 2 view .LVU383
+ 1259 0548 0131     		adds	r1, r1, #1
+ 1260 054a 1432     		adds	r2, r2, #20
+ 1261 054c D7E5     		b	.L39
+ 1262              	.LBE163:
+ 1263              	.LBE166:
+ 1264              	.LBE172:
+ 1265              		.cfi_endproc
+ 1266              	.LFE3:
+ 1268 054e 00BF     		.text
+ 1269              	.Letext0:
+ 1270              		.file 2 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 1271              		.file 3 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 1272              		.file 4 "Inc/yolo_postproc.h"
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 33
+
+
+ 1273              		.file 5 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 1274              		.file 6 "<built-in>"
+ARM GAS  /tmp/claude-1000/ccSL2OR7.s 			page 34
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 yolo_postproc.c
+/tmp/claude-1000/ccSL2OR7.s:26     .text.yolo_postprocess:00000000 $t
+/tmp/claude-1000/ccSL2OR7.s:32     .text.yolo_postprocess:00000000 yolo_postprocess
+/tmp/claude-1000/ccSL2OR7.s:918    .text.yolo_postprocess:000003a0 $d
+/tmp/claude-1000/ccSL2OR7.s:932    .text.yolo_postprocess:000003bc $t
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.features.h.33.3e67abe6fb64142d4f6fa9496796153c
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.stddef.h.39.3e0425629195acf083c9561151306b4d
+                           .group:00000000 wm4.yolo_postproc.h.22.672a49fd69a16bcf7d2b12f67adee39c
+                           .group:00000000 wm4.newlib.h.7.f9f25f80f86429f653675286e7973cb9
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.math.h.13.35ad80917fddb38312d53499dad31194
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+
+UNDEFINED SYMBOLS
+logf
+memset
+expf

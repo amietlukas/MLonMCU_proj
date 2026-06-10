@@ -37,6 +37,17 @@ Resume from checkpoint:
 python classifier/main.py --name baseline128_continued --checkpoint baseline128-YYYYMMDD-HHMMSS
 ```
 
+Prune (structured L1 channel pruning, requires `--checkpoint`):
+
+```bash
+python classifier/main.py --name baseline128_pruned --checkpoint baseline128-YYYYMMDD-HHMMSS --prune 0.3
+```
+
+## Export to TFLite
+
+`onnx_to_tflite.py` converts an exported ONNX model to TFLite (used for the
+CMSIS-NN deployment path). Run it in the `venv_tflite` environment.
+
 ## Config
 
 Main config file:

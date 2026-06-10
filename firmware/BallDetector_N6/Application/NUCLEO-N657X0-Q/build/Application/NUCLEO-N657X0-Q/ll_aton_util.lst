@@ -1,0 +1,497 @@
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ll_aton_util.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c"
+  25              		.section	.text.LL_ATON_getbits,"ax",%progbits
+  26              		.align	1
+  27              		.global	LL_ATON_getbits
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	LL_ATON_getbits:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** /**
+   2:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  ******************************************************************************
+   3:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @file    ll_aton_util.c
+   4:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @author  SRA Artificial Intelligence & Embedded Architectures
+   5:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @brief   ATON LL utility functions
+   6:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  ******************************************************************************
+   7:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @attention
+   8:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  *
+   9:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * Copyright (c) 2024 STMicroelectronics.
+  10:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * All rights reserved.
+  11:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  *
+  12:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * This software is licensed under terms that can be found in the LICENSE file
+  13:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * in the root directory of this software component.
+  14:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  *
+  16:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  ******************************************************************************
+  17:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  */
+  18:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** 
+  19:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** #include <stddef.h>
+  20:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** #include <stdint.h>
+  21:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** #include <stdio.h>
+  22:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** 
+  23:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** #include "ll_aton_util.h"
+  24:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** 
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 2
+
+
+  25:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** /**
+  26:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @brief  Helper function. Extracts bitfield from a buffer
+  27:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @param  bits Pointer of the buffer to extract bits from
+  28:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @param  pos Global bit position of the bitfield to extract
+  29:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @param  nbits Number of bits to extract
+  30:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @retval extracted bitfield
+  31:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  */
+  32:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** uint32_t LL_ATON_getbits(uint32_t *bits, unsigned int pos, int nbits)
+  33:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** {
+  35              		.loc 1 33 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  34:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   // Find the word and bit offset
+  35:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int word_idx = pos >> 5;
+  39              		.loc 1 35 3 view .LVU1
+  36:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int bit_idx = pos & 0x1f;
+  40              		.loc 1 36 3 view .LVU2
+  33:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   // Find the word and bit offset
+  41              		.loc 1 33 1 is_stmt 0 view .LVU3
+  42 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  43              		.cfi_def_cfa_offset 20
+  44              		.cfi_offset 4, -20
+  45              		.cfi_offset 5, -16
+  46              		.cfi_offset 6, -12
+  47              		.cfi_offset 7, -8
+  48              		.cfi_offset 14, -4
+  49              		.loc 1 36 16 view .LVU4
+  50 0002 01F01F04 		and	r4, r1, #31
+  51              	.LVL1:
+  37:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** 
+  38:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   uint32_t value;
+  52              		.loc 1 38 3 is_stmt 1 view .LVU5
+  39:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   if (bit_idx + nbits <= 32)
+  53              		.loc 1 39 3 view .LVU6
+  35:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int bit_idx = pos & 0x1f;
+  54              		.loc 1 35 16 is_stmt 0 view .LVU7
+  55 0006 4909     		lsrs	r1, r1, #5
+  56              	.LVL2:
+  57              	.LBB2:
+  40:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   {
+  41:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     uint32_t word = bits[word_idx];
+  42:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = (word >> bit_idx) & ((1ULL << nbits) - 1);
+  58              		.loc 1 42 19 view .LVU8
+  59 0008 50F82130 		ldr	r3, [r0, r1, lsl #2]
+  60              	.LBE2:
+  39:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   {
+  61              		.loc 1 39 15 view .LVU9
+  62 000c 1519     		adds	r5, r2, r4
+  39:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   {
+  63              		.loc 1 39 6 view .LVU10
+  64 000e 202D     		cmp	r5, #32
+  65              	.LBB3:
+  41:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = (word >> bit_idx) & ((1ULL << nbits) - 1);
+  66              		.loc 1 41 25 view .LVU11
+  67 0010 4FEA8106 		lsl	r6, r1, #2
+  68              		.loc 1 42 19 view .LVU12
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 3
+
+
+  69 0014 23FA04F3 		lsr	r3, r3, r4
+  70              	.LBE3:
+  39:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   {
+  71              		.loc 1 39 6 view .LVU13
+  72 0018 15D8     		bhi	.L2
+  73              	.LBB4:
+  41:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = (word >> bit_idx) & ((1ULL << nbits) - 1);
+  74              		.loc 1 41 5 is_stmt 1 view .LVU14
+  75              	.LVL3:
+  76              		.loc 1 42 5 view .LVU15
+  77              		.loc 1 42 31 is_stmt 0 view .LVU16
+  78 001a 4FF0FF30 		mov	r0, #-1
+  79              	.LVL4:
+  80              		.loc 1 42 31 view .LVU17
+  81 001e 4FF0FF31 		mov	r1, #-1
+  82              	.LVL5:
+  83              		.loc 1 42 31 view .LVU18
+  84 0022 50EA0D21 		lsll	r0, r1, r2
+  85              		.loc 1 42 11 view .LVU19
+  86 0026 23EA0000 		bic	r0, r3, r0
+  87              	.LVL6:
+  88              	.L3:
+  89              		.loc 1 42 11 view .LVU20
+  90              	.LBE4:
+  43:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+  44:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   else
+  45:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   {
+  46:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     uint32_t low = bits[word_idx] >> bit_idx;
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     uint32_t high = bits[word_idx + 1] & ((1ULL << (nbits - (32 - bit_idx))) - 1);
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = low | (high << (32 - bit_idx));
+  49:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+  50:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** 
+  51:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   // Sign extension if needed
+  52:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   if (nbits < 32 && (value & (1ULL << (nbits - 1))))
+  91              		.loc 1 52 3 is_stmt 1 view .LVU21
+  92              		.loc 1 52 6 is_stmt 0 view .LVU22
+  93 002a 1F2A     		cmp	r2, #31
+  94 002c 0ADC     		bgt	.L1
+  95              		.loc 1 52 46 discriminator 1 view .LVU23
+  96 002e 531E     		subs	r3, r2, #1
+  97              		.loc 1 52 18 discriminator 1 view .LVU24
+  98 0030 20FA03F3 		lsr	r3, r0, r3
+  99 0034 DB07     		lsls	r3, r3, #31
+ 100 0036 05D5     		bpl	.L1
+  53:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   {
+  54:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     // If sign bit is set, extend the sign
+  55:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value |= ~((1ULL << nbits) - 1);
+ 101              		.loc 1 55 5 is_stmt 1 view .LVU25
+ 102              		.loc 1 55 22 is_stmt 0 view .LVU26
+ 103 0038 0124     		movs	r4, #1
+ 104 003a 0025     		movs	r5, #0
+ 105 003c 54EA0D25 		lsll	r4, r5, r2
+ 106              		.loc 1 55 11 view .LVU27
+ 107 0040 6442     		rsbs	r4, r4, #0
+ 108 0042 2043     		orrs	r0, r0, r4
+ 109              	.LVL7:
+  56:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 4
+
+
+  57:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** 
+  58:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   return value;
+ 110              		.loc 1 58 3 is_stmt 1 view .LVU28
+ 111              	.L1:
+  59:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** }
+ 112              		.loc 1 59 1 is_stmt 0 view .LVU29
+ 113 0044 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 114              	.LVL8:
+ 115              	.L2:
+ 116              	.LBB5:
+  46:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     uint32_t high = bits[word_idx + 1] & ((1ULL << (nbits - (32 - bit_idx))) - 1);
+ 117              		.loc 1 46 5 is_stmt 1 view .LVU30
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = low | (high << (32 - bit_idx));
+ 118              		.loc 1 47 5 view .LVU31
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ 119              		.loc 1 48 5 view .LVU32
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = low | (high << (32 - bit_idx));
+ 120              		.loc 1 47 25 is_stmt 0 view .LVU33
+ 121 0046 3044     		add	r0, r0, r6
+ 122              	.LVL9:
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = low | (high << (32 - bit_idx));
+ 123              		.loc 1 47 40 view .LVU34
+ 124 0048 4FF0FF37 		mov	r7, #-1
+ 125 004c 4FF0FF36 		mov	r6, #-1
+ 126              	.LVL10:
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = low | (high << (32 - bit_idx));
+ 127              		.loc 1 47 59 view .LVU35
+ 128 0050 203D     		subs	r5, r5, #32
+ 129              	.LVL11:
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = low | (high << (32 - bit_idx));
+ 130              		.loc 1 47 40 view .LVU36
+ 131 0052 56EA0D57 		lsll	r6, r7, r5
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = low | (high << (32 - bit_idx));
+ 132              		.loc 1 47 14 view .LVU37
+ 133 0056 4168     		ldr	r1, [r0, #4]
+ 134              	.LVL12:
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ 135              		.loc 1 48 32 view .LVU38
+ 136 0058 C4F12004 		rsb	r4, r4, #32
+ 137              	.LVL13:
+  47:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     value = low | (high << (32 - bit_idx));
+ 138              		.loc 1 47 14 view .LVU39
+ 139 005c 21EA0601 		bic	r1, r1, r6
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ 140              		.loc 1 48 25 view .LVU40
+ 141 0060 A140     		lsls	r1, r1, r4
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ 142              		.loc 1 48 11 view .LVU41
+ 143 0062 41EA0300 		orr	r0, r1, r3
+ 144              	.LVL14:
+  48:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ 145              		.loc 1 48 11 view .LVU42
+ 146 0066 E0E7     		b	.L3
+ 147              	.LBE5:
+ 148              		.cfi_endproc
+ 149              	.LFE3:
+ 151              		.section	.text.LL_ATON_setbits,"ax",%progbits
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 5
+
+
+ 152              		.align	1
+ 153              		.global	LL_ATON_setbits
+ 154              		.syntax unified
+ 155              		.thumb
+ 156              		.thumb_func
+ 158              	LL_ATON_setbits:
+ 159              	.LVL15:
+ 160              	.LFB4:
+  60:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** 
+  61:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** /**
+  62:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @brief  Helper function. Packs bitfield into a buffer
+  63:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @param  bits Pointer of the buffer to pack bits into
+  64:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @param  pos Global position of the bitfield to pack
+  65:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  * @retval nbits Number of bits to extract
+  66:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****  */
+  67:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** void LL_ATON_setbits(uint32_t *bits, unsigned int pos, int nbits, unsigned int val)
+  68:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** {
+ 161              		.loc 1 68 1 is_stmt 1 view -0
+ 162              		.cfi_startproc
+ 163              		@ args = 0, pretend = 0, frame = 8
+ 164              		@ frame_needed = 0, uses_anonymous_args = 0
+  69:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   const int bitsperint = sizeof(unsigned int) * 8;
+ 165              		.loc 1 69 3 view .LVU44
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int smask = ((1ULL << nbits) - 1) << (pos % bitsperint);
+ 166              		.loc 1 70 3 view .LVU45
+  68:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   const int bitsperint = sizeof(unsigned int) * 8;
+ 167              		.loc 1 68 1 is_stmt 0 view .LVU46
+ 168 0000 2DE9F347 		push	{r0, r1, r4, r5, r6, r7, r8, r9, r10, lr}
+ 169              		.cfi_def_cfa_offset 40
+ 170              		.cfi_offset 4, -32
+ 171              		.cfi_offset 5, -28
+ 172              		.cfi_offset 6, -24
+ 173              		.cfi_offset 7, -20
+ 174              		.cfi_offset 8, -16
+ 175              		.cfi_offset 9, -12
+ 176              		.cfi_offset 10, -8
+ 177              		.cfi_offset 14, -4
+ 178              		.loc 1 70 31 view .LVU47
+ 179 0004 0124     		movs	r4, #1
+ 180 0006 0025     		movs	r5, #0
+ 181 0008 54EA0D25 		lsll	r4, r5, r2
+ 182 000c CDE90045 		strd	r4, [sp]
+  71:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int mask = ((1ULL << nbits) - 1);
+ 183              		.loc 1 71 16 view .LVU48
+ 184 0010 009C     		ldr	r4, [sp]
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int smask = ((1ULL << nbits) - 1) << (pos % bitsperint);
+ 185              		.loc 1 70 54 view .LVU49
+ 186 0012 01F01F0E 		and	lr, r1, #31
+ 187              	.LVL16:
+ 188              		.loc 1 71 3 is_stmt 1 view .LVU50
+  72:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   int index0 = pos / bitsperint;
+ 189              		.loc 1 72 3 view .LVU51
+  71:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int mask = ((1ULL << nbits) - 1);
+ 190              		.loc 1 71 16 is_stmt 0 view .LVU52
+ 191 0016 04F1FF3A 		add	r10, r4, #-1
+ 192              	.LVL17:
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int mask = ((1ULL << nbits) - 1);
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 6
+
+
+ 193              		.loc 1 70 46 view .LVU53
+ 194 001a D046     		mov	r8, r10
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int mask = ((1ULL << nbits) - 1);
+ 195              		.loc 1 70 41 view .LVU54
+ 196 001c 013C     		subs	r4, r4, #1
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int mask = ((1ULL << nbits) - 1);
+ 197              		.loc 1 70 46 view .LVU55
+ 198 001e 019C     		ldr	r4, [sp, #4]
+ 199              		.loc 1 72 20 view .LVU56
+ 200 0020 4FEA5117 		lsr	r7, r1, #5
+ 201              	.LVL18:
+  73:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   int index1 = (pos + nbits - 1) / bitsperint;
+ 202              		.loc 1 73 3 is_stmt 1 view .LVU57
+  70:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   unsigned int mask = ((1ULL << nbits) - 1);
+ 203              		.loc 1 70 46 is_stmt 0 view .LVU58
+ 204 0024 64F10009 		sbc	r9, r4, #0
+ 205 0028 58EA0DE9 		lsll	r8, r9, lr
+ 206              	.LBB6:
+  74:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   if (index0 == index1)
+  75:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   {
+  76:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     uint32_t tmp = (bits[index0] & ~smask) | ((val & mask) << (pos % bitsperint));
+ 207              		.loc 1 76 34 view .LVU59
+ 208 002c 50F82740 		ldr	r4, [r0, r7, lsl #2]
+ 209              	.LBE6:
+  73:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   int index1 = (pos + nbits - 1) / bitsperint;
+ 210              		.loc 1 73 21 view .LVU60
+ 211 0030 1144     		add	r1, r1, r2
+ 212              	.LVL19:
+  73:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   int index1 = (pos + nbits - 1) / bitsperint;
+ 213              		.loc 1 73 29 view .LVU61
+ 214 0032 01F1FF3C 		add	ip, r1, #-1
+ 215              	.LBB7:
+ 216              		.loc 1 76 52 view .LVU62
+ 217 0036 0AEA0303 		and	r3, r10, r3
+ 218              	.LVL20:
+ 219              		.loc 1 76 34 view .LVU63
+ 220 003a 24EA0804 		bic	r4, r4, r8
+ 221              		.loc 1 76 60 view .LVU64
+ 222 003e 03FA0EFE 		lsl	lr, r3, lr
+ 223              	.LVL21:
+ 224              		.loc 1 76 60 view .LVU65
+ 225              	.LBE7:
+  74:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   if (index0 == index1)
+ 226              		.loc 1 74 6 view .LVU66
+ 227 0042 B7EB5C1F 		cmp	r7, ip, lsr #5
+  73:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   int index1 = (pos + nbits - 1) / bitsperint;
+ 228              		.loc 1 73 34 view .LVU67
+ 229 0046 4FEA5C16 		lsr	r6, ip, #5
+ 230              	.LVL22:
+  74:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   if (index0 == index1)
+ 231              		.loc 1 74 3 is_stmt 1 view .LVU68
+ 232              	.LBB8:
+ 233              		.loc 1 76 14 is_stmt 0 view .LVU69
+ 234 004a 44EA0E04 		orr	r4, r4, lr
+ 235              	.LBE8:
+  74:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   if (index0 == index1)
+ 236              		.loc 1 74 6 view .LVU70
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 7
+
+
+ 237 004e 04D1     		bne	.L6
+ 238              	.LBB9:
+ 239              		.loc 1 76 5 is_stmt 1 view .LVU71
+ 240              	.LVL23:
+  77:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index0] = tmp;
+ 241              		.loc 1 77 5 view .LVU72
+ 242              		.loc 1 77 18 is_stmt 0 view .LVU73
+ 243 0050 40F82740 		str	r4, [r0, r7, lsl #2]
+ 244              	.LVL24:
+ 245              	.L5:
+ 246              		.loc 1 77 18 view .LVU74
+ 247              	.LBE9:
+  78:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+  79:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   else
+  80:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   {
+  81:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     unsigned int lshift = ((pos + nbits) % bitsperint);
+  82:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     uint32_t tmp = (bits[index0] & ~smask) | ((val & mask) << (pos % bitsperint));
+  83:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index0] = tmp;
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     tmp = (bits[index1] & ((1ULL << lshift) - 1)) | ((val & mask) >> (nbits - lshift));
+  85:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+  86:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+  87:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c **** }
+ 248              		.loc 1 87 1 view .LVU75
+ 249 0054 02B0     		add	sp, sp, #8
+ 250              		.cfi_remember_state
+ 251              		.cfi_def_cfa_offset 32
+ 252              	.LVL25:
+ 253              		.loc 1 87 1 view .LVU76
+ 254              		@ sp needed
+ 255 0056 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 256              	.LVL26:
+ 257              	.L6:
+ 258              		.cfi_restore_state
+ 259              	.LBB10:
+  81:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     uint32_t tmp = (bits[index0] & ~smask) | ((val & mask) << (pos % bitsperint));
+ 260              		.loc 1 81 5 is_stmt 1 view .LVU77
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+ 261              		.loc 1 84 25 is_stmt 0 view .LVU78
+ 262 005a 4FF0FF38 		mov	r8, #-1
+ 263 005e 4FF0FF39 		mov	r9, #-1
+  81:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     uint32_t tmp = (bits[index0] & ~smask) | ((val & mask) << (pos % bitsperint));
+ 264              		.loc 1 81 18 view .LVU79
+ 265 0062 01F01F05 		and	r5, r1, #31
+ 266              	.LVL27:
+  82:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index0] = tmp;
+ 267              		.loc 1 82 5 is_stmt 1 view .LVU80
+  83:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     tmp = (bits[index1] & ((1ULL << lshift) - 1)) | ((val & mask) >> (nbits - lshift));
+ 268              		.loc 1 83 5 view .LVU81
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+ 269              		.loc 1 84 25 is_stmt 0 view .LVU82
+ 270 0066 58EA0D59 		lsll	r8, r9, r5
+  83:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     tmp = (bits[index1] & ((1ULL << lshift) - 1)) | ((val & mask) >> (nbits - lshift));
+ 271              		.loc 1 83 18 view .LVU83
+ 272 006a 40F82740 		str	r4, [r0, r7, lsl #2]
+ 273              	.LVL28:
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+ 274              		.loc 1 84 5 is_stmt 1 view .LVU84
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 8
+
+
+  85:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ 275              		.loc 1 85 5 view .LVU85
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+ 276              		.loc 1 84 25 is_stmt 0 view .LVU86
+ 277 006e 50F82610 		ldr	r1, [r0, r6, lsl #2]
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+ 278              		.loc 1 84 77 view .LVU87
+ 279 0072 521B     		subs	r2, r2, r5
+ 280              	.LVL29:
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+ 281              		.loc 1 84 25 view .LVU88
+ 282 0074 21EA0801 		bic	r1, r1, r8
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+ 283              		.loc 1 84 67 view .LVU89
+ 284 0078 D340     		lsrs	r3, r3, r2
+ 285              	.LVL30:
+  84:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****     bits[index1] = tmp;
+ 286              		.loc 1 84 9 view .LVU90
+ 287 007a 1943     		orrs	r1, r1, r3
+  85:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ 288              		.loc 1 85 18 view .LVU91
+ 289 007c 40F82610 		str	r1, [r0, r6, lsl #2]
+ 290              	.LVL31:
+  85:../../Middlewares/stedgeai-lib/Npu/ll_aton/ll_aton_util.c ****   }
+ 291              		.loc 1 85 18 view .LVU92
+ 292              	.LBE10:
+ 293              		.loc 1 87 1 view .LVU93
+ 294 0080 E8E7     		b	.L5
+ 295              		.cfi_endproc
+ 296              	.LFE4:
+ 298              		.text
+ 299              	.Letext0:
+ 300              		.file 2 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 301              		.file 3 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ARM GAS  /tmp/claude-1000/ccWZhNx3.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ll_aton_util.c
+/tmp/claude-1000/ccWZhNx3.s:26     .text.LL_ATON_getbits:00000000 $t
+/tmp/claude-1000/ccWZhNx3.s:32     .text.LL_ATON_getbits:00000000 LL_ATON_getbits
+/tmp/claude-1000/ccWZhNx3.s:152    .text.LL_ATON_setbits:00000000 $t
+/tmp/claude-1000/ccWZhNx3.s:158    .text.LL_ATON_setbits:00000000 LL_ATON_setbits
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.stddef.h.39.3e0425629195acf083c9561151306b4d
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.features.h.33.3e67abe6fb64142d4f6fa9496796153c
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.newlib.h.7.f9f25f80f86429f653675286e7973cb9
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.assert.h.11.db24e541f16414db224bf986d21017e2
+                           .group:00000000 wm4.errno.h.2.ba016d646105af6cad23be83630b6a3f
+                           .group:00000000 wm4.errno.h.9.ae5ea2b0ff9ea6e39e585807e35200d3
+                           .group:00000000 wm4.ll_aton_util.h.34.9098eaa90d3d72b819973556e3e5fe44
+
+NO UNDEFINED SYMBOLS

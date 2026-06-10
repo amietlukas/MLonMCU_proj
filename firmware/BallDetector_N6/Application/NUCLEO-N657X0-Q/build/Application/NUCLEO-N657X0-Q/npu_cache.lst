@@ -1,0 +1,823 @@
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"npu_cache.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c"
+  25              		.section	.text.npu_cache_enable,"ax",%progbits
+  26              		.align	1
+  27              		.global	npu_cache_enable
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	npu_cache_enable:
+  33              	.LFB864:
+   1:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** /**
+   2:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   ******************************************************************************
+   3:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   * @file    npu_cache.c
+   4:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   * @brief   Implementation of NPU-cache-handling functions (CACHEAXI)
+   5:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   ******************************************************************************
+   6:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   * @attention
+   7:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   *
+   8:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   * Copyright (c) 2024 STMicroelectronics.
+   9:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   * All rights reserved.
+  10:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   *
+  11:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   * This software is licensed under terms that can be found in the LICENSE file
+  12:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   * in the root directory of this software component.
+  13:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   * If no LICENSE file comes with this software, it is provided AS-IS.
+  14:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   *
+  15:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   ******************************************************************************
+  16:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   */
+  17:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** #include <assert.h>
+  18:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  19:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** #include "npu_cache.h"
+  20:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  21:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** #define USE_HAL_DRIVER  // Define here to fix header issues, must clean projects using only stm32n6
+  22:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** #include "stm32n6xx.h"
+  23:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  24:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** #include "ll_aton_config.h"
+  25:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 2
+
+
+  26:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** #if (LL_ATON_PLATFORM != LL_ATON_PLAT_STM32N6)
+  27:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** #error "LL_ATON_PLATFORM should be equal to LL_ATON_PLAT_STM32N6"
+  28:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** #endif
+  29:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  30:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** static CACHEAXI_HandleTypeDef hcacheaxi_s;
+  31:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  32:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** static inline void npu_cache_init(void)
+  33:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+  34:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   if(hcacheaxi_s.Instance != CACHEAXI) {
+  35:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     hcacheaxi_s.Instance = CACHEAXI;
+  36:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_Init(&hcacheaxi_s);      // Side effect: cacheaxi should be enabled (but one shoul
+  37:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+  38:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+  39:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** static inline void npu_cache_deinit(void)
+  40:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+  41:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   if(hcacheaxi_s.Instance == CACHEAXI) {
+  42:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_DeInit(&hcacheaxi_s);
+  43:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     hcacheaxi_s.Instance = NULL;
+  44:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+  45:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+  46:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  47:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void npu_cache_enable(void)
+  48:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+  34              		.loc 1 48 1 view -0
+  35              		.cfi_startproc
+  36              		@ args = 0, pretend = 0, frame = 0
+  37              		@ frame_needed = 0, uses_anonymous_args = 0
+  49:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   HAL_StatusTypeDef status;
+  38              		.loc 1 49 3 view .LVU1
+  50:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   
+  51:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   npu_cache_init();
+  39              		.loc 1 51 3 view .LVU2
+  40              	.LBB4:
+  41              	.LBI4:
+  32:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+  42              		.loc 1 32 20 view .LVU3
+  43              	.LBB5:
+  34:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     hcacheaxi_s.Instance = CACHEAXI;
+  44              		.loc 1 34 3 view .LVU4
+  34:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     hcacheaxi_s.Instance = CACHEAXI;
+  45              		.loc 1 34 17 is_stmt 0 view .LVU5
+  46 0000 0748     		ldr	r0, .L6
+  34:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     hcacheaxi_s.Instance = CACHEAXI;
+  47              		.loc 1 34 5 view .LVU6
+  48 0002 084B     		ldr	r3, .L6+4
+  49 0004 0268     		ldr	r2, [r0]
+  50              	.LBE5:
+  51              	.LBE4:
+  48:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   HAL_StatusTypeDef status;
+  52              		.loc 1 48 1 view .LVU7
+  53 0006 10B5     		push	{r4, lr}
+  54              		.cfi_def_cfa_offset 8
+  55              		.cfi_offset 4, -8
+  56              		.cfi_offset 14, -4
+  57              	.LBB7:
+  58              	.LBB6:
+  34:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     hcacheaxi_s.Instance = CACHEAXI;
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 3
+
+
+  59              		.loc 1 34 5 view .LVU8
+  60 0008 9A42     		cmp	r2, r3
+  61 000a 02D0     		beq	.L2
+  35:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_Init(&hcacheaxi_s);      // Side effect: cacheaxi should be enabled (but one shoul
+  62              		.loc 1 35 5 is_stmt 1 view .LVU9
+  35:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_Init(&hcacheaxi_s);      // Side effect: cacheaxi should be enabled (but one shoul
+  63              		.loc 1 35 26 is_stmt 0 view .LVU10
+  64 000c 0360     		str	r3, [r0]
+  36:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+  65              		.loc 1 36 5 is_stmt 1 view .LVU11
+  66 000e FFF7FEFF 		bl	HAL_CACHEAXI_Init
+  67              	.LVL0:
+  68              	.L2:
+  69              	.LBE6:
+  70              	.LBE7:
+  52:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   // Enable is wrapped in a loop because most of times, the first call returns
+  53:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   //    HAL_BUSY, resulting in a cache not enabled.
+  54:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   do
+  55:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   {
+  56:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     status = HAL_CACHEAXI_Enable(&hcacheaxi_s);
+  71              		.loc 1 56 14 is_stmt 0 discriminator 1 view .LVU12
+  72 0012 034C     		ldr	r4, .L6
+  73              	.L3:
+  54:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   {
+  74              		.loc 1 54 3 is_stmt 1 discriminator 1 view .LVU13
+  75              		.loc 1 56 5 discriminator 1 view .LVU14
+  76              		.loc 1 56 14 is_stmt 0 discriminator 1 view .LVU15
+  77 0014 2046     		mov	r0, r4
+  78 0016 FFF7FEFF 		bl	HAL_CACHEAXI_Enable
+  79              	.LVL1:
+  57:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   } while (status == HAL_BUSY);
+  80              		.loc 1 57 19 is_stmt 1 discriminator 1 view .LVU16
+  81 001a 0228     		cmp	r0, #2
+  82 001c FAD0     		beq	.L3
+  58:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+  83              		.loc 1 58 1 is_stmt 0 view .LVU17
+  84 001e 10BD     		pop	{r4, pc}
+  85              	.L7:
+  86              		.align	2
+  87              	.L6:
+  88 0020 00000000 		.word	hcacheaxi_s
+  89 0024 00FC0D58 		.word	1477311488
+  90              		.cfi_endproc
+  91              	.LFE864:
+  93              		.section	.text.npu_cache_disable,"ax",%progbits
+  94              		.align	1
+  95              		.global	npu_cache_disable
+  96              		.syntax unified
+  97              		.thumb
+  98              		.thumb_func
+ 100              	npu_cache_disable:
+ 101              	.LFB865:
+  59:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  60:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void npu_cache_disable(void)
+  61:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+ 102              		.loc 1 61 1 is_stmt 1 view -0
+ 103              		.cfi_startproc
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 4
+
+
+ 104              		@ args = 0, pretend = 0, frame = 0
+ 105              		@ frame_needed = 0, uses_anonymous_args = 0
+  62:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   HAL_StatusTypeDef status;
+ 106              		.loc 1 62 3 view .LVU19
+  63:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   if(hcacheaxi_s.Instance == CACHEAXI) {
+ 107              		.loc 1 63 3 view .LVU20
+  61:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   HAL_StatusTypeDef status;
+ 108              		.loc 1 61 1 is_stmt 0 view .LVU21
+ 109 0000 38B5     		push	{r3, r4, r5, lr}
+ 110              		.cfi_def_cfa_offset 16
+ 111              		.cfi_offset 3, -16
+ 112              		.cfi_offset 4, -12
+ 113              		.cfi_offset 5, -8
+ 114              		.cfi_offset 14, -4
+ 115              		.loc 1 63 17 view .LVU22
+ 116 0002 094C     		ldr	r4, .L15
+ 117              		.loc 1 63 5 view .LVU23
+ 118 0004 094D     		ldr	r5, .L15+4
+ 119 0006 2368     		ldr	r3, [r4]
+ 120 0008 AB42     		cmp	r3, r5
+ 121 000a 0CD1     		bne	.L8
+ 122              	.L9:
+  64:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     do
+ 123              		.loc 1 64 5 is_stmt 1 discriminator 1 view .LVU24
+  65:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     {
+  66:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****       status = HAL_CACHEAXI_Disable(&hcacheaxi_s);
+ 124              		.loc 1 66 7 discriminator 1 view .LVU25
+ 125              		.loc 1 66 16 is_stmt 0 discriminator 1 view .LVU26
+ 126 000c 2046     		mov	r0, r4
+ 127 000e FFF7FEFF 		bl	HAL_CACHEAXI_Disable
+ 128              	.LVL2:
+  67:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     } while (status == HAL_BUSY);
+ 129              		.loc 1 67 21 is_stmt 1 discriminator 1 view .LVU27
+ 130 0012 0228     		cmp	r0, #2
+ 131 0014 FAD0     		beq	.L9
+  68:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     npu_cache_deinit();
+ 132              		.loc 1 68 5 view .LVU28
+ 133              	.LBB10:
+ 134              	.LBI10:
+  39:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+ 135              		.loc 1 39 20 view .LVU29
+ 136              	.LBB11:
+  41:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_DeInit(&hcacheaxi_s);
+ 137              		.loc 1 41 3 view .LVU30
+  41:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_DeInit(&hcacheaxi_s);
+ 138              		.loc 1 41 5 is_stmt 0 view .LVU31
+ 139 0016 2368     		ldr	r3, [r4]
+ 140 0018 AB42     		cmp	r3, r5
+ 141 001a 04D1     		bne	.L8
+  42:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     hcacheaxi_s.Instance = NULL;
+ 142              		.loc 1 42 5 is_stmt 1 view .LVU32
+ 143 001c 0248     		ldr	r0, .L15
+ 144              	.LVL3:
+  42:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     hcacheaxi_s.Instance = NULL;
+ 145              		.loc 1 42 5 is_stmt 0 view .LVU33
+ 146 001e FFF7FEFF 		bl	HAL_CACHEAXI_DeInit
+ 147              	.LVL4:
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 5
+
+
+  43:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+ 148              		.loc 1 43 5 is_stmt 1 view .LVU34
+  43:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+ 149              		.loc 1 43 26 is_stmt 0 view .LVU35
+ 150 0022 0023     		movs	r3, #0
+ 151 0024 2360     		str	r3, [r4]
+ 152              	.LVL5:
+ 153              	.L8:
+  43:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+ 154              		.loc 1 43 26 view .LVU36
+ 155              	.LBE11:
+ 156              	.LBE10:
+  69:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+  70:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ 157              		.loc 1 70 1 view .LVU37
+ 158 0026 38BD     		pop	{r3, r4, r5, pc}
+ 159              	.L16:
+ 160              		.align	2
+ 161              	.L15:
+ 162 0028 00000000 		.word	hcacheaxi_s
+ 163 002c 00FC0D58 		.word	1477311488
+ 164              		.cfi_endproc
+ 165              	.LFE865:
+ 167              		.section	.rodata.npu_cache_invalidate.str1.1,"aMS",%progbits,1
+ 168              	.LC0:
+ 169 0000 68636163 		.ascii	"hcacheaxi_s.Instance == CACHEAXI\000"
+ 169      68656178 
+ 169      695F732E 
+ 169      496E7374 
+ 169      616E6365 
+ 170              	.LC1:
+ 171 0021 2E2E2F2E 		.ascii	"../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6x"
+ 171      2E2F4D69 
+ 171      64646C65 
+ 171      77617265 
+ 171      732F7374 
+ 172 0054 782F6E70 		.ascii	"x/npu_cache.c\000"
+ 172      755F6361 
+ 172      6368652E 
+ 172      6300
+ 173              		.section	.text.npu_cache_invalidate,"ax",%progbits
+ 174              		.align	1
+ 175              		.global	npu_cache_invalidate
+ 176              		.syntax unified
+ 177              		.thumb
+ 178              		.thumb_func
+ 180              	npu_cache_invalidate:
+ 181              	.LFB866:
+  71:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  72:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void npu_cache_invalidate(void)
+  73:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+ 182              		.loc 1 73 1 is_stmt 1 view -0
+ 183              		.cfi_startproc
+ 184              		@ args = 0, pretend = 0, frame = 0
+ 185              		@ frame_needed = 0, uses_anonymous_args = 0
+  74:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   assert(hcacheaxi_s.Instance == CACHEAXI);
+ 186              		.loc 1 74 3 view .LVU39
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 6
+
+
+ 187 0000 0748     		ldr	r0, .L19
+  73:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   assert(hcacheaxi_s.Instance == CACHEAXI);
+ 188              		.loc 1 73 1 is_stmt 0 view .LVU40
+ 189 0002 08B5     		push	{r3, lr}
+ 190              		.cfi_def_cfa_offset 8
+ 191              		.cfi_offset 3, -8
+ 192              		.cfi_offset 14, -4
+ 193              		.loc 1 74 3 view .LVU41
+ 194 0004 0268     		ldr	r2, [r0]
+ 195 0006 074B     		ldr	r3, .L19+4
+ 196 0008 9A42     		cmp	r2, r3
+ 197 000a 05D0     		beq	.L18
+ 198              		.loc 1 74 3 discriminator 1 view .LVU42
+ 199 000c 4A21     		movs	r1, #74
+ 200 000e 064B     		ldr	r3, .L19+8
+ 201 0010 064A     		ldr	r2, .L19+12
+ 202 0012 0748     		ldr	r0, .L19+16
+ 203 0014 FFF7FEFF 		bl	__assert_func
+ 204              	.LVL6:
+ 205              	.L18:
+  75:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   if(hcacheaxi_s.Instance == CACHEAXI) {
+ 206              		.loc 1 75 3 is_stmt 1 view .LVU43
+  76:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_Invalidate(&hcacheaxi_s);	
+ 207              		.loc 1 76 5 view .LVU44
+  77:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+  78:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ 208              		.loc 1 78 1 is_stmt 0 view .LVU45
+ 209 0018 BDE80840 		pop	{r3, lr}
+ 210              		.cfi_restore 14
+ 211              		.cfi_restore 3
+ 212              		.cfi_def_cfa_offset 0
+  76:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_Invalidate(&hcacheaxi_s);	
+ 213              		.loc 1 76 5 view .LVU46
+ 214 001c FFF7FEBF 		b	HAL_CACHEAXI_Invalidate
+ 215              	.LVL7:
+ 216              	.L20:
+ 217              		.align	2
+ 218              	.L19:
+ 219 0020 00000000 		.word	hcacheaxi_s
+ 220 0024 00FC0D58 		.word	1477311488
+ 221 0028 00000000 		.word	.LC0
+ 222 002c 00000000 		.word	__func__.2
+ 223 0030 21000000 		.word	.LC1
+ 224              		.cfi_endproc
+ 225              	.LFE866:
+ 227              		.section	.text.npu_cache_clean_range,"ax",%progbits
+ 228              		.align	1
+ 229              		.global	npu_cache_clean_range
+ 230              		.syntax unified
+ 231              		.thumb
+ 232              		.thumb_func
+ 234              	npu_cache_clean_range:
+ 235              	.LVL8:
+ 236              	.LFB867:
+  79:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  80:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void npu_cache_clean_range(uint32_t start_addr, uint32_t end_addr)
+  81:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 7
+
+
+ 237              		.loc 1 81 1 is_stmt 1 view -0
+ 238              		.cfi_startproc
+ 239              		@ args = 0, pretend = 0, frame = 0
+ 240              		@ frame_needed = 0, uses_anonymous_args = 0
+  82:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   assert(hcacheaxi_s.Instance == CACHEAXI);
+ 241              		.loc 1 82 3 view .LVU48
+  81:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   assert(hcacheaxi_s.Instance == CACHEAXI);
+ 242              		.loc 1 81 1 is_stmt 0 view .LVU49
+ 243 0000 0346     		mov	r3, r0
+ 244              		.loc 1 82 3 view .LVU50
+ 245 0002 0A48     		ldr	r0, .L24
+ 246              	.LVL9:
+  81:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   assert(hcacheaxi_s.Instance == CACHEAXI);
+ 247              		.loc 1 81 1 view .LVU51
+ 248 0004 10B5     		push	{r4, lr}
+ 249              		.cfi_def_cfa_offset 8
+ 250              		.cfi_offset 4, -8
+ 251              		.cfi_offset 14, -4
+ 252              		.loc 1 82 3 view .LVU52
+ 253 0006 0A4A     		ldr	r2, .L24+4
+ 254 0008 0468     		ldr	r4, [r0]
+ 255 000a 9442     		cmp	r4, r2
+ 256 000c 05D0     		beq	.L22
+ 257              		.loc 1 82 3 discriminator 1 view .LVU53
+ 258 000e 5221     		movs	r1, #82
+ 259              	.LVL10:
+ 260              		.loc 1 82 3 discriminator 1 view .LVU54
+ 261 0010 084B     		ldr	r3, .L24+8
+ 262              	.LVL11:
+ 263              		.loc 1 82 3 discriminator 1 view .LVU55
+ 264 0012 094A     		ldr	r2, .L24+12
+ 265 0014 0948     		ldr	r0, .L24+16
+ 266 0016 FFF7FEFF 		bl	__assert_func
+ 267              	.LVL12:
+ 268              	.L22:
+  83:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   if(hcacheaxi_s.Instance == CACHEAXI) {
+ 269              		.loc 1 83 3 is_stmt 1 view .LVU56
+  84:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     if (start_addr >= end_addr) {  // prevent unpredictable case.
+ 270              		.loc 1 84 5 view .LVU57
+ 271              		.loc 1 84 8 is_stmt 0 view .LVU58
+ 272 001a 8B42     		cmp	r3, r1
+ 273 001c 05D2     		bcs	.L21
+  85:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****       return;
+  86:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     }
+  87:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_CleanByAddr(&hcacheaxi_s, (uint32_t*)start_addr, end_addr-start_addr);
+ 274              		.loc 1 87 5 is_stmt 1 view .LVU59
+  88:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+  89:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ 275              		.loc 1 89 1 is_stmt 0 view .LVU60
+ 276 001e BDE81040 		pop	{r4, lr}
+ 277              		.cfi_remember_state
+ 278              		.cfi_restore 14
+ 279              		.cfi_restore 4
+ 280              		.cfi_def_cfa_offset 0
+  87:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+ 281              		.loc 1 87 5 view .LVU61
+ 282 0022 CA1A     		subs	r2, r1, r3
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 8
+
+
+ 283 0024 1946     		mov	r1, r3
+ 284              	.LVL13:
+  87:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+ 285              		.loc 1 87 5 view .LVU62
+ 286 0026 FFF7FEBF 		b	HAL_CACHEAXI_CleanByAddr
+ 287              	.LVL14:
+ 288              	.L21:
+ 289              		.cfi_restore_state
+ 290              		.loc 1 89 1 view .LVU63
+ 291 002a 10BD     		pop	{r4, pc}
+ 292              	.L25:
+ 293              		.align	2
+ 294              	.L24:
+ 295 002c 00000000 		.word	hcacheaxi_s
+ 296 0030 00FC0D58 		.word	1477311488
+ 297 0034 00000000 		.word	.LC0
+ 298 0038 00000000 		.word	__func__.1
+ 299 003c 21000000 		.word	.LC1
+ 300              		.cfi_endproc
+ 301              	.LFE867:
+ 303              		.section	.text.npu_cache_clean_invalidate_range,"ax",%progbits
+ 304              		.align	1
+ 305              		.global	npu_cache_clean_invalidate_range
+ 306              		.syntax unified
+ 307              		.thumb
+ 308              		.thumb_func
+ 310              	npu_cache_clean_invalidate_range:
+ 311              	.LVL15:
+ 312              	.LFB868:
+  90:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+  91:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void npu_cache_clean_invalidate_range(uint32_t start_addr, uint32_t end_addr)
+  92:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+ 313              		.loc 1 92 1 is_stmt 1 view -0
+ 314              		.cfi_startproc
+ 315              		@ args = 0, pretend = 0, frame = 0
+ 316              		@ frame_needed = 0, uses_anonymous_args = 0
+  93:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   assert(hcacheaxi_s.Instance == CACHEAXI);
+ 317              		.loc 1 93 3 view .LVU65
+  92:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   assert(hcacheaxi_s.Instance == CACHEAXI);
+ 318              		.loc 1 92 1 is_stmt 0 view .LVU66
+ 319 0000 0346     		mov	r3, r0
+ 320              		.loc 1 93 3 view .LVU67
+ 321 0002 0A48     		ldr	r0, .L29
+ 322              	.LVL16:
+  92:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   assert(hcacheaxi_s.Instance == CACHEAXI);
+ 323              		.loc 1 92 1 view .LVU68
+ 324 0004 10B5     		push	{r4, lr}
+ 325              		.cfi_def_cfa_offset 8
+ 326              		.cfi_offset 4, -8
+ 327              		.cfi_offset 14, -4
+ 328              		.loc 1 93 3 view .LVU69
+ 329 0006 0A4A     		ldr	r2, .L29+4
+ 330 0008 0468     		ldr	r4, [r0]
+ 331 000a 9442     		cmp	r4, r2
+ 332 000c 05D0     		beq	.L27
+ 333              		.loc 1 93 3 discriminator 1 view .LVU70
+ 334 000e 5D21     		movs	r1, #93
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 9
+
+
+ 335              	.LVL17:
+ 336              		.loc 1 93 3 discriminator 1 view .LVU71
+ 337 0010 084B     		ldr	r3, .L29+8
+ 338              	.LVL18:
+ 339              		.loc 1 93 3 discriminator 1 view .LVU72
+ 340 0012 094A     		ldr	r2, .L29+12
+ 341 0014 0948     		ldr	r0, .L29+16
+ 342 0016 FFF7FEFF 		bl	__assert_func
+ 343              	.LVL19:
+ 344              	.L27:
+  94:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   if(hcacheaxi_s.Instance == CACHEAXI) {
+ 345              		.loc 1 94 3 is_stmt 1 view .LVU73
+  95:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     if (start_addr >= end_addr) {  // prevent unpredictable case.
+ 346              		.loc 1 95 5 view .LVU74
+ 347              		.loc 1 95 8 is_stmt 0 view .LVU75
+ 348 001a 8B42     		cmp	r3, r1
+ 349 001c 05D2     		bcs	.L26
+  96:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****       return;
+  97:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     }
+  98:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****     HAL_CACHEAXI_CleanInvalidByAddr(&hcacheaxi_s, (uint32_t*)start_addr, end_addr-start_addr);
+ 350              		.loc 1 98 5 is_stmt 1 view .LVU76
+  99:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+ 100:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ 351              		.loc 1 100 1 is_stmt 0 view .LVU77
+ 352 001e BDE81040 		pop	{r4, lr}
+ 353              		.cfi_remember_state
+ 354              		.cfi_restore 14
+ 355              		.cfi_restore 4
+ 356              		.cfi_def_cfa_offset 0
+  98:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+ 357              		.loc 1 98 5 view .LVU78
+ 358 0022 CA1A     		subs	r2, r1, r3
+ 359 0024 1946     		mov	r1, r3
+ 360              	.LVL20:
+  98:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   }
+ 361              		.loc 1 98 5 view .LVU79
+ 362 0026 FFF7FEBF 		b	HAL_CACHEAXI_CleanInvalidByAddr
+ 363              	.LVL21:
+ 364              	.L26:
+ 365              		.cfi_restore_state
+ 366              		.loc 1 100 1 view .LVU80
+ 367 002a 10BD     		pop	{r4, pc}
+ 368              	.L30:
+ 369              		.align	2
+ 370              	.L29:
+ 371 002c 00000000 		.word	hcacheaxi_s
+ 372 0030 00FC0D58 		.word	1477311488
+ 373 0034 00000000 		.word	.LC0
+ 374 0038 00000000 		.word	__func__.0
+ 375 003c 21000000 		.word	.LC1
+ 376              		.cfi_endproc
+ 377              	.LFE868:
+ 379              		.section	.text.npu_cache_enable_clocks_and_reset,"ax",%progbits
+ 380              		.align	1
+ 381              		.weak	npu_cache_enable_clocks_and_reset
+ 382              		.syntax unified
+ 383              		.thumb
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 10
+
+
+ 384              		.thumb_func
+ 386              	npu_cache_enable_clocks_and_reset:
+ 387              	.LFB871:
+ 101:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+ 102:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** /* 
+ 103:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   Weak functions called by HAL_CACHEAXI_Init/DeInit implementations 
+ 104:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** */
+ 105:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void HAL_CACHEAXI_MspInit(CACHEAXI_HandleTypeDef *hcacheaxi)
+ 106:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** {
+ 107:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   (void)hcacheaxi;
+ 108:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   npu_cache_enable_clocks_and_reset();
+ 109:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ 110:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+ 111:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void HAL_CACHEAXI_MspDeInit(CACHEAXI_HandleTypeDef *hcacheaxi){
+ 112:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   (void)hcacheaxi;
+ 113:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   npu_cache_disable_clocks_and_reset();
+ 114:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ 115:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+ 116:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** /*
+ 117:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   Exposed weak functions to be implemented by the user if needed:
+ 118:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   The CACHEAXI IP must be clocked and reset before use.
+ 119:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** */
+ 120:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** __weak void npu_cache_enable_clocks_and_reset(void){};
+ 388              		.loc 1 120 52 is_stmt 1 view -0
+ 389              		.cfi_startproc
+ 390              		@ args = 0, pretend = 0, frame = 0
+ 391              		@ frame_needed = 0, uses_anonymous_args = 0
+ 392              		@ link register save eliminated.
+ 393              		.loc 1 120 53 view .LVU82
+ 394 0000 7047     		bx	lr
+ 395              		.cfi_endproc
+ 396              	.LFE871:
+ 398              		.section	.text.HAL_CACHEAXI_MspInit,"ax",%progbits
+ 399              		.align	1
+ 400              		.global	HAL_CACHEAXI_MspInit
+ 401              		.syntax unified
+ 402              		.thumb
+ 403              		.thumb_func
+ 405              	HAL_CACHEAXI_MspInit:
+ 406              	.LVL22:
+ 407              	.LFB869:
+ 106:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   (void)hcacheaxi;
+ 408              		.loc 1 106 1 view -0
+ 409              		.cfi_startproc
+ 410              		@ args = 0, pretend = 0, frame = 0
+ 411              		@ frame_needed = 0, uses_anonymous_args = 0
+ 107:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   npu_cache_enable_clocks_and_reset();
+ 412              		.loc 1 107 3 view .LVU84
+ 108:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ 413              		.loc 1 108 3 view .LVU85
+ 106:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   (void)hcacheaxi;
+ 414              		.loc 1 106 1 is_stmt 0 view .LVU86
+ 415 0000 08B5     		push	{r3, lr}
+ 416              		.cfi_def_cfa_offset 8
+ 417              		.cfi_offset 3, -8
+ 418              		.cfi_offset 14, -4
+ 108:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 11
+
+
+ 419              		.loc 1 108 3 view .LVU87
+ 420 0002 FFF7FEFF 		bl	npu_cache_enable_clocks_and_reset
+ 421              	.LVL23:
+ 109:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** 
+ 422              		.loc 1 109 1 view .LVU88
+ 423 0006 08BD     		pop	{r3, pc}
+ 424              		.cfi_endproc
+ 425              	.LFE869:
+ 427              		.section	.text.npu_cache_disable_clocks_and_reset,"ax",%progbits
+ 428              		.align	1
+ 429              		.weak	npu_cache_disable_clocks_and_reset
+ 430              		.syntax unified
+ 431              		.thumb
+ 432              		.thumb_func
+ 434              	npu_cache_disable_clocks_and_reset:
+ 435              	.LFB874:
+ 436              		.cfi_startproc
+ 121:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** __weak void npu_cache_disable_clocks_and_reset(void){};...
+ 437              		.loc 1 121 13 is_stmt 1 view -0
+ 438              		@ args = 0, pretend = 0, frame = 0
+ 439              		@ frame_needed = 0, uses_anonymous_args = 0
+ 440              		@ link register save eliminated.
+ 441 0000 7047     		bx	lr
+ 442              		.cfi_endproc
+ 443              	.LFE874:
+ 445              		.section	.text.HAL_CACHEAXI_MspDeInit,"ax",%progbits
+ 446              		.align	1
+ 447              		.global	HAL_CACHEAXI_MspDeInit
+ 448              		.syntax unified
+ 449              		.thumb
+ 450              		.thumb_func
+ 452              	HAL_CACHEAXI_MspDeInit:
+ 453              	.LVL24:
+ 454              	.LFB870:
+ 111:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void HAL_CACHEAXI_MspDeInit(CACHEAXI_HandleTypeDef *hcacheaxi){
+ 455              		.loc 1 111 63 view -0
+ 456              		.cfi_startproc
+ 457              		@ args = 0, pretend = 0, frame = 0
+ 458              		@ frame_needed = 0, uses_anonymous_args = 0
+ 112:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   (void)hcacheaxi;
+ 459              		.loc 1 112 3 view .LVU91
+ 113:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   npu_cache_disable_clocks_and_reset();
+ 460              		.loc 1 113 3 view .LVU92
+ 111:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** void HAL_CACHEAXI_MspDeInit(CACHEAXI_HandleTypeDef *hcacheaxi){
+ 461              		.loc 1 111 63 is_stmt 0 view .LVU93
+ 462 0000 08B5     		push	{r3, lr}
+ 463              		.cfi_def_cfa_offset 8
+ 464              		.cfi_offset 3, -8
+ 465              		.cfi_offset 14, -4
+ 113:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c ****   npu_cache_disable_clocks_and_reset();
+ 466              		.loc 1 113 3 view .LVU94
+ 467 0002 FFF7FEFF 		bl	npu_cache_disable_clocks_and_reset
+ 468              	.LVL25:
+ 114:../../Middlewares/stedgeai-lib/Npu/Devices/STM32N6xx/npu_cache.c **** }
+ 469              		.loc 1 114 1 view .LVU95
+ 470 0006 08BD     		pop	{r3, pc}
+ 471              		.cfi_endproc
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 12
+
+
+ 472              	.LFE870:
+ 474              		.section	.rodata.__func__.0,"a"
+ 477              	__func__.0:
+ 478 0000 6E70755F 		.ascii	"npu_cache_clean_invalidate_range\000"
+ 478      63616368 
+ 478      655F636C 
+ 478      65616E5F 
+ 478      696E7661 
+ 479              		.section	.rodata.__func__.1,"a"
+ 482              	__func__.1:
+ 483 0000 6E70755F 		.ascii	"npu_cache_clean_range\000"
+ 483      63616368 
+ 483      655F636C 
+ 483      65616E5F 
+ 483      72616E67 
+ 484              		.section	.rodata.__func__.2,"a"
+ 487              	__func__.2:
+ 488 0000 6E70755F 		.ascii	"npu_cache_invalidate\000"
+ 488      63616368 
+ 488      655F696E 
+ 488      76616C69 
+ 488      64617465 
+ 489              		.section	.bss.hcacheaxi_s,"aw",%nobits
+ 490              		.align	2
+ 493              	hcacheaxi_s:
+ 494 0000 00000000 		.space	12
+ 494      00000000 
+ 494      00000000 
+ 495              		.text
+ 496              	.Letext0:
+ 497              		.file 2 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 498              		.file 3 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 499              		.file 4 "../../STM32Cube_FW_N6/Drivers/CMSIS/Device/ST/STM32N6xx/Include/stm32n657xx.h"
+ 500              		.file 5 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_def.h"
+ 501              		.file 6 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal_cacheaxi.h"
+ 502              		.file 7 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 13
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 npu_cache.c
+/tmp/claude-1000/ccRa49CP.s:26     .text.npu_cache_enable:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:32     .text.npu_cache_enable:00000000 npu_cache_enable
+/tmp/claude-1000/ccRa49CP.s:88     .text.npu_cache_enable:00000020 $d
+/tmp/claude-1000/ccRa49CP.s:493    .bss.hcacheaxi_s:00000000 hcacheaxi_s
+/tmp/claude-1000/ccRa49CP.s:94     .text.npu_cache_disable:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:100    .text.npu_cache_disable:00000000 npu_cache_disable
+/tmp/claude-1000/ccRa49CP.s:162    .text.npu_cache_disable:00000028 $d
+/tmp/claude-1000/ccRa49CP.s:174    .text.npu_cache_invalidate:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:180    .text.npu_cache_invalidate:00000000 npu_cache_invalidate
+/tmp/claude-1000/ccRa49CP.s:219    .text.npu_cache_invalidate:00000020 $d
+/tmp/claude-1000/ccRa49CP.s:487    .rodata.__func__.2:00000000 __func__.2
+/tmp/claude-1000/ccRa49CP.s:228    .text.npu_cache_clean_range:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:234    .text.npu_cache_clean_range:00000000 npu_cache_clean_range
+/tmp/claude-1000/ccRa49CP.s:295    .text.npu_cache_clean_range:0000002c $d
+/tmp/claude-1000/ccRa49CP.s:482    .rodata.__func__.1:00000000 __func__.1
+/tmp/claude-1000/ccRa49CP.s:304    .text.npu_cache_clean_invalidate_range:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:310    .text.npu_cache_clean_invalidate_range:00000000 npu_cache_clean_invalidate_range
+/tmp/claude-1000/ccRa49CP.s:371    .text.npu_cache_clean_invalidate_range:0000002c $d
+/tmp/claude-1000/ccRa49CP.s:477    .rodata.__func__.0:00000000 __func__.0
+/tmp/claude-1000/ccRa49CP.s:380    .text.npu_cache_enable_clocks_and_reset:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:386    .text.npu_cache_enable_clocks_and_reset:00000000 npu_cache_enable_clocks_and_reset
+/tmp/claude-1000/ccRa49CP.s:399    .text.HAL_CACHEAXI_MspInit:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:405    .text.HAL_CACHEAXI_MspInit:00000000 HAL_CACHEAXI_MspInit
+/tmp/claude-1000/ccRa49CP.s:428    .text.npu_cache_disable_clocks_and_reset:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:434    .text.npu_cache_disable_clocks_and_reset:00000000 npu_cache_disable_clocks_and_reset
+/tmp/claude-1000/ccRa49CP.s:446    .text.HAL_CACHEAXI_MspDeInit:00000000 $t
+/tmp/claude-1000/ccRa49CP.s:452    .text.HAL_CACHEAXI_MspDeInit:00000000 HAL_CACHEAXI_MspDeInit
+/tmp/claude-1000/ccRa49CP.s:490    .bss.hcacheaxi_s:00000000 $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.assert.h.11.db24e541f16414db224bf986d21017e2
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.stm32n6xx.h.34.c523a1ffdf274a69e8802892c6776332
+                           .group:00000000 wm4.stm32n657xx.h.26.acd272cb67318cc1a4791ce2f0720ca6
+                           .group:00000000 wm4.cmsis_version.h.30.d128735bf87720f7436b74fefeb5043c
+                           .group:00000000 wm4.core_cm55.h.67.25006a3ce7048d64bcddd2996d5fac93
+                           .group:00000000 wm4.arm_acle.h.28.ce8f475a5cc50333e54ae4adeb8c0298
+                           .group:00000000 wm4.cmsis_gcc.h.39.eba7438bc45fd1a6e6376b63ffe44436
+                           .group:00000000 wm4.cmsis_gcc_m.h.24.e590ec51aeda3a1242400351d73f5dce
+                           .group:00000000 wm4.core_cm55.h.213.0528f46a674315ef8d35c4477e230358
+                           .group:00000000 wm4.armv8m_mpu.h.24.bf28cc25bee30a7ff9d2f7a44a5e2230
+                           .group:00000000 wm4.armv8m_pmu.h.24.6ded195d2625055391fd378c0e1d2519
+                           .group:00000000 wm4.core_cm55.h.4477.396e822ef855bcfb932819ad48de1c4c
+                           .group:00000000 wm4.armv7m_cachel1.h.24.936dd92d6e204a8d0b17d5e4ea4a356e
+                           .group:00000000 wm4.stm32n657xx.h.575.78d331c417ec710388ced647138f735f
+                           .group:00000000 wm4.stm32n6xx.h.116.b4247d9785590e7c5ec9234ffb2153bf
+                           .group:00000000 wm4.stm32n6xx_hal_conf.h.21.a3ee9875a8d50695591dfaa6b0d72c91
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 14
+
+
+                           .group:00000000 wm4.stddef.h.39.3e0425629195acf083c9561151306b4d
+                           .group:00000000 wm4.arm_cmse.h.103.a0d15a79c4c9a67da8d5831704d7248e
+                           .group:00000000 wm4.stm32_hal_legacy.h.22.e62aae2fd3ae33360b6781c8a72e5b18
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.math.h.13.35ad80917fddb38312d53499dad31194
+                           .group:00000000 wm4.stm32n6xx_hal_def.h.63.3a8f01490e8852464e9fcb69092e9c75
+                           .group:00000000 wm4.stm32n6xx_ll_bus.h.38.2366a295ee4cdb04833997d3787fcd2d
+                           .group:00000000 wm4.stm32n6xx_ll_rcc.h.21.656bd5637db608589ad16ea57d39430c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.194.69b522b1afdf59a82d05a1f71efe03c7
+                           .group:00000000 wm4.stm32n6xx_hal_rcc_ex.h.21.cc6be0a7d168882a1a6f470236ba784c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.4361.4b490a4a19722e68c21f88cb8a774a30
+                           .group:00000000 wm4.stm32n6xx_hal_gpio.h.21.89d54af663b98eb8fc098192053f7eeb
+                           .group:00000000 wm4.stm32n6xx_hal_gpio_ex.h.22.f7e795fb05a69a19b87d946b47c8db8b
+                           .group:00000000 wm4.stm32n6xx_hal_rif.h.21.33f2c553a8a3fc14dca8c470b213ab19
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.21.61e48c5c2e8d25d22177834b232fe45c
+                           .group:00000000 wm4.stm32n6xx_hal_dma_ex.h.21.82f854ecdb6a463b06d0b4e5c217c368
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.1020.87e2180c009560b617c1f8208140c950
+                           .group:00000000 wm4.stm32n6xx_hal_cortex.h.21.f493623cc58f9454ab4eae41e395c5cc
+                           .group:00000000 wm4.stm32n6xx_hal_bsec.h.21.1ee89319140541f82434908b4267aa30
+                           .group:00000000 wm4.stm32n6xx_hal_dcmipp.h.21.e2b87dce83d7d722d696a597f6ac56bf
+                           .group:00000000 wm4.stm32n6xx_hal_dma2d.h.21.75c8d46cdbb72970123b3f34ae2043d7
+                           .group:00000000 wm4.stm32n6xx_hal_exti.h.21.e0efb23591051684dc14f1f2431c6aab
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.21.3f483626ff64c5bf027265bb2e1d1331
+                           .group:00000000 wm4.stm32n6xx_hal_i2c_ex.h.21.79e9196c22282cdaf6b4047893638c45
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.741.1084702632703acc669e4282b3043372
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.21.ae1eb09930e7e550e48e418ac5849e4d
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.1002.b13ede7fc94ed5ad1c6768a157d2149a
+                           .group:00000000 wm4.stm32n6xx_ll_usb.h.21.daaf86158046f2cf02166c495d637480
+                           .group:00000000 wm4.stm32n6xx_hal_pcd.h.155.27040aac6844effe2af8c180caf1dd2e
+                           .group:00000000 wm4.stm32n6xx_hal_pwr.h.21.cdb73e4869c3fed3fc84f901ec0e5f0a
+                           .group:00000000 wm4.stm32n6xx_hal_pwr_ex.h.21.1a673224a58b0c1e5fad8eeda6514208
+                           .group:00000000 wm4.stm32n6xx_hal_ramcfg.h.21.a62dfbb4d2c14e9a8c634a215e37bd3d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.21.9f810303326e2d91749800e9911f8e4d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.906.8ad9375f39dce09dc0a4db0025ee7a76
+                           .group:00000000 wm4.stm32n6xx_hal_tim.h.21.839dd2b2a70382fb2c44f8f293a84d5f
+                           .group:00000000 wm4.stm32n6xx_hal_tim_ex.h.21.e372d5ac63c13441211ea4ecbd353150
+                           .group:00000000 wm4.stm32n6xx_hal_uart.h.21.230f549bfa0d5ebfd77bfb311b2aca15
+                           .group:00000000 wm4.stm32n6xx_hal_uart_ex.h.21.a0d5511e1d0703b7b5278c8f5472b96d
+                           .group:00000000 wm4.stm32n6xx_hal_xspi.h.21.7fd922d3bdb871475cf18436a68935bb
+                           .group:00000000 wm4.stm32n6xx_hal_cacheaxi.h.21.7c3375b7903ec42376e4883320997f74
+                           .group:00000000 wm4.stm32n6xx_hal.h.81.e79d59262ba173c33cf1d69281830d15
+                           .group:00000000 wm4.ll_aton_config.h.20.6c93c36cdcfd4d0d33ea92e3d64119d1
+
+UNDEFINED SYMBOLS
+HAL_CACHEAXI_Init
+HAL_CACHEAXI_Enable
+HAL_CACHEAXI_Disable
+HAL_CACHEAXI_DeInit
+__assert_func
+HAL_CACHEAXI_Invalidate
+HAL_CACHEAXI_CleanByAddr
+ARM GAS  /tmp/claude-1000/ccRa49CP.s 			page 15
+
+
+HAL_CACHEAXI_CleanInvalidByAddr

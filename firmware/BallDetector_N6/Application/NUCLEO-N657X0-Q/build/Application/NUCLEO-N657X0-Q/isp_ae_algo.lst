@@ -1,0 +1,2672 @@
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"isp_ae_algo.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c"
+  25              		.section	.text.isp_ae_init,"ax",%progbits
+  26              		.align	1
+  27              		.global	isp_ae_init
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	isp_ae_init:
+  33              	.LVL0:
+  34              	.LFB865:
+   1:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /**
+   2:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  ******************************************************************************
+   3:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * @file    isp_ae_algo.c
+   4:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * @author  AIS Application Team
+   5:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * @brief   ISP AWB algorithm
+   6:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  ******************************************************************************
+   7:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * @attention
+   8:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  *
+   9:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * Copyright (c) 2025 STMicroelectronics.
+  10:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * All rights reserved.
+  11:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  *
+  12:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * This software is licensed under terms that can be found in the LICENSE file
+  13:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * in the root directory of this software component.
+  14:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  * If no LICENSE file comes with this software, it is provided AS-IS.
+  15:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  *
+  16:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  ******************************************************************************
+  17:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****  */
+  18:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  19:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /* Includes ------------------------------------------------------------------*/
+  20:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #include "isp_core.h"
+  21:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #include "isp_services.h"
+  22:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  23:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /* Private types -------------------------------------------------------------*/
+  24:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /* Private constants ---------------------------------------------------------*/
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 2
+
+
+  25:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_FINE_TOLERANCE                   5
+  26:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_FINE_TOLERANCE_LOW_LUX(target)   ((target) < 15 ? 8 : 10)
+  27:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_COARSE_TOLERANCE                 10
+  28:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_COARSE_TOLERANCE_LOW_LUX(target) ((target) < 15 ? 10 : 15)
+  29:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_TOLERANCE                        0.10  /* % */
+  30:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_TOLERANCE_LOW_LUX                0.15  /* % */
+  31:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  32:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_LOW_LUX_LIMIT                    50    /* lux */
+  33:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  34:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_EXPOSURE_COARSE_INCREMENT        500   /* us */
+  35:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_EXPOSURE_COARSE_DECREMENT        300   /* us */
+  36:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_EXPOSURE_FINE_INCREMENT          150   /* us */
+  37:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_EXPOSURE_FINE_DECREMENT          100   /* us */
+  38:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  39:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_GAIN_COARSE_INCREMENT            2000  /* mdB */
+  40:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_GAIN_COARSE_DECREMENT            1500  /* mdB */
+  41:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_GAIN_FINE_INCREMENT              500   /* mdB */
+  42:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_GAIN_FINE_DECREMENT              300   /* mdB */
+  43:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  44:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define AE_MAX_GAIN_INCREMENT               10000 /* mdB */
+  45:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /* Private macro -------------------------------------------------------------*/
+  46:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #ifndef MIN
+  47:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define MIN(a,b) ((a)<(b)?(a):(b))
+  48:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #endif
+  49:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  50:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #ifndef MAX
+  51:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #define MAX(a,b) ((a)>(b)?(a):(b))
+  52:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** #endif
+  53:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  54:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /* Private function prototypes -----------------------------------------------*/
+  55:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /* Private variables ---------------------------------------------------------*/
+  56:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** static ISP_IQParamTypeDef *IQParamConfig;
+  57:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** static ISP_SensorInfoTypeDef *pSensorInfo;
+  58:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** static uint32_t previous_lux = 0;
+  59:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  60:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /* Global variables ----------------------------------------------------------*/
+  61:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /* Private functions ---------------------------------------------------------*/
+  62:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /**
+  63:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @brief  isp_ae_init
+  64:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         This function initializes ISP parameters and sensor info
+  65:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         that will be used to process AE algorithm
+  66:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  hIsp:  ISP device handle. To cast in (ISP_HandleTypeDef *)
+  67:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @retval None
+  68:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   */
+  69:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** void isp_ae_init(ISP_HandleTypeDef *hIsp)
+  70:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** {
+  35              		.loc 1 70 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  71:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
+  39              		.loc 1 71 3 view .LVU1
+  70:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
+  40              		.loc 1 70 1 is_stmt 0 view .LVU2
+  41 0000 10B5     		push	{r4, lr}
+  42              		.cfi_def_cfa_offset 8
+  43              		.cfi_offset 4, -8
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 3
+
+
+  44              		.cfi_offset 14, -4
+  70:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
+  45              		.loc 1 70 1 view .LVU3
+  46 0002 0446     		mov	r4, r0
+  47              		.loc 1 71 19 view .LVU4
+  48 0004 FFF7FEFF 		bl	ISP_SVC_IQParam_Get
+  49              	.LVL1:
+  50              		.loc 1 71 17 view .LVU5
+  51 0008 024B     		ldr	r3, .L2
+  72:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   pSensorInfo = &hIsp->sensorInfo;
+  52              		.loc 1 72 17 view .LVU6
+  53 000a 4C34     		adds	r4, r4, #76
+  54              	.LVL2:
+  71:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   IQParamConfig = ISP_SVC_IQParam_Get(hIsp);
+  55              		.loc 1 71 17 view .LVU7
+  56 000c 1860     		str	r0, [r3]
+  57              		.loc 1 72 3 is_stmt 1 view .LVU8
+  58              		.loc 1 72 15 is_stmt 0 view .LVU9
+  59 000e 024B     		ldr	r3, .L2+4
+  60 0010 1C60     		str	r4, [r3]
+  73:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** }
+  61              		.loc 1 73 1 view .LVU10
+  62 0012 10BD     		pop	{r4, pc}
+  63              	.LVL3:
+  64              	.L3:
+  65              		.loc 1 73 1 view .LVU11
+  66              		.align	2
+  67              	.L2:
+  68 0014 00000000 		.word	IQParamConfig
+  69 0018 00000000 		.word	pSensorInfo
+  70              		.cfi_endproc
+  71              	.LFE865:
+  73              		.section	.text.isp_ae_get_new_exposure,"ax",%progbits
+  74              		.align	1
+  75              		.global	isp_ae_get_new_exposure
+  76              		.syntax unified
+  77              		.thumb
+  78              		.thumb_func
+  80              	isp_ae_get_new_exposure:
+  81              	.LVL4:
+  82              	.LFB868:
+  74:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  75:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /**
+  76:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @brief  isp_ae_compute_antiflcker
+  77:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         ONLY USEFUL WHEN WHEN ANTI-FLICKER IS ACTIVATED
+  78:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         Otherwise exposure time and gain are unchanged
+  79:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         This function will compute an exposure time that eliminates the flickering effect
+  80:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         and compensates with gain to still achieve the desired brightness
+  81:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  gain             : current sensor gain value (mdB)
+  82:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  exposure         : current sensor exposure time value (us)
+  83:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  adjusted_gain    : pointer to the new exposure time value (us)
+  84:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  adjusted_exposure: pointer to the new sensor gain value (mdB)
+  85:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @retval None
+  86:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   */
+  87:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** static void isp_ae_compute_antiflcker(uint32_t gain, uint32_t exposure,
+  88:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****                                       uint32_t *adjusted_gain, uint32_t *adjusted_exposure)
+  89:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** {
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 4
+
+
+  90:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* Get equivalent gain/exposure where exposure is a multiple of the flickering period */
+  91:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   float compensation_gain;
+  92:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t compensation_gain_mdb, compat_period_us;
+  93:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t up_equiv_exposure;
+  94:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+  95:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (IQParamConfig->AECAlgo.antiFlickerFreq == 0)
+  96:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+  97:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_gain = gain;
+  98:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_exposure = exposure;
+  99:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     return;
+ 100:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 101:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 102:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   compat_period_us = 1000U * 1000U / (2U * IQParamConfig->AECAlgo.antiFlickerFreq);
+ 103:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   up_equiv_exposure = (1 + exposure / compat_period_us) * compat_period_us;
+ 104:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if ((exposure > compat_period_us) && (exposure < 0.95 * up_equiv_exposure))
+ 105:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 106:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Make exposure a multiple of the flickering period in case exposure is higher than the
+ 107:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****        flickering period and we are 5% under a multiple value */
+ 108:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_exposure = (exposure / compat_period_us) * compat_period_us;
+ 109:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 110:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Increase the gain accordingly */
+ 111:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain = (float)exposure / (float)(*adjusted_exposure + 1);
+ 112:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain_mdb = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 113:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_gain = gain + compensation_gain_mdb;
+ 114:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (*adjusted_gain > pSensorInfo->gain_max)
+ 115:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 116:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *adjusted_gain = pSensorInfo->gain_max;
+ 117:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 118:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 119:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   else
+ 120:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 121:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Keep the initial values in case:
+ 122:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****        - We cannot update the exposure because the values are under the flickering period (will fli
+ 123:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****        - Or we are close to the upper multiple value (the acceptance criteria is set to 95% of the
+ 124:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****          multiple value to ensure no flickering effect will be visible) */
+ 125:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_gain = gain;
+ 126:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_exposure = exposure;
+ 127:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 128:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** }
+ 129:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 130:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /**
+ 131:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @brief  isp_ae_reverse_antiflicker
+ 132:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         ONLY USEFUL WHEN ANTI-FLICKER IS ACTIVATED
+ 133:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         Otherwise exposure time and gain are unchanged
+ 134:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         This function computes the original exposure time and gain values
+ 135:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         from the adjusted values used to eliminate flickering and maintain brightness.
+ 136:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  gain             : current sensor gain value (mdB)
+ 137:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  exposure         : current sensor exposure time value (us)
+ 138:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  original_gain    : pointer to the new exposure time value (us)
+ 139:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  original_exposure: pointer to the new sensor gain value (mdB)
+ 140:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @retval None
+ 141:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   */
+ 142:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** static void isp_ae_reverse_antiflicker(uint32_t gain, uint32_t exposure,
+ 143:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****                                        uint32_t *original_gain, uint32_t *original_exposure)
+ 144:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** {
+ 145:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* Get equivalent gain/exposure where exposure has a maximum value (reverse processing of the abo
+ 146:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   float compensation_gain;
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 5
+
+
+ 147:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t global_exposure;
+ 148:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 149:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* Compute adjusted_gain and exposure in any case even if antiflicker is disabled
+ 150:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****    * This way, in case there is no light condition change, previous adjustment for antiflicker
+ 151:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****    * will be removed */
+ 152:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   global_exposure = (uint32_t)(exposure * pow(10, (float)gain / (20 * 1000)));
+ 154:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 155:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 156:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_gain = 0;
+ 157:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_exposure = global_exposure;
+ 158:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Fix rounding error when close to max value */
+ 159:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (*original_exposure > 0.98 * pSensorInfo->exposure_max)
+ 160:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 161:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *original_exposure = pSensorInfo->exposure_max;
+ 162:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 163:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 164:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   else
+ 165:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 166:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Set exposure to max, and compute the compensation gain */
+ 167:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_exposure = pSensorInfo->exposure_max;
+ 168:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Increase the gain accordingly */
+ 169:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain = (float)global_exposure / (float)*original_exposure;
+ 170:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_gain = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 171:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 172:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** }
+ 173:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 174:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** /**
+ 175:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @brief  isp_ae_get_new_exposure
+ 176:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         This function computes the new sensor exposure to be applied
+ 177:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         for a given lux and a given luminance target
+ 178:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         This function is implemented in accordance with the exposure estimation
+ 179:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         principles based on the estimated lux value of the current scene.
+ 180:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         There are 3 models of new sensor exposure estimation used in this AE algorithm:
+ 181:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         - Estimation 1 is used for values above 𝐿𝑢𝑥𝑅𝑒𝑓_𝐻𝐿
+ 182:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         - Estimation 2 is used for values below 𝐿𝑢𝑥𝑅𝑒𝑓_𝐻𝐿 and above �
+ 183:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         - Estimation 3 is used for values from 0 to 𝑐𝑢𝑠𝑡𝑜𝑚_𝑙𝑜𝑤_𝑙�
+ 184:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *           𝑐𝑢𝑠𝑡𝑜𝑚_𝑙𝑜𝑤_𝑙𝑢𝑥_𝑙𝑖𝑚𝑖𝑡 should be set
+ 185:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *           𝑎_𝐿𝐿×𝑙𝑢𝑚_𝑡𝑎𝑟𝑔𝑒𝑡×𝑐𝑎𝑙𝑖𝑏𝐹𝑎�
+ 186:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         Two types of convergence are targeted:
+ 187:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         - COARSE CONVERGENCE: in the 1st iteration, the exposure calculation brings
+ 188:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *           the luminance value close to the target
+ 189:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *         - FINE CONVERGENCE: in the following iteration,  if fine convergence has not been
+ 190:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *           achieved yet with the previous calculation, small increments are applied to
+ 191:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *           reach high accuracy.
+ 192:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  lux      : current lux value of the captured scene
+ 193:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  averageL : current average luminance statistic
+ 194:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  pExposure: pointer to the new exposure time value (us)
+ 195:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  pGain    : pointer to the new sensor gain value (mdB)
+ 196:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  exposure : current sensor exposure time value (us)
+ 197:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @param  gain     : current sensor gain value (mdB)
+ 198:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   * @retval None
+ 199:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   */
+ 200:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** void isp_ae_get_new_exposure(uint32_t lux, uint32_t averageL, uint32_t *pExposure, uint32_t *pGain,
+ 201:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** {
+  83              		.loc 1 201 1 is_stmt 1 view -0
+  84              		.cfi_startproc
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 6
+
+
+  85              		@ args = 8, pretend = 0, frame = 32
+  86              		@ frame_needed = 0, uses_anonymous_args = 0
+  87              		.loc 1 201 1 is_stmt 0 view .LVU13
+  88 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  89              		.cfi_def_cfa_offset 36
+  90              		.cfi_offset 4, -36
+  91              		.cfi_offset 5, -32
+  92              		.cfi_offset 6, -28
+  93              		.cfi_offset 7, -24
+  94              		.cfi_offset 8, -20
+  95              		.cfi_offset 9, -16
+  96              		.cfi_offset 10, -12
+  97              		.cfi_offset 11, -8
+  98              		.cfi_offset 14, -4
+  99 0004 2DED108B 		vpush.64	{d8, d9, d10, d11, d12, d13, d14, d15}
+ 100              		.cfi_def_cfa_offset 100
+ 101              		.cfi_offset 80, -100
+ 102              		.cfi_offset 81, -96
+ 103              		.cfi_offset 82, -92
+ 104              		.cfi_offset 83, -88
+ 105              		.cfi_offset 84, -84
+ 106              		.cfi_offset 85, -80
+ 107              		.cfi_offset 86, -76
+ 108              		.cfi_offset 87, -72
+ 109              		.cfi_offset 88, -68
+ 110              		.cfi_offset 89, -64
+ 111              		.cfi_offset 90, -60
+ 112              		.cfi_offset 91, -56
+ 113              		.cfi_offset 92, -52
+ 114              		.cfi_offset 93, -48
+ 115              		.cfi_offset 94, -44
+ 116              		.cfi_offset 95, -40
+ 117 0008 89B0     		sub	sp, sp, #36
+ 118              		.cfi_def_cfa_offset 136
+ 202:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double a, b, c, d;
+ 203:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double cur_global_exposure = exposure * pow(10, (double)gain / 20000);
+ 119              		.loc 1 203 41 view .LVU14
+ 120 000a DDED227A 		vldr.32	s15, [sp, #136]	@ int
+ 121 000e B8EE67BB 		vcvt.f64.u32	d11, s15
+ 122              		.loc 1 203 51 view .LVU15
+ 123 0012 DDED237A 		vldr.32	s15, [sp, #140]	@ int
+ 124              		.loc 1 203 43 view .LVU16
+ 125 0016 9FED88EB 		vldr.64	d14, .L146
+ 126              		.loc 1 203 51 view .LVU17
+ 127 001a B8EE67FB 		vcvt.f64.u32	d15, s15
+ 201:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double a, b, c, d;
+ 128              		.loc 1 201 1 view .LVU18
+ 129 001e 09EE101A 		vmov	s18, r1	@ int
+ 130              		.loc 1 203 43 view .LVU19
+ 131 0022 8FEE0E1B 		vdiv.f64	d1, d15, d14
+ 132 0026 B2EE040B 		vmov.f64	d0, #1.0e+1
+ 201:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double a, b, c, d;
+ 133              		.loc 1 201 1 view .LVU20
+ 134 002a 1C46     		mov	r4, r3
+ 202:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double a, b, c, d;
+ 135              		.loc 1 202 3 is_stmt 1 view .LVU21
+ 136              		.loc 1 203 3 view .LVU22
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 7
+
+
+ 201:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double a, b, c, d;
+ 137              		.loc 1 201 1 is_stmt 0 view .LVU23
+ 138 002c 0646     		mov	r6, r0
+ 139 002e 9046     		mov	r8, r2
+ 140              		.loc 1 203 43 view .LVU24
+ 141 0030 FFF7FEFF 		bl	pow
+ 142              	.LVL5:
+ 204:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double new_global_exposure;
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t custom_low_lux_limit = ((uint32_t)(((double)IQParamConfig->AECAlgo.exposureTarget * IQPa
+ 143              		.loc 1 205 69 view .LVU25
+ 144 0034 884B     		ldr	r3, .L146+32
+ 203:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double new_global_exposure;
+ 145              		.loc 1 203 10 view .LVU26
+ 146 0036 2BEE008B 		vmul.f64	d8, d11, d0
+ 147              	.LVL6:
+ 204:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   double new_global_exposure;
+ 148              		.loc 1 204 3 is_stmt 1 view .LVU27
+ 149              		.loc 1 205 3 view .LVU28
+ 150              		.loc 1 205 69 is_stmt 0 view .LVU29
+ 151 003a 1F68     		ldr	r7, [r3]
+ 206:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 152              		.loc 1 206 74 view .LVU30
+ 153 003c 97F88432 		ldrb	r3, [r7, #644]	@ zero_extendqisi2
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 154              		.loc 1 205 78 view .LVU31
+ 155 0040 D7F86C90 		ldr	r9, [r7, #108]
+ 156              		.loc 1 206 74 view .LVU32
+ 157 0044 0CEE903A 		vmov	s25, r3	@ int
+ 207:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.LL_Expo2 / IQParamConfig->luxRef.LL_Lum2) /
+ 158              		.loc 1 207 74 view .LVU33
+ 159 0048 97F88C32 		ldrb	r3, [r7, #652]	@ zero_extendqisi2
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 160              		.loc 1 205 48 view .LVU34
+ 161 004c 07EE909A 		vmov	s15, r9	@ int
+ 162              		.loc 1 207 74 view .LVU35
+ 163 0050 0093     		str	r3, [sp]
+ 208:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 - IQParamConfig->luxRef.LL_Expo2))) / AE_LOW_LUX_
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t custom_high_lux_limit = ((uint32_t)(((double)IQParamConfig->AECAlgo.exposureTarget * IQP
+ 210:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 164              		.loc 1 210 41 view .LVU36
+ 165 0052 D7E99AB3 		ldrd	fp, r3, [r7, #616]
+ 166 0056 0293     		str	r3, [sp, #8]
+ 167              		.loc 1 210 74 view .LVU37
+ 168 0058 97F87032 		ldrb	r3, [r7, #624]	@ zero_extendqisi2
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 169              		.loc 1 205 48 view .LVU38
+ 170 005c B8EE67AB 		vcvt.f64.u32	d10, s15
+ 171              		.loc 1 210 74 view .LVU39
+ 172 0060 0593     		str	r3, [sp, #20]
+ 211:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2) /
+ 173              		.loc 1 211 41 view .LVU40
+ 174 0062 D7F87432 		ldr	r3, [r7, #628]
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 175              		.loc 1 205 117 view .LVU41
+ 176 0066 97EDA4CA 		vldr.32	s24, [r7, #656]
+ 177              		.loc 1 211 41 view .LVU42
+ 178 006a 0693     		str	r3, [sp, #24]
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 8
+
+
+ 179              		.loc 1 211 74 view .LVU43
+ 180 006c 97F87832 		ldrb	r3, [r7, #632]	@ zero_extendqisi2
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 181              		.loc 1 205 154 view .LVU44
+ 182 0070 D7ED9FDA 		vldr.32	s27, [r7, #636]	@ int
+ 183              		.loc 1 211 74 view .LVU45
+ 184 0074 0793     		str	r3, [sp, #28]
+ 212:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 - IQParamConfig->luxRef.HL_Expo2))) / AE_LOW_LUX_
+ 213:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t curExposure, curGain;
+ 214:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 215:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /**** Handle start conditions ****/
+ 216:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* This code aims to slightly deviate from the camera's minimum exposure settings
+ 217:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****    * in order to capture enough light and make a first non-zero estimate of lux */
+ 218:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (averageL <= 5 && exposure == pSensorInfo->exposure_min && gain == pSensorInfo->gain_min)
+ 185              		.loc 1 218 47 view .LVU46
+ 186 0076 794B     		ldr	r3, .L146+36
+ 206:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.LL_Expo2 / IQParamConfig->luxRef.LL_Lum2) /
+ 187              		.loc 1 206 41 view .LVU47
+ 188 0078 97EDA0DA 		vldr.32	s26, [r7, #640]	@ int
+ 189              		.loc 1 218 47 view .LVU48
+ 190 007c 1D68     		ldr	r5, [r3]
+ 191              		.loc 1 218 6 view .LVU49
+ 192 007e 19EE103A 		vmov	r3, s18	@ int
+ 193 0082 052B     		cmp	r3, #5
+ 207:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 - IQParamConfig->luxRef.LL_Expo2))) / AE_LOW_LUX_
+ 194              		.loc 1 207 41 view .LVU50
+ 195 0084 D7EDA29A 		vldr.32	s19, [r7, #648]	@ int
+ 196              	.LVL7:
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 197              		.loc 1 209 3 is_stmt 1 view .LVU51
+ 213:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 198              		.loc 1 213 3 view .LVU52
+ 199              		.loc 1 218 3 view .LVU53
+ 200              		.loc 1 218 6 is_stmt 0 view .LVU54
+ 201 0088 5BD8     		bhi	.L5
+ 202              		.loc 1 218 21 discriminator 1 view .LVU55
+ 203 008a AB6B     		ldr	r3, [r5, #56]
+ 204 008c 229A     		ldr	r2, [sp, #136]
+ 205 008e 9342     		cmp	r3, r2
+ 206 0090 57D1     		bne	.L5
+ 207              		.loc 1 218 62 discriminator 2 view .LVU56
+ 208 0092 EA6A     		ldr	r2, [r5, #44]
+ 209 0094 2399     		ldr	r1, [sp, #140]
+ 210 0096 8A42     		cmp	r2, r1
+ 211 0098 53D1     		bne	.L5
+ 219:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 220:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     new_global_exposure = gain ? exposure * pow(10, ((double)gain + 3000) / 20000) : exposure + 200
+ 212              		.loc 1 220 5 is_stmt 1 view .LVU57
+ 213              		.loc 1 220 84 is_stmt 0 view .LVU58
+ 214 009a 62B3     		cbz	r2, .L6
+ 215              		.loc 1 220 67 discriminator 1 view .LVU59
+ 216 009c 9FED681B 		vldr.64	d1, .L146+8
+ 217 00a0 3FEE011B 		vadd.f64	d1, d15, d1
+ 218              		.loc 1 220 45 discriminator 1 view .LVU60
+ 219 00a4 B2EE040B 		vmov.f64	d0, #1.0e+1
+ 220 00a8 81EE0E1B 		vdiv.f64	d1, d1, d14
+ 221 00ac FFF7FEFF 		bl	pow
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 9
+
+
+ 222              	.LVL8:
+ 223              		.loc 1 220 84 discriminator 1 view .LVU61
+ 224 00b0 2BEE000B 		vmul.f64	d0, d11, d0
+ 225              	.L7:
+ 226              	.LVL9:
+ 221:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (new_global_exposure <= pSensorInfo->exposure_max)
+ 227              		.loc 1 221 5 is_stmt 1 discriminator 4 view .LVU62
+ 228              		.loc 1 221 43 is_stmt 0 discriminator 4 view .LVU63
+ 229 00b4 EB6B     		ldr	r3, [r5, #60]
+ 230              		.loc 1 221 29 discriminator 4 view .LVU64
+ 231 00b6 07EE903A 		vmov	s15, r3	@ int
+ 232 00ba B8EE677B 		vcvt.f64.u32	d7, s15
+ 233              		.loc 1 221 8 discriminator 4 view .LVU65
+ 234 00be B4EEC07B 		vcmpe.f64	d7, d0
+ 235 00c2 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 236 00c6 1DDB     		blt	.L133
+ 222:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 223:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = 0;
+ 237              		.loc 1 223 7 is_stmt 1 view .LVU66
+ 238              		.loc 1 223 14 is_stmt 0 view .LVU67
+ 239 00c8 0023     		movs	r3, #0
+ 240 00ca 2360     		str	r3, [r4]
+ 224:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pExposure = (new_global_exposure < pSensorInfo->exposure_min) ? pSensorInfo->exposure_min : 
+ 241              		.loc 1 224 7 is_stmt 1 view .LVU68
+ 242              		.loc 1 224 54 is_stmt 0 view .LVU69
+ 243 00cc AB6B     		ldr	r3, [r5, #56]
+ 244              		.loc 1 224 41 view .LVU70
+ 245 00ce 07EE903A 		vmov	s15, r3	@ int
+ 246 00d2 B8EE677B 		vcvt.f64.u32	d7, s15
+ 247              		.loc 1 224 98 view .LVU71
+ 248 00d6 B4EEC07B 		vcmpe.f64	d7, d0
+ 249 00da F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 250 00de DCBF     		itt	le
+ 251 00e0 FCEEC07B 		vcvtle.u32.f64	s15, d0
+ 252 00e4 17EE903A 		vmovle	r3, s15	@ int
+ 253              		.loc 1 224 18 view .LVU72
+ 254 00e8 C8F80030 		str	r3, [r8]
+ 255              	.LVL10:
+ 256              	.L4:
+ 225:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 226:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     else
+ 227:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 228:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pExposure = pSensorInfo->exposure_max;
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (uint32_t)(20 * 1000 * log10((float)new_global_exposure / (float)(*pExposure)));
+ 230:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 231:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 232:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     return;
+ 233:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 234:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 235:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /**** Get equivalent sensor gain/exposure where exposure is at its max possible value ****/
+ 236:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* ONLY USEFUL WHEN WHEN ANTI-FLICKER IS ACTIVATED
+ 237:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****    * In case, sensor exposure time has been compensated by sensor gain for anti-flicker,
+ 238:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****    * calculate the value that would be applied without anti-flicker activated */
+ 239:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   isp_ae_reverse_antiflicker(gain, exposure, &curGain, &curExposure);
+ 240:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 241:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /**** Check if coarse convergence is reached ****/
+ 242:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* Tolerance for coarse convergence is different in case we are in very low lux conditions (sligh
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 10
+
+
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (((lux > AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposur
+ 244:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 245:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 246:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /**** COARSE CONVERGENCE not reached ****/
+ 247:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* The AE algorithm process intends to calculate the sensor exposure needed to approach the lum
+ 248:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 249:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /**** Select the estimation model to apply according to the lux value ****/
+ 250:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if ((lux <= IQParamConfig->luxRef.HL_LuxRef) || (lux <= custom_high_lux_limit))
+ 251:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 252:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** Apply ESTIMATION 2 model below 𝐿𝑢𝑥𝑅𝑒𝑓_𝐻𝐿 ****/
+ 253:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Calculate a and b with the low lux references to improve precision when lux is under HL_Lu
+ 254:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       a = (IQParamConfig->luxRef.LL_LuxRef *
+ 255:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 256:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.LL_Expo2 / IQParamConfig->luxRef.LL_Lum2)) /
+ 257:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 - IQParamConfig->luxRef.LL_Expo2);
+ 258:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 259:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       b = (IQParamConfig->luxRef.LL_LuxRef * (double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig
+ 260:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.LL_Expo1);
+ 261:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 262:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     else
+ 263:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 264:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** Apply ESTIMATION 1 model above 𝐿𝑢𝑥𝑅𝑒𝑓_𝐻𝐿 ****/
+ 265:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Calculate a and b with the high lux references for higher lux conditions*/
+ 266:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       a = (IQParamConfig->luxRef.HL_LuxRef *
+ 267:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 268:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2)) /
+ 269:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 - IQParamConfig->luxRef.HL_Expo2);
+ 270:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 271:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       b = (IQParamConfig->luxRef.HL_LuxRef * (double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig
+ 272:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.HL_Expo1);
+ 273:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 274:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 275:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (lux <= custom_low_lux_limit)
+ 276:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 277:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** Switch to ESTIMATION 3 model below 𝑐𝑢𝑠𝑡𝑜𝑚_𝑙𝑜𝑤_𝑙𝑢𝑥_�
+ 278:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Calculate coefficient for very low lux model as we reach the limit of the previous one */
+ 279:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       d = pSensorInfo->exposure_max * pow(10, (double)pSensorInfo->again_max / 20000);
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       c = ((b / (((double)custom_low_lux_limit / ((double)IQParamConfig->AECAlgo.exposureTarget * I
+ 281:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 282:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Compute new global exposure to apply in ESTIMATION 3 model*/
+ 283:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       new_global_exposure = (c * (double)lux) + d;
+ 284:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 285:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     else
+ 286:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 287:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** Process ESTIMATION 1 or 2 model ****/
+ 288:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Compute new global exposure to apply in ESTIMATION 1 or 2 model*/
+ 289:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Else apply previous estimation model with a and b coefficients */
+ 290:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       new_global_exposure = b / (((double)lux / ((double)IQParamConfig->AECAlgo.exposureTarget * IQ
+ 291:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 292:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 293:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /**** Check validity of new global exposure ****/
+ 294:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Check the different cases:
+ 295:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****      * - CASE 1: when averageL is under the target, the exposure is supposed to be increased
+ 296:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****      * - CASE 2: when averageL is above the target, the exposure is supposed to be decreased
+ 297:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****      * If the new exposure is not valid, then we switch to a standard incremental method,
+ 298:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****      * using the averageL statistic as a parameter to calculate the new exposure.
+ 299:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****      * This will ensure that the target will be reach in any case.
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 11
+
+
+ 300:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****      * */
+ 301:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (averageL < IQParamConfig->AECAlgo.exposureTarget)
+ 302:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 303:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** CASE 1 ****/
+ 304:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Exposure should be increased */
+ 305:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       if (new_global_exposure <= cur_global_exposure)
+ 306:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 307:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         /* Wrong estimation, to be corrected */
+ 308:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         new_global_exposure = -1; // reset to -1
+ 309:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 310:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         /* Same lux estimation but previous setting did not allow convergence, so we need to change
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         if ((abs((int32_t)lux - (int32_t)previous_lux) <= (float)lux * 0.05) && (lux != 0))
+ 312:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 313:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           /* Use the luminance information for readjustment */
+ 314:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           new_global_exposure = cur_global_exposure * ((double)IQParamConfig->AECAlgo.exposureTarge
+ 315:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 316:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 317:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         if (new_global_exposure <= 0)
+ 318:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 319:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           /* Increase exposure with small increment to get closer to target */
+ 320:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           if (cur_global_exposure <= pSensorInfo->exposure_max)
+ 321:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           {
+ 322:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             new_global_exposure = averageL ? cur_global_exposure * (double)IQParamConfig->AECAlgo.e
+ 323:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 324:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           else
+ 325:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           {
+ 326:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             new_global_exposure = pSensorInfo->exposure_max * pow(10, ((double)curGain + AE_GAIN_CO
+ 327:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 328:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 329:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 330:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 331:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** Additional safeguards to ensure the proper behavior of the algorithm ****/
+ 332:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Check ratios are consistent when big or small changes are requested */
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       if (cur_global_exposure != 0 && averageL != 0)
+ 334:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 335:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         /* Compare exposure ratio and luminance ratio, to check the consistency of the results */
+ 336:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         if ((((new_global_exposure / cur_global_exposure) < 1.10) && (((double)IQParamConfig->AECAl
+ 337:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 1.50) && (((double)IQParamConfig->AECAl
+ 338:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) > 1.65) && (((double)IQParamConfig->AECAl
+ 339:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) > 1.35) && (((double)IQParamConfig->AECAl
+ 340:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (new_global_exposure / cur_global_exposure) < 1.02) /* Or same exposure estimation but 
+ 341:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 342:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           /* Apply the same ratio */
+ 343:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           new_global_exposure = cur_global_exposure * ((double)IQParamConfig->AECAlgo.exposureTarge
+ 344:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 345:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 346:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 347:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     else
+ 348:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 349:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** CASE 2 ****/
+ 350:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Exposure should be decreased */
+ 351:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       if (new_global_exposure >= cur_global_exposure)
+ 352:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 353:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         /* Wrong estimation, to be corrected */
+ 354:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         new_global_exposure = -1;
+ 355:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 356:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         /* Same lux estimation but previous setting did not allow convergence, so we need to change
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 12
+
+
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         if ((abs((int32_t)lux - (int32_t)previous_lux) <= (float)lux * 0.05) && (lux != 0))
+ 358:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 359:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           /* Use the luminance information for readjustment */
+ 360:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           new_global_exposure = cur_global_exposure * ((double)IQParamConfig->AECAlgo.exposureTarge
+ 361:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 362:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 363:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         if (new_global_exposure <= 0) //small step to get closer to target
+ 364:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 365:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           /* Decrease exposure with small decrement to get closer to target */
+ 366:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           if (cur_global_exposure <= pSensorInfo->exposure_max)
+ 367:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           {
+ 368:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             new_global_exposure = averageL ? cur_global_exposure * (double)IQParamConfig->AECAlgo.e
+ 369:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 370:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           else
+ 371:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           {
+ 372:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             new_global_exposure = pSensorInfo->exposure_max * pow(10, ((double)curGain - AE_GAIN_CO
+ 373:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 374:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 375:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 376:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 377:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** Additional safeguards to ensure the proper behavior of the algorithm ****/
+ 378:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Check ratios are consistent when big or small changes are requested */
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       if (cur_global_exposure != 0 && averageL != 0)
+ 380:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 381:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           /* Compare exposure ratio and luminance ratio, to check the consistency of the results */
+ 382:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         if ((((new_global_exposure / cur_global_exposure) > 0.60) && (((double)IQParamConfig->AECAl
+ 383:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.45) && (((double)IQParamConfig->AECAl
+ 384:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.15) && (((double)IQParamConfig->AECAl
+ 385:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.60) && (((double)IQParamConfig->AECAl
+ 386:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (new_global_exposure / cur_global_exposure) > 0.98) /* Or same exposure estimation but 
+ 387:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 388:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           /* Apply the same ratio */
+ 389:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           new_global_exposure = cur_global_exposure * ((double)IQParamConfig->AECAlgo.exposureTarge
+ 390:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 391:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 392:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 393:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 394:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /**** Clamp and split exposure into exposure value and gain ****/
+ 395:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (new_global_exposure <= pSensorInfo->exposure_max)
+ 396:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 397:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = 0;
+ 398:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pExposure = (new_global_exposure < pSensorInfo->exposure_min) ? pSensorInfo->exposure_min : 
+ 399:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 400:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     else
+ 401:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 402:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pExposure = pSensorInfo->exposure_max;
+ 403:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (uint32_t)(20 * 1000 * log10(new_global_exposure / (float)(*pExposure)));
+ 404:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 405:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Limit digital gain (lux value is very low and the gain is already very high and we need to
+ 406:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       if ((*pGain > pSensorInfo->again_max) && (abs((int32_t)*pGain - (int32_t)curGain) > AE_MAX_GA
+ 407:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 408:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pGain = *pGain < curGain ? (curGain < AE_MAX_GAIN_INCREMENT ? 0 : curGain - AE_MAX_GAIN_IN
+ 409:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 410:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ga
+ 411:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 412:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 413:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   else
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 13
+
+
+ 414:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 415:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 416:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /**** COARSE CONVERGENCE is reached ****/
+ 417:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Check if fine convergence processing is required to reach high accuracy */
+ 418:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 419:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Coarse convergence reached, refine convergence */
+ 420:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (((lux > AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.expos
+ 421:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.expo
+ 422:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 423:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** FINE CONVERGENCE not reached ****/
+ 424:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 425:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       if (averageL < IQParamConfig->AECAlgo.exposureTarget)
+ 426:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 427:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         /* Slightly increase exposure */
+ 428:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         if (cur_global_exposure <= pSensorInfo->exposure_max)
+ 429:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 430:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           new_global_exposure = averageL ? cur_global_exposure * (double)IQParamConfig->AECAlgo.exp
+ 431:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 432:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         else
+ 433:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 434:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           new_global_exposure = pSensorInfo->exposure_max * pow(10, ((double)curGain + AE_GAIN_FINE
+ 435:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 436:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 437:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       else
+ 438:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 439:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         /* Slightly decrease exposure */
+ 440:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         if (cur_global_exposure <= pSensorInfo->exposure_max)
+ 441:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           new_global_exposure = averageL ? cur_global_exposure * (double)IQParamConfig->AECAlgo.exp
+ 443:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 444:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         else
+ 445:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 446:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           new_global_exposure = pSensorInfo->exposure_max * pow(10, ((double)curGain - AE_GAIN_FINE
+ 447:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 448:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 449:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 450:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Clamp and split exposure into exposure value and gain */
+ 451:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       if (new_global_exposure <= pSensorInfo->exposure_max)
+ 452:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 453:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pGain = 0;
+ 454:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pExposure = (new_global_exposure < pSensorInfo->exposure_min) ? pSensorInfo->exposure_min 
+ 455:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 456:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       else
+ 457:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 458:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pExposure = pSensorInfo->exposure_max;
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pGain = (uint32_t)(20 * 1000 * log10((float)new_global_exposure / (float)(*pExposure)));
+ 460:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 461:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->
+ 462:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 463:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 464:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     else
+ 465:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 466:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /**** FINE CONVERGENCE is reached ****/
+ 467:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       /* Converged */
+ 468:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pExposure = curExposure;
+ 469:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = curGain;
+ 470:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 14
+
+
+ 471:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 472:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 473:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /**** Consider flickering period constraint ****/
+ 474:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* ONLY USEFUL WHEN WHEN ANTI-FLICKER IS ACTIVATED */
+ 475:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   isp_ae_compute_antiflcker(*pGain, *pExposure, &curGain, &curExposure);
+ 476:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 477:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* Return final value of sensor exposure time and gain */
+ 478:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *pExposure = curExposure;
+ 479:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *pGain = curGain;
+ 480:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 481:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   /* Store lux value to avoid making the same exposure estimation if it did not allow to reach conv
+ 482:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   previous_lux = lux;
+ 483:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** }
+ 257              		.loc 1 483 1 view .LVU73
+ 258 00ec 09B0     		add	sp, sp, #36
+ 259              		.cfi_remember_state
+ 260              		.cfi_def_cfa_offset 100
+ 261              		@ sp needed
+ 262 00ee BDEC108B 		vldm	sp!, {d8-d15}
+ 263              		.cfi_restore 94
+ 264              		.cfi_restore 95
+ 265              		.cfi_restore 92
+ 266              		.cfi_restore 93
+ 267              		.cfi_restore 90
+ 268              		.cfi_restore 91
+ 269              		.cfi_restore 88
+ 270              		.cfi_restore 89
+ 271              		.cfi_restore 86
+ 272              		.cfi_restore 87
+ 273              		.cfi_restore 84
+ 274              		.cfi_restore 85
+ 275              		.cfi_restore 82
+ 276              		.cfi_restore 83
+ 277              		.cfi_restore 80
+ 278              		.cfi_restore 81
+ 279              		.cfi_def_cfa_offset 36
+ 280 00f2 BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 281              	.LVL11:
+ 282              	.L6:
+ 283              		.cfi_restore_state
+ 220:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (new_global_exposure <= pSensorInfo->exposure_max)
+ 284              		.loc 1 220 95 discriminator 2 view .LVU74
+ 285 00f6 03F5FA63 		add	r3, r3, #2000
+ 286 00fa 00EE103A 		vmov	s0, r3	@ int
+ 220:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (new_global_exposure <= pSensorInfo->exposure_max)
+ 287              		.loc 1 220 84 discriminator 2 view .LVU75
+ 288 00fe B8EE400B 		vcvt.f64.u32	d0, s0
+ 289 0102 D7E7     		b	.L7
+ 290              	.LVL12:
+ 291              	.L133:
+ 228:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (uint32_t)(20 * 1000 * log10((float)new_global_exposure / (float)(*pExposure)));
+ 292              		.loc 1 228 7 is_stmt 1 view .LVU76
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 293              		.loc 1 229 74 is_stmt 0 view .LVU77
+ 294 0104 07EE903A 		vmov	s15, r3	@ int
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 295              		.loc 1 229 45 view .LVU78
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 15
+
+
+ 296 0108 B7EEC00B 		vcvt.f32.f64	s0, d0
+ 297              	.LVL13:
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 298              		.loc 1 229 74 view .LVU79
+ 299 010c F8EE677A 		vcvt.f32.u32	s15, s15
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 300              		.loc 1 229 72 view .LVU80
+ 301 0110 80EE277A 		vdiv.f32	s14, s0, s15
+ 228:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (uint32_t)(20 * 1000 * log10((float)new_global_exposure / (float)(*pExposure)));
+ 302              		.loc 1 228 18 view .LVU81
+ 303 0114 C8F80030 		str	r3, [r8]
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 304              		.loc 1 229 7 is_stmt 1 view .LVU82
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 305              		.loc 1 229 39 is_stmt 0 view .LVU83
+ 306 0118 B7EEC70A 		vcvt.f64.f32	d0, s14
+ 307 011c FFF7FEFF 		bl	log10
+ 308              	.LVL14:
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 309              		.loc 1 229 37 view .LVU84
+ 310 0120 20EE0E0B 		vmul.f64	d0, d0, d14
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 311              		.loc 1 229 16 view .LVU85
+ 312 0124 FCEEC07B 		vcvt.u32.f64	s15, d0
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 313              		.loc 1 229 14 view .LVU86
+ 314 0128 C4ED007A 		vstr.32	s15, [r4]	@ int
+ 230:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 315              		.loc 1 230 7 is_stmt 1 view .LVU87
+ 229:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (*pGain < pSensorInfo->gain_min) ? pSensorInfo->gain_min : (*pGain > pSensorInfo->ag
+ 316              		.loc 1 229 16 is_stmt 0 view .LVU88
+ 317 012c 17EE903A 		vmov	r3, s15	@ int
+ 230:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 318              		.loc 1 230 37 view .LVU89
+ 319 0130 EA6A     		ldr	r2, [r5, #44]
+ 230:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 320              		.loc 1 230 73 view .LVU90
+ 321 0132 9342     		cmp	r3, r2
+ 322 0134 03D3     		bcc	.L12
+ 230:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 323              		.loc 1 230 73 discriminator 2 view .LVU91
+ 324 0136 6A6B     		ldr	r2, [r5, #52]
+ 325 0138 9A42     		cmp	r2, r3
+ 326 013a 28BF     		it	cs
+ 327 013c 1A46     		movcs	r2, r3
+ 328              	.L12:
+ 230:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 329              		.loc 1 230 14 discriminator 4 view .LVU92
+ 330 013e 2260     		str	r2, [r4]
+ 331 0140 D4E7     		b	.L4
+ 332              	.LVL15:
+ 333              	.L5:
+ 239:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 334              		.loc 1 239 3 is_stmt 1 view .LVU93
+ 335              	.LBB6:
+ 336              	.LBI6:
+ 142:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****                                        uint32_t *original_gain, uint32_t *original_exposure)
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 16
+
+
+ 337              		.loc 1 142 13 view .LVU94
+ 338              	.LBB7:
+ 146:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t global_exposure;
+ 339              		.loc 1 146 3 view .LVU95
+ 147:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 340              		.loc 1 147 3 view .LVU96
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 341              		.loc 1 153 3 view .LVU97
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 342              		.loc 1 153 51 is_stmt 0 view .LVU98
+ 343 0142 DDED237A 		vldr.32	s15, [sp, #140]	@ int
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 344              		.loc 1 153 63 view .LVU99
+ 345 0146 9FED467A 		vldr.32	s14, .L146+40
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 346              		.loc 1 153 51 view .LVU100
+ 347 014a F8EE677A 		vcvt.f32.u32	s15, s15
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 348              		.loc 1 153 63 view .LVU101
+ 349 014e 87EE871A 		vdiv.f32	s2, s15, s14
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 350              		.loc 1 153 43 view .LVU102
+ 351 0152 B2EE040B 		vmov.f64	d0, #1.0e+1
+ 352 0156 B7EEC11A 		vcvt.f64.f32	d1, s2
+ 353 015a FFF7FEFF 		bl	pow
+ 354              	.LVL16:
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 355              		.loc 1 153 41 view .LVU103
+ 356 015e 2BEE00BB 		vmul.f64	d11, d11, d0
+ 154:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 357              		.loc 1 154 36 view .LVU104
+ 358 0162 D5ED0FFA 		vldr.32	s31, [r5, #60]	@ int
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 359              		.loc 1 153 19 view .LVU105
+ 360 0166 FCEECB7B 		vcvt.u32.f64	s15, d11
+ 154:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 361              		.loc 1 154 6 view .LVU106
+ 362 016a 1FEE903A 		vmov	r3, s31	@ int
+ 153:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if (global_exposure < pSensorInfo->exposure_max)
+ 363              		.loc 1 153 19 view .LVU107
+ 364 016e 17EE902A 		vmov	r2, s15	@ int
+ 365              	.LVL17:
+ 154:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 366              		.loc 1 154 3 is_stmt 1 view .LVU108
+ 154:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 367              		.loc 1 154 6 is_stmt 0 view .LVU109
+ 368 0172 9A42     		cmp	r2, r3
+ 369 0174 4FD2     		bcs	.L13
+ 156:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_exposure = global_exposure;
+ 370              		.loc 1 156 5 is_stmt 1 view .LVU110
+ 371              	.LVL18:
+ 157:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Fix rounding error when close to max value */
+ 372              		.loc 1 157 5 view .LVU111
+ 159:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 373              		.loc 1 159 5 view .LVU112
+ 159:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 374              		.loc 1 159 28 is_stmt 0 view .LVU113
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 17
+
+
+ 375 0176 B8EE676B 		vcvt.f64.u32	d6, s15
+ 159:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 376              		.loc 1 159 35 view .LVU114
+ 377 017a 9FED335B 		vldr.64	d5, .L146+16
+ 378 017e B8EE6F7B 		vcvt.f64.u32	d7, s31
+ 379 0182 27EE057B 		vmul.f64	d7, d7, d5
+ 156:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_exposure = global_exposure;
+ 380              		.loc 1 156 20 view .LVU115
+ 381 0186 B4EEC76B 		vcmpe.f64	d6, d7
+ 382 018a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 383 018e 9FED35FA 		vldr.32	s30, .L146+44	@ int
+ 384 0192 C8BF     		it	gt
+ 385 0194 1A46     		movgt	r2, r3
+ 386              	.LVL19:
+ 387              	.L14:
+ 156:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_exposure = global_exposure;
+ 388              		.loc 1 156 20 view .LVU116
+ 389              	.LBE7:
+ 390              	.LBE6:
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 391              		.loc 1 243 3 is_stmt 1 view .LVU117
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 392              		.loc 1 243 59 is_stmt 0 view .LVU118
+ 393 0196 19EE103A 		vmov	r3, s18	@ int
+ 394 019a A3EB0903 		sub	r3, r3, r9
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 395              		.loc 1 243 37 view .LVU119
+ 396 019e 002B     		cmp	r3, #0
+ 397 01a0 B8BF     		it	lt
+ 398 01a2 5B42     		rsblt	r3, r3, #0
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 399              		.loc 1 243 109 view .LVU120
+ 400 01a4 07EE903A 		vmov	s15, r3	@ int
+ 401 01a8 B8EEE75B 		vcvt.f64.s32	d5, s15
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 402              		.loc 1 243 111 view .LVU121
+ 403 01ac 07EE909A 		vmov	s15, r9	@ int
+ 404 01b0 B8EE677A 		vcvt.f32.u32	s14, s15
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 405              		.loc 1 243 6 view .LVU122
+ 406 01b4 322E     		cmp	r6, #50
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 407              		.loc 1 243 111 view .LVU123
+ 408 01b6 B7EEC76A 		vcvt.f64.f32	d6, s14
+ 409 01ba DFF8ACA0 		ldr	r10, .L146+48
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 410              		.loc 1 243 6 view .LVU124
+ 411 01be 55D9     		bls	.L15
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ 412              		.loc 1 243 111 discriminator 1 view .LVU125
+ 413 01c0 9FED237B 		vldr.64	d7, .L146+24
+ 414 01c4 26EE077B 		vmul.f64	d7, d6, d7
+ 415 01c8 B2EE046B 		vmov.f64	d6, #1.0e+1
+ 416 01cc B4EEC67B 		vcmpe.f64	d7, d6
+ 417 01d0 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 418 01d4 37FE067B 		vselgt.f64	d7, d7, d6
+ 243:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.exposu
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 18
+
+
+ 419              		.loc 1 243 33 discriminator 1 view .LVU126
+ 420 01d8 B4EEC57B 		vcmpe.f64	d7, d5
+ 421 01dc F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 422 01e0 5DD4     		bmi	.L17
+ 420:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         ((lux <= AE_LOW_LUX_LIMIT) && (abs((int32_t)averageL - (int32_t)IQParamConfig->AECAlgo.expo
+ 423              		.loc 1 420 35 discriminator 1 view .LVU127
+ 424 01e2 052B     		cmp	r3, #5
+ 425              	.L142:
+ 421:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 426              		.loc 1 421 36 view .LVU128
+ 427 01e4 40F3AD83 		ble	.L78
+ 425:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 428              		.loc 1 425 7 is_stmt 1 view .LVU129
+ 425:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 429              		.loc 1 425 10 is_stmt 0 view .LVU130
+ 430 01e8 19EE103A 		vmov	r3, s18	@ int
+ 431              	.LBB11:
+ 432              	.LBB8:
+ 159:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 433              		.loc 1 159 35 view .LVU131
+ 434 01ec B8EE6FBB 		vcvt.f64.u32	d11, s31
+ 435              	.LBE8:
+ 436              	.LBE11:
+ 425:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 437              		.loc 1 425 10 view .LVU132
+ 438 01f0 9945     		cmp	r9, r3
+ 428:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 439              		.loc 1 428 12 view .LVU133
+ 440 01f2 B4EEC8BB 		vcmpe.f64	d11, d8
+ 425:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 441              		.loc 1 425 10 view .LVU134
+ 442 01f6 40F27583 		bls	.L80
+ 443              	.LVL20:
+ 428:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 444              		.loc 1 428 9 is_stmt 1 view .LVU135
+ 428:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 445              		.loc 1 428 12 is_stmt 0 view .LVU136
+ 446 01fa F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 447 01fe C0F26283 		blt	.L139
+ 430:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 448              		.loc 1 430 11 is_stmt 1 view .LVU137
+ 430:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 449              		.loc 1 430 123 is_stmt 0 view .LVU138
+ 450 0202 002B     		cmp	r3, #0
+ 451 0204 00F04683 		beq	.L83
+ 452              	.L143:
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 453              		.loc 1 442 64 discriminator 1 view .LVU139
+ 454 0208 2AEE08AB 		vmul.f64	d10, d10, d8
+ 455              	.LVL21:
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 456              		.loc 1 442 112 discriminator 1 view .LVU140
+ 457 020c B8EE499B 		vcvt.f64.u32	d9, s18
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 458              		.loc 1 442 123 discriminator 1 view .LVU141
+ 459 0210 8AEE098B 		vdiv.f64	d8, d10, d9
+ 460              	.LVL22:
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 19
+
+
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 461              		.loc 1 442 123 discriminator 1 view .LVU142
+ 462 0214 42E3     		b	.L84
+ 463              	.LVL23:
+ 464              	.L13:
+ 465              	.LBB12:
+ 466              	.LBB9:
+ 167:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     /* Increase the gain accordingly */
+ 467              		.loc 1 167 5 is_stmt 1 view .LVU143
+ 169:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_gain = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 468              		.loc 1 169 5 view .LVU144
+ 170:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 469              		.loc 1 170 5 view .LVU145
+ 169:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_gain = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 470              		.loc 1 169 25 is_stmt 0 view .LVU146
+ 471 0216 B8EE67BA 		vcvt.f32.u32	s22, s15
+ 169:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_gain = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 472              		.loc 1 169 50 view .LVU147
+ 473 021a F8EE6F7A 		vcvt.f32.u32	s15, s31
+ 169:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *original_gain = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 474              		.loc 1 169 23 view .LVU148
+ 475 021e 8BEE270A 		vdiv.f32	s0, s22, s15
+ 476              	.LVL24:
+ 170:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 477              		.loc 1 170 45 view .LVU149
+ 478 0222 B7EEC00A 		vcvt.f64.f32	d0, s0
+ 479              	.LVL25:
+ 170:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 480              		.loc 1 170 45 view .LVU150
+ 481 0226 FFF7FEFF 		bl	log10
+ 482              	.LVL26:
+ 170:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 483              		.loc 1 170 43 view .LVU151
+ 484 022a 20EE0E0B 		vmul.f64	d0, d0, d14
+ 170:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 485              		.loc 1 170 22 view .LVU152
+ 486 022e 1FEE902A 		vmov	r2, s31	@ int
+ 487 0232 BCEEC0FB 		vcvt.u32.f64	s30, d0
+ 488              	.LVL27:
+ 170:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 489              		.loc 1 170 22 view .LVU153
+ 490 0236 AEE7     		b	.L14
+ 491              	.L147:
+ 492              		.align	3
+ 493              	.L146:
+ 494 0238 00000000 		.word	0
+ 495 023c 0088D340 		.word	1087604736
+ 496 0240 00000000 		.word	0
+ 497 0244 0070A740 		.word	1084715008
+ 498 0248 5C8FC2F5 		.word	-171798692
+ 499 024c 285CEF3F 		.word	1072651304
+ 500 0250 9A999999 		.word	-1717986918
+ 501 0254 9999B93F 		.word	1069128089
+ 502 0258 00000000 		.word	IQParamConfig
+ 503 025c 00000000 		.word	pSensorInfo
+ 504 0260 00409C46 		.word	1184645120
+ 505 0264 00000000 		.word	0
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 20
+
+
+ 506 0268 00000000 		.word	previous_lux
+ 507              	.LVL28:
+ 508              	.L15:
+ 170:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   }
+ 509              		.loc 1 170 22 view .LVU154
+ 510              	.LBE9:
+ 511              	.LBE12:
+ 244:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 512              		.loc 1 244 112 view .LVU155
+ 513 026c 9FEDC47B 		vldr.64	d7, .L148
+ 514 0270 B2EE0E4B 		vmov.f64	d4, #1.5e+1
+ 515 0274 26EE077B 		vmul.f64	d7, d6, d7
+ 516 0278 B2EE046B 		vmov.f64	d6, #1.0e+1
+ 517 027c B9F10F0F 		cmp	r9, #15
+ 518 0280 28BF     		it	cs
+ 519 0282 B0EE446B 		vmovcs.f64	d6, d4
+ 520 0286 B4EE467B 		vcmp.f64	d7, d6
+ 521 028a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 522 028e 37FE066B 		vselgt.f64	d6, d7, d6
+ 244:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 523              		.loc 1 244 34 view .LVU156
+ 524 0292 B4EEC56B 		vcmpe.f64	d6, d5
+ 525 0296 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 526 029a 40F1F482 		bpl	.L135
+ 527              	.L17:
+ 207:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 - IQParamConfig->luxRef.LL_Expo2))) / AE_LOW_LUX_
+ 528              		.loc 1 207 51 view .LVU157
+ 529 029e DDED005A 		vldr.32	s11, [sp]	@ int
+ 206:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.LL_Expo2 / IQParamConfig->luxRef.LL_Lum2) /
+ 530              		.loc 1 206 12 view .LVU158
+ 531 02a2 B8EE4D3B 		vcvt.f64.u32	d3, s26
+ 207:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 - IQParamConfig->luxRef.LL_Expo2))) / AE_LOW_LUX_
+ 532              		.loc 1 207 12 view .LVU159
+ 533 02a6 B8EE696B 		vcvt.f64.u32	d6, s19
+ 206:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.LL_Expo2 / IQParamConfig->luxRef.LL_Lum2) /
+ 534              		.loc 1 206 51 view .LVU160
+ 535 02aa B8EEECBB 		vcvt.f64.s32	d11, s25
+ 207:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 - IQParamConfig->luxRef.LL_Expo2))) / AE_LOW_LUX_
+ 536              		.loc 1 207 51 view .LVU161
+ 537 02ae B8EEE55B 		vcvt.f64.s32	d5, s11
+ 206:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.LL_Expo2 / IQParamConfig->luxRef.LL_Lum2) /
+ 538              		.loc 1 206 51 view .LVU162
+ 539 02b2 83EE0B7B 		vdiv.f64	d7, d3, d11
+ 207:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 - IQParamConfig->luxRef.LL_Expo2))) / AE_LOW_LUX_
+ 540              		.loc 1 207 51 view .LVU163
+ 541 02b6 86EE054B 		vdiv.f64	d4, d6, d5
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 542              		.loc 1 205 165 view .LVU164
+ 543 02ba B8EE6D0B 		vcvt.f64.u32	d0, s27
+ 206:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.LL_Expo2 / IQParamConfig->luxRef.LL_Lum2) /
+ 544              		.loc 1 206 83 view .LVU165
+ 545 02be 37EE447B 		vsub.f64	d7, d7, d4
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 546              		.loc 1 205 117 view .LVU166
+ 547 02c2 B7EECC2A 		vcvt.f64.f32	d2, s24
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 548              		.loc 1 205 165 view .LVU167
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 21
+
+
+ 549 02c6 27EE007B 		vmul.f64	d7, d7, d0
+ 208:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t custom_high_lux_limit = ((uint32_t)(((double)IQParamConfig->AECAlgo.exposureTarget * IQP
+ 550              		.loc 1 208 51 view .LVU168
+ 551 02ca 33EE466B 		vsub.f64	d6, d3, d6
+ 250:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 552              		.loc 1 250 8 view .LVU169
+ 553 02ce B345     		cmp	fp, r6
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 554              		.loc 1 205 94 view .LVU170
+ 555 02d0 22EE0A2B 		vmul.f64	d2, d2, d10
+ 207:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 - IQParamConfig->luxRef.LL_Expo2))) / AE_LOW_LUX_
+ 556              		.loc 1 207 84 view .LVU171
+ 557 02d4 87EE061B 		vdiv.f64	d1, d7, d6
+ 250:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 558              		.loc 1 250 5 is_stmt 1 view .LVU172
+ 559 02d8 9FEDAB4B 		vldr.64	d4, .L148+8
+ 250:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 560              		.loc 1 250 8 is_stmt 0 view .LVU173
+ 561 02dc 31D2     		bcs	.L24
+ 210:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2) /
+ 562              		.loc 1 210 51 discriminator 1 view .LVU174
+ 563 02de DDED056A 		vldr.32	s13, [sp, #20]	@ int
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 564              		.loc 1 209 166 discriminator 1 view .LVU175
+ 565 02e2 07EE90BA 		vmov	s15, fp	@ int
+ 210:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2) /
+ 566              		.loc 1 210 51 discriminator 1 view .LVU176
+ 567 02e6 B8EEE66B 		vcvt.f64.s32	d6, s13
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 568              		.loc 1 209 166 discriminator 1 view .LVU177
+ 569 02ea B8EE67CB 		vcvt.f64.u32	d12, s15
+ 570              	.LVL29:
+ 210:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2) /
+ 571              		.loc 1 210 51 discriminator 1 view .LVU178
+ 572 02ee 8DED006B 		vstr.64	d6, [sp]
+ 210:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2) /
+ 573              		.loc 1 210 12 discriminator 1 view .LVU179
+ 574 02f2 DDED027A 		vldr.32	s15, [sp, #8]	@ int
+ 211:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 - IQParamConfig->luxRef.HL_Expo2))) / AE_LOW_LUX_
+ 575              		.loc 1 211 12 discriminator 1 view .LVU180
+ 576 02f6 DDED066A 		vldr.32	s13, [sp, #24]	@ int
+ 210:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2) /
+ 577              		.loc 1 210 12 discriminator 1 view .LVU181
+ 578 02fa B8EE677B 		vcvt.f64.u32	d7, s15
+ 211:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 - IQParamConfig->luxRef.HL_Expo2))) / AE_LOW_LUX_
+ 579              		.loc 1 211 12 discriminator 1 view .LVU182
+ 580 02fe B8EE665B 		vcvt.f64.u32	d5, s13
+ 210:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2) /
+ 581              		.loc 1 210 51 discriminator 1 view .LVU183
+ 582 0302 9DED006B 		vldr.64	d6, [sp]
+ 583 0306 87EE06DB 		vdiv.f64	d13, d7, d6
+ 211:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 - IQParamConfig->luxRef.HL_Expo2))) / AE_LOW_LUX_
+ 584              		.loc 1 211 51 discriminator 1 view .LVU184
+ 585 030a DDED076A 		vldr.32	s13, [sp, #28]	@ int
+ 586 030e B8EEE66B 		vcvt.f64.s32	d6, s13
+ 587 0312 85EE066B 		vdiv.f64	d6, d5, d6
+ 210:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****            (double)IQParamConfig->luxRef.HL_Expo2 / IQParamConfig->luxRef.HL_Lum2) /
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 22
+
+
+ 588              		.loc 1 210 83 discriminator 1 view .LVU185
+ 589 0316 3DEE466B 		vsub.f64	d6, d13, d6
+ 212:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t curExposure, curGain;
+ 590              		.loc 1 212 51 discriminator 1 view .LVU186
+ 591 031a 37EE455B 		vsub.f64	d5, d7, d5
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 592              		.loc 1 209 166 discriminator 1 view .LVU187
+ 593 031e 26EE0C6B 		vmul.f64	d6, d6, d12
+ 211:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 - IQParamConfig->luxRef.HL_Expo2))) / AE_LOW_LUX_
+ 594              		.loc 1 211 84 discriminator 1 view .LVU188
+ 595 0322 86EE05DB 		vdiv.f64	d13, d6, d5
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 596              		.loc 1 209 131 discriminator 1 view .LVU189
+ 597 0326 22EE0D5B 		vmul.f64	d5, d2, d13
+ 212:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t curExposure, curGain;
+ 598              		.loc 1 212 87 discriminator 1 view .LVU190
+ 599 032a 85EE046B 		vdiv.f64	d6, d5, d4
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 600              		.loc 1 209 37 discriminator 1 view .LVU191
+ 601 032e BCEEC66B 		vcvt.u32.f64	s12, d6
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 602              		.loc 1 209 12 discriminator 1 view .LVU192
+ 603 0332 3223     		movs	r3, #50
+ 604 0334 16EE102A 		vmov	r2, s12	@ int
+ 605              	.LVL30:
+ 209:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 606              		.loc 1 209 12 discriminator 1 view .LVU193
+ 607 0338 02FB0333 		mla	r3, r2, r3, r3
+ 250:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 608              		.loc 1 250 50 discriminator 1 view .LVU194
+ 609 033c B342     		cmp	r3, r6
+ 610 033e C0F09C80 		bcc	.L25
+ 611              	.L24:
+ 254:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 612              		.loc 1 254 7 is_stmt 1 view .LVU195
+ 613              	.LVL31:
+ 259:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.LL_Expo1);
+ 614              		.loc 1 259 7 view .LVU196
+ 259:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.LL_Expo1);
+ 615              		.loc 1 259 44 is_stmt 0 view .LVU197
+ 616 0342 20EE030B 		vmul.f64	d0, d0, d3
+ 259:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.LL_Expo1);
+ 617              		.loc 1 259 85 view .LVU198
+ 618 0346 80EE0BCB 		vdiv.f64	d12, d0, d11
+ 254:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 619              		.loc 1 254 9 view .LVU199
+ 620 034a B0EE41DB 		vmov.f64	d13, d1
+ 259:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.LL_Expo1);
+ 621              		.loc 1 259 9 view .LVU200
+ 622 034e A3EE41CB 		vfms.f64	d12, d3, d1
+ 623              	.LVL32:
+ 624              	.L26:
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 625              		.loc 1 205 130 view .LVU201
+ 626 0352 22EE011B 		vmul.f64	d1, d2, d1
+ 208:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t custom_high_lux_limit = ((uint32_t)(((double)IQParamConfig->AECAlgo.exposureTarget * IQP
+ 627              		.loc 1 208 87 view .LVU202
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 23
+
+
+ 628 0356 81EE047B 		vdiv.f64	d7, d1, d4
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 629              		.loc 1 205 36 view .LVU203
+ 630 035a BCEEC77B 		vcvt.u32.f64	s14, d7
+ 205:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.LL_Expo1 / IQParamConfig->luxRef.LL_Lum1 -
+ 631              		.loc 1 205 12 view .LVU204
+ 632 035e 4FF0320B 		mov	fp, #50
+ 633 0362 17EE103A 		vmov	r3, s14	@ int
+ 634 0366 07EE906A 		vmov	s15, r6	@ int
+ 635 036a 03FB0BBB 		mla	fp, r3, fp, fp
+ 636              	.LVL33:
+ 275:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 637              		.loc 1 275 5 is_stmt 1 view .LVU205
+ 275:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 638              		.loc 1 275 8 is_stmt 0 view .LVU206
+ 639 036e B345     		cmp	fp, r6
+ 640              	.LBB13:
+ 641              	.LBB10:
+ 159:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 642              		.loc 1 159 35 view .LVU207
+ 643 0370 B8EE6FBB 		vcvt.f64.u32	d11, s31
+ 644 0374 B8EE674B 		vcvt.f64.u32	d4, s15
+ 645              	.LBE10:
+ 646              	.LBE13:
+ 275:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 647              		.loc 1 275 8 view .LVU208
+ 648 0378 C0F08880 		bcc	.L27
+ 279:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       c = ((b / (((double)custom_low_lux_limit / ((double)IQParamConfig->AECAlgo.exposureTarget * I
+ 649              		.loc 1 279 47 view .LVU209
+ 650 037c D5ED0D7A 		vldr.32	s15, [r5, #52]	@ int
+ 651 0380 B8EE671B 		vcvt.f64.u32	d1, s15
+ 279:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       c = ((b / (((double)custom_low_lux_limit / ((double)IQParamConfig->AECAlgo.exposureTarget * I
+ 652              		.loc 1 279 39 view .LVU210
+ 653 0384 B2EE040B 		vmov.f64	d0, #1.0e+1
+ 654 0388 81EE0E1B 		vdiv.f64	d1, d1, d14
+ 655 038c 8DED024B 		vstr.64	d4, [sp, #8]	@ int
+ 656 0390 8DED002B 		vstr.64	d2, [sp]	@ int
+ 279:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       c = ((b / (((double)custom_low_lux_limit / ((double)IQParamConfig->AECAlgo.exposureTarget * I
+ 657              		.loc 1 279 7 is_stmt 1 view .LVU211
+ 279:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       c = ((b / (((double)custom_low_lux_limit / ((double)IQParamConfig->AECAlgo.exposureTarget * I
+ 658              		.loc 1 279 39 is_stmt 0 view .LVU212
+ 659 0394 FFF7FEFF 		bl	pow
+ 660              	.LVL34:
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 661              		.loc 1 280 7 is_stmt 1 view .LVU213
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 662              		.loc 1 280 19 is_stmt 0 view .LVU214
+ 663 0398 07EE90BA 		vmov	s15, fp	@ int
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 664              		.loc 1 280 48 view .LVU215
+ 665 039c 9DED002B 		vldr.64	d2, [sp]	@ int
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 666              		.loc 1 280 19 view .LVU216
+ 667 03a0 B8EE677B 		vcvt.f64.u32	d7, s15
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 668              		.loc 1 280 48 view .LVU217
+ 669 03a4 87EE025B 		vdiv.f64	d5, d7, d2
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 24
+
+
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 670              		.loc 1 280 135 view .LVU218
+ 671 03a8 35EE4D5B 		vsub.f64	d5, d5, d13
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 672              		.loc 1 280 15 view .LVU219
+ 673 03ac 8CEE056B 		vdiv.f64	d6, d12, d5
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 674              		.loc 1 280 149 view .LVU220
+ 675 03b0 A0EE4B6B 		vfms.f64	d6, d0, d11
+ 676              	.LVL35:
+ 283:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 677              		.loc 1 283 7 is_stmt 1 view .LVU221
+ 283:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 678              		.loc 1 283 32 is_stmt 0 view .LVU222
+ 679 03b4 9DED024B 		vldr.64	d4, [sp, #8]	@ int
+ 280:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 680              		.loc 1 280 9 view .LVU223
+ 681 03b8 86EE075B 		vdiv.f64	d5, d6, d7
+ 682              	.LVL36:
+ 283:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 683              		.loc 1 283 32 view .LVU224
+ 684 03bc 24EE057B 		vmul.f64	d7, d4, d5
+ 283:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 685              		.loc 1 283 27 view .LVU225
+ 686 03c0 A0EE0B7B 		vfma.f64	d7, d0, d11
+ 687              	.LVL37:
+ 688              	.L28:
+ 301:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 689              		.loc 1 301 5 is_stmt 1 view .LVU226
+ 301:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 690              		.loc 1 301 8 is_stmt 0 view .LVU227
+ 691 03c4 19EE103A 		vmov	r3, s18	@ int
+ 692 03c8 9945     		cmp	r9, r3
+ 305:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 693              		.loc 1 305 10 view .LVU228
+ 694 03ca B4EEC87B 		vcmpe.f64	d7, d8
+ 301:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 695              		.loc 1 301 8 view .LVU229
+ 696 03ce 40F22B81 		bls	.L29
+ 697              	.LVL38:
+ 305:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 698              		.loc 1 305 7 is_stmt 1 view .LVU230
+ 305:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 699              		.loc 1 305 10 is_stmt 0 view .LVU231
+ 700 03d2 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 701 03d6 73D8     		bhi	.L30
+ 308:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 702              		.loc 1 308 9 is_stmt 1 view .LVU232
+ 703              	.LVL39:
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 704              		.loc 1 311 9 view .LVU233
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 705              		.loc 1 311 59 is_stmt 0 view .LVU234
+ 706 03d8 06EE906A 		vmov	s13, r6	@ int
+ 707 03dc B8EE666A 		vcvt.f32.u32	s12, s13
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 708              		.loc 1 311 31 view .LVU235
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 25
+
+
+ 709 03e0 DAF80030 		ldr	r3, [r10]
+ 710              	.LVL40:
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 711              		.loc 1 311 59 view .LVU236
+ 712 03e4 B7EEC66A 		vcvt.f64.f32	d6, s12
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 713              		.loc 1 311 31 view .LVU237
+ 714 03e8 F31A     		subs	r3, r6, r3
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 715              		.loc 1 311 14 view .LVU238
+ 716 03ea 002B     		cmp	r3, #0
+ 717 03ec B8BF     		it	lt
+ 718 03ee 5B42     		rsblt	r3, r3, #0
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 719              		.loc 1 311 56 view .LVU239
+ 720 03f0 07EE903A 		vmov	s15, r3	@ int
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 721              		.loc 1 311 70 view .LVU240
+ 722 03f4 9FED785B 		vldr.64	d5, .L148+88
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 723              		.loc 1 311 56 view .LVU241
+ 724 03f8 B8EEE77B 		vcvt.f64.s32	d7, s15
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 725              		.loc 1 311 70 view .LVU242
+ 726 03fc 26EE056B 		vmul.f64	d6, d6, d5
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 727              		.loc 1 311 12 view .LVU243
+ 728 0400 B4EEC67B 		vcmpe.f64	d7, d6
+ 729 0404 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 730 0408 0BD8     		bhi	.L32
+ 311:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 731              		.loc 1 311 78 discriminator 1 view .LVU244
+ 732 040a 56B1     		cbz	r6, .L32
+ 314:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 733              		.loc 1 314 11 is_stmt 1 view .LVU245
+ 314:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 734              		.loc 1 314 102 is_stmt 0 view .LVU246
+ 735 040c B8EE496B 		vcvt.f64.u32	d6, s18
+ 736 0410 8AEE067B 		vdiv.f64	d7, d10, d6
+ 314:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 737              		.loc 1 314 31 view .LVU247
+ 738 0414 27EE087B 		vmul.f64	d7, d7, d8
+ 739              	.LVL41:
+ 317:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 740              		.loc 1 317 9 is_stmt 1 view .LVU248
+ 317:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 741              		.loc 1 317 12 is_stmt 0 view .LVU249
+ 742 0418 B5EEC07B 		vcmpe.f64	d7, #0
+ 743 041c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 744 0420 4ED8     		bhi	.L30
+ 745              	.LVL42:
+ 746              	.L32:
+ 320:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           {
+ 747              		.loc 1 320 11 is_stmt 1 view .LVU250
+ 320:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           {
+ 748              		.loc 1 320 14 is_stmt 0 view .LVU251
+ 749 0422 B4EEC8BB 		vcmpe.f64	d11, d8
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 26
+
+
+ 750 0426 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 751 042a 3BDB     		blt	.L136
+ 322:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 752              		.loc 1 322 13 is_stmt 1 view .LVU252
+ 322:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 753              		.loc 1 322 125 is_stmt 0 view .LVU253
+ 754 042c 19EE103A 		vmov	r3, s18	@ int
+ 755 0430 9BB3     		cbz	r3, .L37
+ 756              	.LVL43:
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 757              		.loc 1 333 10 discriminator 1 view .LVU254
+ 758 0432 B5EE408B 		vcmp.f64	d8, #0
+ 322:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 759              		.loc 1 322 66 discriminator 1 view .LVU255
+ 760 0436 2AEE086B 		vmul.f64	d6, d10, d8
+ 322:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 761              		.loc 1 322 114 discriminator 1 view .LVU256
+ 762 043a B8EE495B 		vcvt.f64.u32	d5, s18
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 763              		.loc 1 333 10 discriminator 1 view .LVU257
+ 764 043e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 322:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 765              		.loc 1 322 125 discriminator 1 view .LVU258
+ 766 0442 86EE057B 		vdiv.f64	d7, d6, d5
+ 767              	.LVL44:
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 768              		.loc 1 333 7 is_stmt 1 discriminator 1 view .LVU259
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 769              		.loc 1 333 10 is_stmt 0 discriminator 1 view .LVU260
+ 770 0446 44D1     		bne	.L38
+ 771              	.LVL45:
+ 772              	.L39:
+ 395:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 773              		.loc 1 395 5 is_stmt 1 view .LVU261
+ 395:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 774              		.loc 1 395 8 is_stmt 0 view .LVU262
+ 775 0448 B4EEC7BB 		vcmpe.f64	d11, d7
+ 776 044c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 777 0450 C0F29C81 		blt	.L138
+ 397:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pExposure = (new_global_exposure < pSensorInfo->exposure_min) ? pSensorInfo->exposure_min : 
+ 778              		.loc 1 397 7 is_stmt 1 view .LVU263
+ 397:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pExposure = (new_global_exposure < pSensorInfo->exposure_min) ? pSensorInfo->exposure_min : 
+ 779              		.loc 1 397 14 is_stmt 0 view .LVU264
+ 780 0454 0023     		movs	r3, #0
+ 781 0456 2360     		str	r3, [r4]
+ 398:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 782              		.loc 1 398 7 is_stmt 1 view .LVU265
+ 398:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 783              		.loc 1 398 54 is_stmt 0 view .LVU266
+ 784 0458 AB6B     		ldr	r3, [r5, #56]
+ 398:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 785              		.loc 1 398 41 view .LVU267
+ 786 045a 06EE903A 		vmov	s13, r3	@ int
+ 787 045e B8EE666B 		vcvt.f64.u32	d6, s13
+ 398:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 788              		.loc 1 398 98 view .LVU268
+ 789 0462 B4EEC76B 		vcmpe.f64	d6, d7
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 27
+
+
+ 790 0466 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 791 046a 03DC     		bgt	.L90
+ 398:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 792              		.loc 1 398 98 discriminator 2 view .LVU269
+ 793 046c FCEEC77B 		vcvt.u32.f64	s15, d7
+ 794              	.LVL46:
+ 795              	.L145:
+ 454:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 796              		.loc 1 454 100 discriminator 2 view .LVU270
+ 797 0470 17EE903A 		vmov	r3, s15	@ int
+ 798              	.L90:
+ 454:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 799              		.loc 1 454 20 discriminator 4 view .LVU271
+ 800 0474 C8F80030 		str	r3, [r8]
+ 801 0478 BFE1     		b	.L72
+ 802              	.LVL47:
+ 803              	.L25:
+ 266:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           ((double)IQParamConfig->luxRef.HL_Expo1 / IQParamConfig->luxRef.HL_Lum1 -
+ 804              		.loc 1 266 7 is_stmt 1 view .LVU272
+ 271:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.HL_Expo1);
+ 805              		.loc 1 271 7 view .LVU273
+ 271:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.HL_Expo1);
+ 806              		.loc 1 271 44 is_stmt 0 view .LVU274
+ 807 047a 2CEE076B 		vmul.f64	d6, d12, d7
+ 271:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.HL_Expo1);
+ 808              		.loc 1 271 85 view .LVU275
+ 809 047e 9DED005B 		vldr.64	d5, [sp]
+ 810 0482 86EE05CB 		vdiv.f64	d12, d6, d5
+ 271:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.HL_Expo1);
+ 811              		.loc 1 271 9 view .LVU276
+ 812 0486 A7EE4DCB 		vfms.f64	d12, d7, d13
+ 813              	.LVL48:
+ 271:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           (a * IQParamConfig->luxRef.HL_Expo1);
+ 814              		.loc 1 271 9 view .LVU277
+ 815 048a 62E7     		b	.L26
+ 816              	.LVL49:
+ 817              	.L27:
+ 290:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 818              		.loc 1 290 7 is_stmt 1 view .LVU278
+ 290:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 819              		.loc 1 290 47 is_stmt 0 view .LVU279
+ 820 048c 84EE026B 		vdiv.f64	d6, d4, d2
+ 290:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 821              		.loc 1 290 134 view .LVU280
+ 822 0490 36EE4D6B 		vsub.f64	d6, d6, d13
+ 290:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 823              		.loc 1 290 27 view .LVU281
+ 824 0494 8CEE067B 		vdiv.f64	d7, d12, d6
+ 825              	.LVL50:
+ 290:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 826              		.loc 1 290 27 view .LVU282
+ 827 0498 94E7     		b	.L28
+ 828              	.LVL51:
+ 829              	.L37:
+ 322:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 830              		.loc 1 322 125 discriminator 2 view .LVU283
+ 831 049a 9FED3D7B 		vldr.64	d7, .L148+16
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 28
+
+
+ 832 049e 38EE077B 		vadd.f64	d7, d8, d7
+ 833              	.LVL52:
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 834              		.loc 1 333 7 is_stmt 1 discriminator 2 view .LVU284
+ 835 04a2 D1E7     		b	.L39
+ 836              	.LVL53:
+ 837              	.L136:
+ 326:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 838              		.loc 1 326 13 view .LVU285
+ 326:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 839              		.loc 1 326 88 is_stmt 0 view .LVU286
+ 840 04a4 9FED3C7B 		vldr.64	d7, .L148+24
+ 326:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 841              		.loc 1 326 72 view .LVU287
+ 842 04a8 B8EE4F1B 		vcvt.f64.u32	d1, s30
+ 326:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 843              		.loc 1 326 88 view .LVU288
+ 844 04ac 31EE071B 		vadd.f64	d1, d1, d7
+ 326:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 845              		.loc 1 326 63 view .LVU289
+ 846 04b0 B2EE040B 		vmov.f64	d0, #1.0e+1
+ 847 04b4 81EE0E1B 		vdiv.f64	d1, d1, d14
+ 848 04b8 FFF7FEFF 		bl	pow
+ 849              	.LVL54:
+ 326:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 850              		.loc 1 326 33 view .LVU290
+ 851 04bc 20EE0B7B 		vmul.f64	d7, d0, d11
+ 852              	.LVL55:
+ 853              	.L30:
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 854              		.loc 1 333 7 is_stmt 1 view .LVU291
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 855              		.loc 1 333 10 is_stmt 0 view .LVU292
+ 856 04c0 B5EE408B 		vcmp.f64	d8, #0
+ 857 04c4 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 858 04c8 BED0     		beq	.L39
+ 333:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 859              		.loc 1 333 36 discriminator 1 view .LVU293
+ 860 04ca 19EE103A 		vmov	r3, s18	@ int
+ 861 04ce 002B     		cmp	r3, #0
+ 862 04d0 BAD0     		beq	.L39
+ 863              	.LVL56:
+ 864              	.L38:
+ 336:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 1.50) && (((double)IQParamConfig->AECAl
+ 865              		.loc 1 336 9 is_stmt 1 view .LVU294
+ 336:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 1.50) && (((double)IQParamConfig->AECAl
+ 866              		.loc 1 336 36 is_stmt 0 view .LVU295
+ 867 04d2 87EE086B 		vdiv.f64	d6, d7, d8
+ 336:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 1.50) && (((double)IQParamConfig->AECAl
+ 868              		.loc 1 336 12 view .LVU296
+ 869 04d6 9FED325B 		vldr.64	d5, .L148+32
+ 870 04da B4EEC56B 		vcmpe.f64	d6, d5
+ 871 04de F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 872 04e2 0AD5     		bpl	.L40
+ 336:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 1.50) && (((double)IQParamConfig->AECAl
+ 873              		.loc 1 336 118 discriminator 1 view .LVU297
+ 874 04e4 B8EE494B 		vcvt.f64.u32	d4, s18
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 29
+
+
+ 875 04e8 8AEE043B 		vdiv.f64	d3, d10, d4
+ 336:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 1.50) && (((double)IQParamConfig->AECAl
+ 876              		.loc 1 336 67 discriminator 1 view .LVU298
+ 877 04ec 9FED2E4B 		vldr.64	d4, .L148+40
+ 878 04f0 B4EEC43B 		vcmpe.f64	d3, d4
+ 879 04f4 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 880 04f8 3BDC     		bgt	.L61
+ 881              	.L40:
+ 336:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 1.50) && (((double)IQParamConfig->AECAl
+ 882              		.loc 1 336 139 discriminator 3 view .LVU299
+ 883 04fa B7EE084B 		vmov.f64	d4, #1.5e+0
+ 884 04fe B4EEC46B 		vcmpe.f64	d6, d4
+ 885 0502 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 886 0506 0AD5     		bpl	.L43
+ 337:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) > 1.65) && (((double)IQParamConfig->AECAl
+ 887              		.loc 1 337 118 view .LVU300
+ 888 0508 B8EE494B 		vcvt.f64.u32	d4, s18
+ 889 050c 8AEE043B 		vdiv.f64	d3, d10, d4
+ 337:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) > 1.65) && (((double)IQParamConfig->AECAl
+ 890              		.loc 1 337 67 view .LVU301
+ 891 0510 9FED274B 		vldr.64	d4, .L148+48
+ 892 0514 B4EEC43B 		vcmpe.f64	d3, d4
+ 893 0518 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 894 051c 29DC     		bgt	.L61
+ 895              	.L43:
+ 337:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) > 1.65) && (((double)IQParamConfig->AECAl
+ 896              		.loc 1 337 139 discriminator 1 view .LVU302
+ 897 051e 9FED264B 		vldr.64	d4, .L148+56
+ 898 0522 B4EEC46B 		vcmpe.f64	d6, d4
+ 899 0526 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 900 052a 0ADD     		ble	.L45
+ 338:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) > 1.35) && (((double)IQParamConfig->AECAl
+ 901              		.loc 1 338 118 view .LVU303
+ 902 052c B8EE494B 		vcvt.f64.u32	d4, s18
+ 903 0530 8AEE043B 		vdiv.f64	d3, d10, d4
+ 338:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) > 1.35) && (((double)IQParamConfig->AECAl
+ 904              		.loc 1 338 67 view .LVU304
+ 905 0534 9FED224B 		vldr.64	d4, .L148+64
+ 906 0538 B4EEC43B 		vcmpe.f64	d3, d4
+ 907 053c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 908 0540 17D4     		bmi	.L61
+ 909              	.L45:
+ 338:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) > 1.35) && (((double)IQParamConfig->AECAl
+ 910              		.loc 1 338 139 discriminator 1 view .LVU305
+ 911 0542 9FED214B 		vldr.64	d4, .L148+72
+ 912 0546 B4EEC46B 		vcmpe.f64	d6, d4
+ 913 054a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 914 054e 08DD     		ble	.L47
+ 339:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (new_global_exposure / cur_global_exposure) < 1.02) /* Or same exposure estimation but 
+ 915              		.loc 1 339 118 view .LVU306
+ 916 0550 B8EE493B 		vcvt.f64.u32	d3, s18
+ 917 0554 8AEE034B 		vdiv.f64	d4, d10, d3
+ 339:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (new_global_exposure / cur_global_exposure) < 1.02) /* Or same exposure estimation but 
+ 918              		.loc 1 339 67 view .LVU307
+ 919 0558 B4EEC54B 		vcmpe.f64	d4, d5
+ 920 055c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 921 0560 07D4     		bmi	.L61
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 30
+
+
+ 922              	.L47:
+ 339:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (new_global_exposure / cur_global_exposure) < 1.02) /* Or same exposure estimation but 
+ 923              		.loc 1 339 139 discriminator 1 view .LVU308
+ 924 0562 9FED1B5B 		vldr.64	d5, .L148+80
+ 925 0566 B4EEC56B 		vcmpe.f64	d6, d5
+ 926 056a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 927 056e 7FF56BAF 		bpl	.L39
+ 928              	.L61:
+ 389:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 929              		.loc 1 389 11 is_stmt 1 view .LVU309
+ 389:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 930              		.loc 1 389 102 is_stmt 0 view .LVU310
+ 931 0572 B8EE499B 		vcvt.f64.u32	d9, s18
+ 932 0576 8AEE097B 		vdiv.f64	d7, d10, d9
+ 933              	.LVL57:
+ 389:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 934              		.loc 1 389 31 view .LVU311
+ 935 057a 27EE087B 		vmul.f64	d7, d7, d8
+ 936              	.LVL58:
+ 389:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 937              		.loc 1 389 31 view .LVU312
+ 938 057e 63E7     		b	.L39
+ 939              	.L149:
+ 940              		.align	3
+ 941              	.L148:
+ 942 0580 33333333 		.word	858993459
+ 943 0584 3333C33F 		.word	1069757235
+ 944 0588 00000000 		.word	0
+ 945 058c 00004940 		.word	1078525952
+ 946 0590 00000000 		.word	0
+ 947 0594 00407F40 		.word	1082081280
+ 948 0598 00000000 		.word	0
+ 949 059c 00409F40 		.word	1084178432
+ 950 05a0 9A999999 		.word	-1717986918
+ 951 05a4 9999F13F 		.word	1072798105
+ 952 05a8 66666666 		.word	1717986918
+ 953 05ac 6666F63F 		.word	1073112678
+ 954 05b0 CDCCCCCC 		.word	-858993459
+ 955 05b4 CCCCFC3F 		.word	1073532108
+ 956 05b8 66666666 		.word	1717986918
+ 957 05bc 6666FA3F 		.word	1073374822
+ 958 05c0 CDCCCCCC 		.word	-858993459
+ 959 05c4 CCCCF43F 		.word	1073007820
+ 960 05c8 9A999999 		.word	-1717986918
+ 961 05cc 9999F53F 		.word	1073060249
+ 962 05d0 52B81E85 		.word	-2061584302
+ 963 05d4 EB51F03F 		.word	1072714219
+ 964 05d8 9A999999 		.word	-1717986918
+ 965 05dc 9999A93F 		.word	1068079513
+ 966 05e0 33333333 		.word	858993459
+ 967 05e4 3333E33F 		.word	1071854387
+ 968 05e8 9A999999 		.word	-1717986918
+ 969 05ec 9999D93F 		.word	1071225241
+ 970 05f0 CDCCCCCC 		.word	-858993459
+ 971 05f4 CCCCDC3F 		.word	1071434956
+ 972 05f8 CDCCCCCC 		.word	-858993459
+ 973 05fc CCCCE43F 		.word	1071959244
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 31
+
+
+ 974 0600 33333333 		.word	858993459
+ 975 0604 3333C33F 		.word	1069757235
+ 976 0608 33333333 		.word	858993459
+ 977 060c 3333EB3F 		.word	1072378675
+ 978 0610 5C8FC2F5 		.word	-171798692
+ 979 0614 285CEF3F 		.word	1072651304
+ 980 0618 00000000 		.word	0
+ 981 061c 00C07240 		.word	1081262080
+ 982 0620 00000000 		.word	0
+ 983 0624 00709740 		.word	1083666432
+ 984              	.L29:
+ 351:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 985              		.loc 1 351 7 is_stmt 1 view .LVU313
+ 351:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 986              		.loc 1 351 10 is_stmt 0 view .LVU314
+ 987 0628 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 988 062c C0F2A280 		blt	.L50
+ 354:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 989              		.loc 1 354 9 is_stmt 1 view .LVU315
+ 990              	.LVL59:
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 991              		.loc 1 357 9 view .LVU316
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 992              		.loc 1 357 59 is_stmt 0 view .LVU317
+ 993 0630 06EE906A 		vmov	s13, r6	@ int
+ 994 0634 B8EE666A 		vcvt.f32.u32	s12, s13
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 995              		.loc 1 357 31 view .LVU318
+ 996 0638 DAF80030 		ldr	r3, [r10]
+ 997              	.LVL60:
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 998              		.loc 1 357 59 view .LVU319
+ 999 063c B7EEC66A 		vcvt.f64.f32	d6, s12
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1000              		.loc 1 357 31 view .LVU320
+ 1001 0640 F31A     		subs	r3, r6, r3
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1002              		.loc 1 357 14 view .LVU321
+ 1003 0642 002B     		cmp	r3, #0
+ 1004 0644 B8BF     		it	lt
+ 1005 0646 5B42     		rsblt	r3, r3, #0
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1006              		.loc 1 357 56 view .LVU322
+ 1007 0648 07EE903A 		vmov	s15, r3	@ int
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1008              		.loc 1 357 70 view .LVU323
+ 1009 064c 1FED1E5B 		vldr.64	d5, .L148+88
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1010              		.loc 1 357 56 view .LVU324
+ 1011 0650 B8EEE77B 		vcvt.f64.s32	d7, s15
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1012              		.loc 1 357 70 view .LVU325
+ 1013 0654 26EE056B 		vmul.f64	d6, d6, d5
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1014              		.loc 1 357 12 view .LVU326
+ 1015 0658 B4EEC67B 		vcmpe.f64	d7, d6
+ 1016 065c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 32
+
+
+ 1017 0660 0BD8     		bhi	.L52
+ 357:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1018              		.loc 1 357 78 discriminator 1 view .LVU327
+ 1019 0662 56B1     		cbz	r6, .L52
+ 360:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1020              		.loc 1 360 11 is_stmt 1 view .LVU328
+ 360:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1021              		.loc 1 360 102 is_stmt 0 view .LVU329
+ 1022 0664 B8EE496B 		vcvt.f64.u32	d6, s18
+ 1023 0668 8AEE067B 		vdiv.f64	d7, d10, d6
+ 360:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1024              		.loc 1 360 31 view .LVU330
+ 1025 066c 27EE087B 		vmul.f64	d7, d7, d8
+ 1026              	.LVL61:
+ 363:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1027              		.loc 1 363 9 is_stmt 1 view .LVU331
+ 363:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1028              		.loc 1 363 12 is_stmt 0 view .LVU332
+ 1029 0670 B5EEC07B 		vcmpe.f64	d7, #0
+ 1030 0674 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1031 0678 7CD8     		bhi	.L50
+ 1032              	.LVL62:
+ 1033              	.L52:
+ 366:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           {
+ 1034              		.loc 1 366 11 is_stmt 1 view .LVU333
+ 366:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           {
+ 1035              		.loc 1 366 14 is_stmt 0 view .LVU334
+ 1036 067a B4EEC8BB 		vcmpe.f64	d11, d8
+ 1037 067e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1038 0682 69DB     		blt	.L137
+ 368:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1039              		.loc 1 368 13 is_stmt 1 view .LVU335
+ 368:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1040              		.loc 1 368 125 is_stmt 0 view .LVU336
+ 1041 0684 19EE103A 		vmov	r3, s18	@ int
+ 1042 0688 002B     		cmp	r3, #0
+ 1043 068a 60D0     		beq	.L57
+ 1044              	.LVL63:
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1045              		.loc 1 379 10 discriminator 1 view .LVU337
+ 1046 068c B5EE408B 		vcmp.f64	d8, #0
+ 368:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1047              		.loc 1 368 66 discriminator 1 view .LVU338
+ 1048 0690 2AEE086B 		vmul.f64	d6, d10, d8
+ 368:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1049              		.loc 1 368 114 discriminator 1 view .LVU339
+ 1050 0694 B8EE495B 		vcvt.f64.u32	d5, s18
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1051              		.loc 1 379 10 discriminator 1 view .LVU340
+ 1052 0698 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 368:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1053              		.loc 1 368 125 discriminator 1 view .LVU341
+ 1054 069c 86EE057B 		vdiv.f64	d7, d6, d5
+ 1055              	.LVL64:
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1056              		.loc 1 379 7 is_stmt 1 discriminator 1 view .LVU342
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 33
+
+
+ 1057              		.loc 1 379 10 is_stmt 0 discriminator 1 view .LVU343
+ 1058 06a0 3FF4D2AE 		beq	.L39
+ 1059              	.L58:
+ 382:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.45) && (((double)IQParamConfig->AECAl
+ 1060              		.loc 1 382 9 is_stmt 1 view .LVU344
+ 382:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.45) && (((double)IQParamConfig->AECAl
+ 1061              		.loc 1 382 36 is_stmt 0 view .LVU345
+ 1062 06a4 87EE086B 		vdiv.f64	d6, d7, d8
+ 382:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.45) && (((double)IQParamConfig->AECAl
+ 1063              		.loc 1 382 12 view .LVU346
+ 1064 06a8 1FED335B 		vldr.64	d5, .L148+96
+ 1065 06ac B4EEC56B 		vcmpe.f64	d6, d5
+ 1066 06b0 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1067 06b4 0BDD     		ble	.L59
+ 382:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.45) && (((double)IQParamConfig->AECAl
+ 1068              		.loc 1 382 118 discriminator 1 view .LVU347
+ 1069 06b6 B8EE494B 		vcvt.f64.u32	d4, s18
+ 1070 06ba 8AEE043B 		vdiv.f64	d3, d10, d4
+ 382:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.45) && (((double)IQParamConfig->AECAl
+ 1071              		.loc 1 382 67 discriminator 1 view .LVU348
+ 1072 06be 1FED364B 		vldr.64	d4, .L148+104
+ 1073 06c2 B4EEC43B 		vcmpe.f64	d3, d4
+ 1074 06c6 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1075 06ca 3FF552AF 		bmi	.L61
+ 1076              	.L59:
+ 382:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.45) && (((double)IQParamConfig->AECAl
+ 1077              		.loc 1 382 139 discriminator 3 view .LVU349
+ 1078 06ce 1FED384B 		vldr.64	d4, .L148+112
+ 1079 06d2 B4EEC46B 		vcmpe.f64	d6, d4
+ 1080 06d6 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1081 06da 0BD5     		bpl	.L62
+ 383:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.15) && (((double)IQParamConfig->AECAl
+ 1082              		.loc 1 383 118 view .LVU350
+ 1083 06dc B8EE494B 		vcvt.f64.u32	d4, s18
+ 1084 06e0 8AEE043B 		vdiv.f64	d3, d10, d4
+ 383:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.15) && (((double)IQParamConfig->AECAl
+ 1085              		.loc 1 383 67 view .LVU351
+ 1086 06e4 1FED3C4B 		vldr.64	d4, .L148+120
+ 1087 06e8 B4EEC43B 		vcmpe.f64	d3, d4
+ 1088 06ec F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1089 06f0 3FF73FAF 		bgt	.L61
+ 1090              	.L62:
+ 383:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.15) && (((double)IQParamConfig->AECAl
+ 1091              		.loc 1 383 139 discriminator 1 view .LVU352
+ 1092 06f4 1FED3E4B 		vldr.64	d4, .L148+128
+ 1093 06f8 B4EEC46B 		vcmpe.f64	d6, d4
+ 1094 06fc F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1095 0700 0BD5     		bpl	.L64
+ 384:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.60) && (((double)IQParamConfig->AECAl
+ 1096              		.loc 1 384 118 view .LVU353
+ 1097 0702 B8EE494B 		vcvt.f64.u32	d4, s18
+ 1098 0706 8AEE043B 		vdiv.f64	d3, d10, d4
+ 384:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.60) && (((double)IQParamConfig->AECAl
+ 1099              		.loc 1 384 67 view .LVU354
+ 1100 070a B6EE004B 		vmov.f64	d4, #5.0e-1
+ 1101 070e B4EEC43B 		vcmpe.f64	d3, d4
+ 1102 0712 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 34
+
+
+ 1103 0716 3FF72CAF 		bgt	.L61
+ 1104              	.L64:
+ 384:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (((new_global_exposure / cur_global_exposure) < 0.60) && (((double)IQParamConfig->AECAl
+ 1105              		.loc 1 384 139 discriminator 1 view .LVU355
+ 1106 071a B4EEC56B 		vcmpe.f64	d6, d5
+ 1107 071e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1108 0722 0BD5     		bpl	.L66
+ 385:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (new_global_exposure / cur_global_exposure) > 0.98) /* Or same exposure estimation but 
+ 1109              		.loc 1 385 118 view .LVU356
+ 1110 0724 B8EE495B 		vcvt.f64.u32	d5, s18
+ 1111 0728 8AEE054B 		vdiv.f64	d4, d10, d5
+ 385:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (new_global_exposure / cur_global_exposure) > 0.98) /* Or same exposure estimation but 
+ 1112              		.loc 1 385 67 view .LVU357
+ 1113 072c 1FED4A5B 		vldr.64	d5, .L148+136
+ 1114 0730 B4EEC54B 		vcmpe.f64	d4, d5
+ 1115 0734 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1116 0738 3FF71BAF 		bgt	.L61
+ 1117              	.L66:
+ 385:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****             (new_global_exposure / cur_global_exposure) > 0.98) /* Or same exposure estimation but 
+ 1118              		.loc 1 385 139 discriminator 1 view .LVU358
+ 1119 073c 1FED4C5B 		vldr.64	d5, .L148+144
+ 1120 0740 B4EEC56B 		vcmpe.f64	d6, d5
+ 1121 0744 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1122 0748 7FF77EAE 		ble	.L39
+ 1123 074c 11E7     		b	.L61
+ 1124              	.LVL65:
+ 1125              	.L57:
+ 368:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1126              		.loc 1 368 125 discriminator 2 view .LVU359
+ 1127 074e 1FED4E7B 		vldr.64	d7, .L148+152
+ 1128 0752 38EE477B 		vsub.f64	d7, d8, d7
+ 1129              	.LVL66:
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1130              		.loc 1 379 7 is_stmt 1 discriminator 2 view .LVU360
+ 1131 0756 77E6     		b	.L39
+ 1132              	.LVL67:
+ 1133              	.L137:
+ 372:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1134              		.loc 1 372 13 view .LVU361
+ 372:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1135              		.loc 1 372 88 is_stmt 0 view .LVU362
+ 1136 0758 1FED4F7B 		vldr.64	d7, .L148+160
+ 372:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1137              		.loc 1 372 72 view .LVU363
+ 1138 075c B8EE4F1B 		vcvt.f64.u32	d1, s30
+ 372:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1139              		.loc 1 372 88 view .LVU364
+ 1140 0760 31EE471B 		vsub.f64	d1, d1, d7
+ 372:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1141              		.loc 1 372 63 view .LVU365
+ 1142 0764 B2EE040B 		vmov.f64	d0, #1.0e+1
+ 1143 0768 81EE0E1B 		vdiv.f64	d1, d1, d14
+ 1144 076c FFF7FEFF 		bl	pow
+ 1145              	.LVL68:
+ 372:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****           }
+ 1146              		.loc 1 372 33 view .LVU366
+ 1147 0770 20EE0B7B 		vmul.f64	d7, d0, d11
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 35
+
+
+ 1148              	.LVL69:
+ 1149              	.L50:
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1150              		.loc 1 379 7 is_stmt 1 view .LVU367
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1151              		.loc 1 379 10 is_stmt 0 view .LVU368
+ 1152 0774 B5EE408B 		vcmp.f64	d8, #0
+ 1153 0778 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1154 077c 3FF464AE 		beq	.L39
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1155              		.loc 1 379 36 discriminator 1 view .LVU369
+ 1156 0780 19EE103A 		vmov	r3, s18	@ int
+ 1157 0784 002B     		cmp	r3, #0
+ 1158 0786 3FF45FAE 		beq	.L39
+ 1159              	.LVL70:
+ 379:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1160              		.loc 1 379 36 discriminator 1 view .LVU370
+ 1161 078a 8BE7     		b	.L58
+ 1162              	.LVL71:
+ 1163              	.L138:
+ 402:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (uint32_t)(20 * 1000 * log10(new_global_exposure / (float)(*pExposure)));
+ 1164              		.loc 1 402 7 is_stmt 1 view .LVU371
+ 403:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1165              		.loc 1 403 67 is_stmt 0 view .LVU372
+ 1166 078c B8EE6F0A 		vcvt.f32.u32	s0, s31
+ 1167 0790 B7EEC00A 		vcvt.f64.f32	d0, s0
+ 402:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = (uint32_t)(20 * 1000 * log10(new_global_exposure / (float)(*pExposure)));
+ 1168              		.loc 1 402 18 view .LVU373
+ 1169 0794 C8ED00FA 		vstr.32	s31, [r8]	@ int
+ 403:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1170              		.loc 1 403 7 is_stmt 1 view .LVU374
+ 403:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1171              		.loc 1 403 39 is_stmt 0 view .LVU375
+ 1172 0798 87EE000B 		vdiv.f64	d0, d7, d0
+ 1173 079c FFF7FEFF 		bl	log10
+ 1174              	.LVL72:
+ 403:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1175              		.loc 1 403 37 view .LVU376
+ 1176 07a0 20EE0E0B 		vmul.f64	d0, d0, d14
+ 403:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1177              		.loc 1 403 16 view .LVU377
+ 1178 07a4 FCEEC07B 		vcvt.u32.f64	s15, d0
+ 403:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1179              		.loc 1 403 14 view .LVU378
+ 1180 07a8 C4ED007A 		vstr.32	s15, [r4]	@ int
+ 406:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1181              		.loc 1 406 7 is_stmt 1 view .LVU379
+ 403:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1182              		.loc 1 403 16 is_stmt 0 view .LVU380
+ 1183 07ac 17EE901A 		vmov	r1, s15	@ int
+ 406:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1184              		.loc 1 406 10 view .LVU381
+ 1185 07b0 6B6B     		ldr	r3, [r5, #52]
+ 1186 07b2 9942     		cmp	r1, r3
+ 1187 07b4 18D9     		bls	.L73
+ 406:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1188              		.loc 1 406 69 discriminator 1 view .LVU382
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 36
+
+
+ 1189 07b6 1FEE103A 		vmov	r3, s30	@ int
+ 1190 07ba CA1A     		subs	r2, r1, r3
+ 406:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1191              		.loc 1 406 45 discriminator 1 view .LVU383
+ 1192 07bc 42F21073 		movw	r3, #10000
+ 406:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1193              		.loc 1 406 49 discriminator 1 view .LVU384
+ 1194 07c0 002A     		cmp	r2, #0
+ 1195 07c2 B8BF     		it	lt
+ 1196 07c4 5242     		rsblt	r2, r2, #0
+ 406:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1197              		.loc 1 406 45 discriminator 1 view .LVU385
+ 1198 07c6 9A42     		cmp	r2, r3
+ 1199 07c8 0EDD     		ble	.L73
+ 408:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1200              		.loc 1 408 9 is_stmt 1 view .LVU386
+ 408:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1201              		.loc 1 408 109 is_stmt 0 view .LVU387
+ 1202 07ca 1FEE102A 		vmov	r2, s30	@ int
+ 1203 07ce 9A42     		cmp	r2, r3
+ 1204 07d0 38BF     		it	cc
+ 1205 07d2 1A46     		movcc	r2, r3
+ 1206 07d4 1FEE100A 		vmov	r0, s30	@ int
+ 1207 07d8 A2F51C52 		sub	r2, r2, #9984
+ 1208 07dc 103A     		subs	r2, r2, #16
+ 1209 07de 8142     		cmp	r1, r0
+ 1210 07e0 0344     		add	r3, r3, r0
+ 1211 07e2 38BF     		it	cc
+ 1212 07e4 1346     		movcc	r3, r2
+ 408:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1213              		.loc 1 408 16 view .LVU388
+ 1214 07e6 2360     		str	r3, [r4]
+ 1215              	.L73:
+ 410:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 1216              		.loc 1 410 7 is_stmt 1 view .LVU389
+ 410:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 1217              		.loc 1 410 17 is_stmt 0 view .LVU390
+ 1218 07e8 2268     		ldr	r2, [r4]
+ 410:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 1219              		.loc 1 410 37 view .LVU391
+ 1220 07ea EB6A     		ldr	r3, [r5, #44]
+ 410:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 1221              		.loc 1 410 73 view .LVU392
+ 1222 07ec 9A42     		cmp	r2, r3
+ 1223 07ee 03D3     		bcc	.L76
+ 410:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 1224              		.loc 1 410 73 discriminator 2 view .LVU393
+ 1225 07f0 2B6B     		ldr	r3, [r5, #48]
+ 1226 07f2 9342     		cmp	r3, r2
+ 1227 07f4 28BF     		it	cs
+ 1228 07f6 1346     		movcs	r3, r2
+ 1229              	.L76:
+ 410:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 1230              		.loc 1 410 14 discriminator 4 view .LVU394
+ 1231 07f8 2360     		str	r3, [r4]
+ 1232              	.LVL73:
+ 1233              	.L72:
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 37
+
+
+ 475:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1234              		.loc 1 475 3 is_stmt 1 discriminator 1 view .LVU395
+ 1235              	.LBB14:
+ 1236              	.LBB15:
+  95:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 1237              		.loc 1 95 29 is_stmt 0 discriminator 1 view .LVU396
+ 1238 07fa 97F87010 		ldrb	r1, [r7, #112]	@ zero_extendqisi2
+ 1239              	.LBE15:
+ 1240              	.LBE14:
+ 475:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1241              		.loc 1 475 3 discriminator 1 view .LVU397
+ 1242 07fe D4F80090 		ldr	r9, [r4]
+ 475:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1243              		.loc 1 475 3 discriminator 1 view .LVU398
+ 1244 0802 D8F80030 		ldr	r3, [r8]
+ 1245              	.LVL74:
+ 1246              	.LBB17:
+ 1247              	.LBI14:
+  87:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****                                       uint32_t *adjusted_gain, uint32_t *adjusted_exposure)
+ 1248              		.loc 1 87 13 is_stmt 1 discriminator 1 view .LVU399
+ 1249              	.LBB16:
+  91:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t compensation_gain_mdb, compat_period_us;
+ 1250              		.loc 1 91 3 discriminator 1 view .LVU400
+  92:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   uint32_t up_equiv_exposure;
+ 1251              		.loc 1 92 3 discriminator 1 view .LVU401
+  93:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1252              		.loc 1 93 3 discriminator 1 view .LVU402
+  95:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 1253              		.loc 1 95 3 discriminator 1 view .LVU403
+  95:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 1254              		.loc 1 95 6 is_stmt 0 discriminator 1 view .LVU404
+ 1255 0806 B9B3     		cbz	r1, .L92
+ 102:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   up_equiv_exposure = (1 + exposure / compat_period_us) * compat_period_us;
+ 1256              		.loc 1 102 3 is_stmt 1 view .LVU405
+ 102:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   up_equiv_exposure = (1 + exposure / compat_period_us) * compat_period_us;
+ 1257              		.loc 1 102 20 is_stmt 0 view .LVU406
+ 1258 0808 5B4A     		ldr	r2, .L150+40
+ 102:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   up_equiv_exposure = (1 + exposure / compat_period_us) * compat_period_us;
+ 1259              		.loc 1 102 42 view .LVU407
+ 1260 080a 4900     		lsls	r1, r1, #1
+ 102:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   up_equiv_exposure = (1 + exposure / compat_period_us) * compat_period_us;
+ 1261              		.loc 1 102 20 view .LVU408
+ 1262 080c B2FBF1F2 		udiv	r2, r2, r1
+ 1263              	.LVL75:
+ 103:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if ((exposure > compat_period_us) && (exposure < 0.95 * up_equiv_exposure))
+ 1264              		.loc 1 103 3 is_stmt 1 view .LVU409
+ 104:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 1265              		.loc 1 104 3 view .LVU410
+ 104:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 1266              		.loc 1 104 6 is_stmt 0 view .LVU411
+ 1267 0810 9342     		cmp	r3, r2
+ 1268 0812 31D9     		bls	.L92
+ 103:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if ((exposure > compat_period_us) && (exposure < 0.95 * up_equiv_exposure))
+ 1269              		.loc 1 103 37 view .LVU412
+ 1270 0814 B3FBF2F7 		udiv	r7, r3, r2
+ 1271              	.LVL76:
+ 103:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   if ((exposure > compat_period_us) && (exposure < 0.95 * up_equiv_exposure))
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 38
+
+
+ 1272              		.loc 1 103 21 view .LVU413
+ 1273 0818 07FB0227 		mla	r7, r7, r2, r2
+ 1274              	.LVL77:
+ 104:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 1275              		.loc 1 104 57 view .LVU414
+ 1276 081c 07EE907A 		vmov	s15, r7	@ int
+ 1277 0820 9FED4B6B 		vldr.64	d6, .L150
+ 1278 0824 B8EE677B 		vcvt.f64.u32	d7, s15
+ 1279 0828 27EE067B 		vmul.f64	d7, d7, d6
+ 104:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   {
+ 1280              		.loc 1 104 37 view .LVU415
+ 1281 082c 06EE903A 		vmov	s13, r3	@ int
+ 1282 0830 B8EE666B 		vcvt.f64.u32	d6, s13
+ 1283 0834 B4EEC76B 		vcmpe.f64	d6, d7
+ 1284 0838 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1285 083c 1CD5     		bpl	.L92
+ 108:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1286              		.loc 1 108 5 is_stmt 1 view .LVU416
+ 111:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain_mdb = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 1287              		.loc 1 111 25 is_stmt 0 view .LVU417
+ 1288 083e 07EE903A 		vmov	s15, r3	@ int
+ 108:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1289              		.loc 1 108 56 view .LVU418
+ 1290 0842 BF1A     		subs	r7, r7, r2
+ 1291              	.LVL78:
+ 111:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain_mdb = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 1292              		.loc 1 111 5 is_stmt 1 view .LVU419
+ 112:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_gain = gain + compensation_gain_mdb;
+ 1293              		.loc 1 112 5 view .LVU420
+ 111:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain_mdb = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 1294              		.loc 1 111 70 is_stmt 0 view .LVU421
+ 1295 0844 7B1C     		adds	r3, r7, #1
+ 1296              	.LVL79:
+ 111:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain_mdb = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 1297              		.loc 1 111 25 view .LVU422
+ 1298 0846 B8EE677A 		vcvt.f32.u32	s14, s15
+ 111:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain_mdb = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 1299              		.loc 1 111 70 view .LVU423
+ 1300 084a 07EE903A 		vmov	s15, r3	@ int
+ 111:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain_mdb = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 1301              		.loc 1 111 43 view .LVU424
+ 1302 084e F8EE677A 		vcvt.f32.u32	s15, s15
+ 111:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     compensation_gain_mdb = (uint32_t)(20 * 1000 * log10(compensation_gain));
+ 1303              		.loc 1 111 23 view .LVU425
+ 1304 0852 87EE270A 		vdiv.f32	s0, s14, s15
+ 1305              	.LVL80:
+ 112:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_gain = gain + compensation_gain_mdb;
+ 1306              		.loc 1 112 52 view .LVU426
+ 1307 0856 B7EEC00A 		vcvt.f64.f32	d0, s0
+ 1308              	.LVL81:
+ 112:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_gain = gain + compensation_gain_mdb;
+ 1309              		.loc 1 112 52 view .LVU427
+ 1310 085a FFF7FEFF 		bl	log10
+ 1311              	.LVL82:
+ 113:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (*adjusted_gain > pSensorInfo->gain_max)
+ 1312              		.loc 1 113 5 is_stmt 1 view .LVU428
+ 114:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 39
+
+
+ 1313              		.loc 1 114 5 view .LVU429
+ 112:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_gain = gain + compensation_gain_mdb;
+ 1314              		.loc 1 112 50 is_stmt 0 view .LVU430
+ 1315 085e 20EE0E0B 		vmul.f64	d0, d0, d14
+ 1316              	.LVL83:
+ 112:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     *adjusted_gain = gain + compensation_gain_mdb;
+ 1317              		.loc 1 112 27 view .LVU431
+ 1318 0862 BCEEC00B 		vcvt.u32.f64	s0, d0
+ 113:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     if (*adjusted_gain > pSensorInfo->gain_max)
+ 1319              		.loc 1 113 27 view .LVU432
+ 1320 0866 10EE103A 		vmov	r3, s0	@ int
+ 1321 086a 2A6B     		ldr	r2, [r5, #48]
+ 1322 086c 4B44     		add	r3, r3, r9
+ 1323 086e 9342     		cmp	r3, r2
+ 1324 0870 28BF     		it	cs
+ 1325 0872 1346     		movcs	r3, r2
+ 1326 0874 9946     		mov	r9, r3
+ 1327              	.LVL84:
+ 108:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1328              		.loc 1 108 24 view .LVU433
+ 1329 0876 3B46     		mov	r3, r7
+ 1330              	.LVL85:
+ 1331              	.L92:
+ 108:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1332              		.loc 1 108 24 view .LVU434
+ 1333              	.LBE16:
+ 1334              	.LBE17:
+ 478:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *pGain = curGain;
+ 1335              		.loc 1 478 3 is_stmt 1 view .LVU435
+ 478:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****   *pGain = curGain;
+ 1336              		.loc 1 478 14 is_stmt 0 view .LVU436
+ 1337 0878 C8F80030 		str	r3, [r8]
+ 479:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1338              		.loc 1 479 3 is_stmt 1 view .LVU437
+ 482:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** }
+ 1339              		.loc 1 482 16 is_stmt 0 view .LVU438
+ 1340 087c CAF80060 		str	r6, [r10]
+ 479:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1341              		.loc 1 479 10 view .LVU439
+ 1342 0880 C4F80090 		str	r9, [r4]
+ 482:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** }
+ 1343              		.loc 1 482 3 is_stmt 1 view .LVU440
+ 1344              	.LVL86:
+ 482:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** }
+ 1345              		.loc 1 482 3 is_stmt 0 view .LVU441
+ 1346 0884 32E4     		b	.L4
+ 1347              	.LVL87:
+ 1348              	.L135:
+ 421:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 1349              		.loc 1 421 114 view .LVU442
+ 1350 0886 B9F10F0F 		cmp	r9, #15
+ 1351 088a 34BF     		ite	cc
+ 1352 088c 0821     		movcc	r1, #8
+ 1353 088e 0A21     		movcs	r1, #10
+ 421:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     {
+ 1354              		.loc 1 421 36 view .LVU443
+ 1355 0890 8B42     		cmp	r3, r1
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 40
+
+
+ 1356 0892 A7E4     		b	.L142
+ 1357              	.LVL88:
+ 1358              	.L83:
+ 430:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1359              		.loc 1 430 123 discriminator 2 view .LVU444
+ 1360 0894 9FED307B 		vldr.64	d7, .L150+8
+ 1361 0898 38EE078B 		vadd.f64	d8, d8, d7
+ 1362              	.LVL89:
+ 1363              	.L84:
+ 451:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1364              		.loc 1 451 7 is_stmt 1 view .LVU445
+ 451:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       {
+ 1365              		.loc 1 451 10 is_stmt 0 view .LVU446
+ 1366 089c B4EEC8BB 		vcmpe.f64	d11, d8
+ 1367 08a0 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1368 08a4 30DB     		blt	.L141
+ 453:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pExposure = (new_global_exposure < pSensorInfo->exposure_min) ? pSensorInfo->exposure_min 
+ 1369              		.loc 1 453 9 is_stmt 1 view .LVU447
+ 453:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pExposure = (new_global_exposure < pSensorInfo->exposure_min) ? pSensorInfo->exposure_min 
+ 1370              		.loc 1 453 16 is_stmt 0 view .LVU448
+ 1371 08a6 0023     		movs	r3, #0
+ 1372 08a8 2360     		str	r3, [r4]
+ 454:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1373              		.loc 1 454 9 is_stmt 1 view .LVU449
+ 454:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1374              		.loc 1 454 56 is_stmt 0 view .LVU450
+ 1375 08aa AB6B     		ldr	r3, [r5, #56]
+ 454:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1376              		.loc 1 454 43 view .LVU451
+ 1377 08ac 07EE903A 		vmov	s15, r3	@ int
+ 1378 08b0 B8EE677B 		vcvt.f64.u32	d7, s15
+ 454:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1379              		.loc 1 454 100 view .LVU452
+ 1380 08b4 B4EEC87B 		vcmpe.f64	d7, d8
+ 1381 08b8 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1382 08bc 3FF7DAAD 		bgt	.L90
+ 454:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1383              		.loc 1 454 100 discriminator 2 view .LVU453
+ 1384 08c0 FCEEC87B 		vcvt.u32.f64	s15, d8
+ 1385 08c4 D4E5     		b	.L145
+ 1386              	.LVL90:
+ 1387              	.L139:
+ 434:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1388              		.loc 1 434 11 is_stmt 1 view .LVU454
+ 434:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1389              		.loc 1 434 70 is_stmt 0 view .LVU455
+ 1390 08c6 B8EE4F1B 		vcvt.f64.u32	d1, s30
+ 434:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1391              		.loc 1 434 86 view .LVU456
+ 1392 08ca 9FED257B 		vldr.64	d7, .L150+16
+ 1393 08ce 31EE071B 		vadd.f64	d1, d1, d7
+ 1394              	.L144:
+ 446:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1395              		.loc 1 446 61 view .LVU457
+ 1396 08d2 81EE0E1B 		vdiv.f64	d1, d1, d14
+ 1397 08d6 B2EE040B 		vmov.f64	d0, #1.0e+1
+ 1398 08da FFF7FEFF 		bl	pow
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 41
+
+
+ 1399              	.LVL91:
+ 446:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1400              		.loc 1 446 31 view .LVU458
+ 1401 08de 2BEE008B 		vmul.f64	d8, d11, d0
+ 1402              	.LVL92:
+ 446:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1403              		.loc 1 446 31 view .LVU459
+ 1404 08e2 DBE7     		b	.L84
+ 1405              	.LVL93:
+ 1406              	.L80:
+ 440:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1407              		.loc 1 440 9 is_stmt 1 view .LVU460
+ 440:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         {
+ 1408              		.loc 1 440 12 is_stmt 0 view .LVU461
+ 1409 08e4 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 1410 08e8 07DB     		blt	.L140
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1411              		.loc 1 442 11 is_stmt 1 view .LVU462
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1412              		.loc 1 442 123 is_stmt 0 view .LVU463
+ 1413 08ea 002B     		cmp	r3, #0
+ 1414 08ec 7FF48CAC 		bne	.L143
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1415              		.loc 1 442 123 discriminator 2 view .LVU464
+ 1416 08f0 9FED1D7B 		vldr.64	d7, .L150+24
+ 1417 08f4 38EE478B 		vsub.f64	d8, d8, d7
+ 1418              	.LVL94:
+ 442:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1419              		.loc 1 442 123 discriminator 2 view .LVU465
+ 1420 08f8 D0E7     		b	.L84
+ 1421              	.LVL95:
+ 1422              	.L140:
+ 446:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1423              		.loc 1 446 11 is_stmt 1 view .LVU466
+ 446:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1424              		.loc 1 446 70 is_stmt 0 view .LVU467
+ 1425 08fa B8EE4F1B 		vcvt.f64.u32	d1, s30
+ 446:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         }
+ 1426              		.loc 1 446 86 view .LVU468
+ 1427 08fe 9FED1C7B 		vldr.64	d7, .L150+32
+ 1428 0902 31EE471B 		vsub.f64	d1, d1, d7
+ 1429 0906 E4E7     		b	.L144
+ 1430              	.LVL96:
+ 1431              	.L141:
+ 458:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pGain = (uint32_t)(20 * 1000 * log10((float)new_global_exposure / (float)(*pExposure)));
+ 1432              		.loc 1 458 9 is_stmt 1 view .LVU469
+ 458:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****         *pGain = (uint32_t)(20 * 1000 * log10((float)new_global_exposure / (float)(*pExposure)));
+ 1433              		.loc 1 458 20 is_stmt 0 view .LVU470
+ 1434 0908 C8ED00FA 		vstr.32	s31, [r8]	@ int
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1435              		.loc 1 459 9 is_stmt 1 view .LVU471
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1436              		.loc 1 459 47 is_stmt 0 view .LVU472
+ 1437 090c B7EEC88B 		vcvt.f32.f64	s16, d8
+ 1438              	.LVL97:
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1439              		.loc 1 459 76 view .LVU473
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 42
+
+
+ 1440 0910 F8EE6FFA 		vcvt.f32.u32	s31, s31
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1441              		.loc 1 459 74 view .LVU474
+ 1442 0914 88EE2F0A 		vdiv.f32	s0, s16, s31
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1443              		.loc 1 459 41 view .LVU475
+ 1444 0918 B7EEC00A 		vcvt.f64.f32	d0, s0
+ 1445 091c FFF7FEFF 		bl	log10
+ 1446              	.LVL98:
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1447              		.loc 1 459 39 view .LVU476
+ 1448 0920 20EE0E0B 		vmul.f64	d0, d0, d14
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1449              		.loc 1 459 18 view .LVU477
+ 1450 0924 FCEEC07B 		vcvt.u32.f64	s15, d0
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1451              		.loc 1 459 16 view .LVU478
+ 1452 0928 C4ED007A 		vstr.32	s15, [r4]	@ int
+ 461:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1453              		.loc 1 461 9 is_stmt 1 view .LVU479
+ 459:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c **** 
+ 1454              		.loc 1 459 18 is_stmt 0 view .LVU480
+ 1455 092c 17EE903A 		vmov	r3, s15	@ int
+ 461:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1456              		.loc 1 461 39 view .LVU481
+ 1457 0930 EA6A     		ldr	r2, [r5, #44]
+ 461:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1458              		.loc 1 461 75 view .LVU482
+ 1459 0932 9342     		cmp	r3, r2
+ 1460 0934 03D3     		bcc	.L91
+ 461:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1461              		.loc 1 461 75 discriminator 2 view .LVU483
+ 1462 0936 2A6B     		ldr	r2, [r5, #48]
+ 1463 0938 9A42     		cmp	r2, r3
+ 1464 093a 28BF     		it	cs
+ 1465 093c 1A46     		movcs	r2, r3
+ 1466              	.L91:
+ 461:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       }
+ 1467              		.loc 1 461 16 discriminator 4 view .LVU484
+ 1468 093e 2260     		str	r2, [r4]
+ 1469 0940 5BE7     		b	.L72
+ 1470              	.LVL99:
+ 1471              	.L78:
+ 468:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = curGain;
+ 1472              		.loc 1 468 7 is_stmt 1 view .LVU485
+ 468:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****       *pGain = curGain;
+ 1473              		.loc 1 468 18 is_stmt 0 view .LVU486
+ 1474 0942 C8F80020 		str	r2, [r8]
+ 469:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 1475              		.loc 1 469 7 is_stmt 1 view .LVU487
+ 469:../../Middlewares/stm32-mw-camera/ISP_Library/isp/Src/isp_ae_algo.c ****     }
+ 1476              		.loc 1 469 14 is_stmt 0 view .LVU488
+ 1477 0946 84ED00FA 		vstr.32	s30, [r4]	@ int
+ 1478 094a 56E7     		b	.L72
+ 1479              	.L151:
+ 1480 094c AFF30080 		.align	3
+ 1481              	.L150:
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 43
+
+
+ 1482 0950 66666666 		.word	1717986918
+ 1483 0954 6666EE3F 		.word	1072588390
+ 1484 0958 00000000 		.word	0
+ 1485 095c 00C06240 		.word	1080213504
+ 1486 0960 00000000 		.word	0
+ 1487 0964 00407F40 		.word	1082081280
+ 1488 0968 00000000 		.word	0
+ 1489 096c 00005940 		.word	1079574528
+ 1490 0970 00000000 		.word	0
+ 1491 0974 00C07240 		.word	1081262080
+ 1492 0978 40420F00 		.word	1000000
+ 1493              		.cfi_endproc
+ 1494              	.LFE868:
+ 1496              		.section	.bss.previous_lux,"aw",%nobits
+ 1497              		.align	2
+ 1500              	previous_lux:
+ 1501 0000 00000000 		.space	4
+ 1502              		.section	.bss.pSensorInfo,"aw",%nobits
+ 1503              		.align	2
+ 1506              	pSensorInfo:
+ 1507 0000 00000000 		.space	4
+ 1508              		.section	.bss.IQParamConfig,"aw",%nobits
+ 1509              		.align	2
+ 1512              	IQParamConfig:
+ 1513 0000 00000000 		.space	4
+ 1514              		.text
+ 1515              	.Letext0:
+ 1516              		.file 2 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 1517              		.file 3 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 1518              		.file 4 "../../Middlewares/stm32-mw-camera/ISP_Library/isp/Inc/isp_core.h"
+ 1519              		.file 5 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 1520              		.file 6 "../../Middlewares/stm32-mw-camera/ISP_Library/isp/Inc/isp_services.h"
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 44
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 isp_ae_algo.c
+/tmp/claude-1000/ccVtSW6D.s:26     .text.isp_ae_init:00000000 $t
+/tmp/claude-1000/ccVtSW6D.s:32     .text.isp_ae_init:00000000 isp_ae_init
+/tmp/claude-1000/ccVtSW6D.s:68     .text.isp_ae_init:00000014 $d
+/tmp/claude-1000/ccVtSW6D.s:1512   .bss.IQParamConfig:00000000 IQParamConfig
+/tmp/claude-1000/ccVtSW6D.s:1506   .bss.pSensorInfo:00000000 pSensorInfo
+/tmp/claude-1000/ccVtSW6D.s:74     .text.isp_ae_get_new_exposure:00000000 $t
+/tmp/claude-1000/ccVtSW6D.s:80     .text.isp_ae_get_new_exposure:00000000 isp_ae_get_new_exposure
+/tmp/claude-1000/ccVtSW6D.s:494    .text.isp_ae_get_new_exposure:00000238 $d
+/tmp/claude-1000/ccVtSW6D.s:1500   .bss.previous_lux:00000000 previous_lux
+/tmp/claude-1000/ccVtSW6D.s:513    .text.isp_ae_get_new_exposure:0000026c $t
+/tmp/claude-1000/ccVtSW6D.s:942    .text.isp_ae_get_new_exposure:00000580 $d
+/tmp/claude-1000/ccVtSW6D.s:987    .text.isp_ae_get_new_exposure:00000628 $t
+/tmp/claude-1000/ccVtSW6D.s:1482   .text.isp_ae_get_new_exposure:00000950 $d
+/tmp/claude-1000/ccVtSW6D.s:1497   .bss.previous_lux:00000000 $d
+/tmp/claude-1000/ccVtSW6D.s:1503   .bss.pSensorInfo:00000000 $d
+/tmp/claude-1000/ccVtSW6D.s:1509   .bss.IQParamConfig:00000000 $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.isp_conf.h.21.f38432dbfef47e2ce2a64e60ef6a2d79
+                           .group:00000000 wm4.stm32n6xx_hal_conf.h.21.a3ee9875a8d50695591dfaa6b0d72c91
+                           .group:00000000 wm4.stddef.h.39.3e0425629195acf083c9561151306b4d
+                           .group:00000000 wm4.arm_cmse.h.103.a0d15a79c4c9a67da8d5831704d7248e
+                           .group:00000000 wm4.stm32n6xx.h.34.c523a1ffdf274a69e8802892c6776332
+                           .group:00000000 wm4.stm32n657xx.h.26.acd272cb67318cc1a4791ce2f0720ca6
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.features.h.33.3e67abe6fb64142d4f6fa9496796153c
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.cmsis_version.h.30.d128735bf87720f7436b74fefeb5043c
+                           .group:00000000 wm4.core_cm55.h.67.25006a3ce7048d64bcddd2996d5fac93
+                           .group:00000000 wm4.arm_acle.h.28.ce8f475a5cc50333e54ae4adeb8c0298
+                           .group:00000000 wm4.cmsis_gcc.h.39.eba7438bc45fd1a6e6376b63ffe44436
+                           .group:00000000 wm4.cmsis_gcc_m.h.24.e590ec51aeda3a1242400351d73f5dce
+                           .group:00000000 wm4.core_cm55.h.213.0528f46a674315ef8d35c4477e230358
+                           .group:00000000 wm4.armv8m_mpu.h.24.bf28cc25bee30a7ff9d2f7a44a5e2230
+                           .group:00000000 wm4.armv8m_pmu.h.24.6ded195d2625055391fd378c0e1d2519
+                           .group:00000000 wm4.core_cm55.h.4477.396e822ef855bcfb932819ad48de1c4c
+                           .group:00000000 wm4.armv7m_cachel1.h.24.936dd92d6e204a8d0b17d5e4ea4a356e
+                           .group:00000000 wm4.stm32n657xx.h.575.78d331c417ec710388ced647138f735f
+                           .group:00000000 wm4.stm32n6xx.h.116.b4247d9785590e7c5ec9234ffb2153bf
+                           .group:00000000 wm4.stm32_hal_legacy.h.22.e62aae2fd3ae33360b6781c8a72e5b18
+                           .group:00000000 wm4.newlib.h.7.f9f25f80f86429f653675286e7973cb9
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.math.h.13.35ad80917fddb38312d53499dad31194
+                           .group:00000000 wm4.stm32n6xx_hal_def.h.63.3a8f01490e8852464e9fcb69092e9c75
+ARM GAS  /tmp/claude-1000/ccVtSW6D.s 			page 45
+
+
+                           .group:00000000 wm4.stm32n6xx_ll_bus.h.38.2366a295ee4cdb04833997d3787fcd2d
+                           .group:00000000 wm4.stm32n6xx_ll_rcc.h.21.656bd5637db608589ad16ea57d39430c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.194.69b522b1afdf59a82d05a1f71efe03c7
+                           .group:00000000 wm4.stm32n6xx_hal_rcc_ex.h.21.cc6be0a7d168882a1a6f470236ba784c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.4361.4b490a4a19722e68c21f88cb8a774a30
+                           .group:00000000 wm4.stm32n6xx_hal_gpio.h.21.89d54af663b98eb8fc098192053f7eeb
+                           .group:00000000 wm4.stm32n6xx_hal_gpio_ex.h.22.f7e795fb05a69a19b87d946b47c8db8b
+                           .group:00000000 wm4.stm32n6xx_hal_rif.h.21.33f2c553a8a3fc14dca8c470b213ab19
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.21.61e48c5c2e8d25d22177834b232fe45c
+                           .group:00000000 wm4.stm32n6xx_hal_dma_ex.h.21.82f854ecdb6a463b06d0b4e5c217c368
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.1020.87e2180c009560b617c1f8208140c950
+                           .group:00000000 wm4.stm32n6xx_hal_cortex.h.21.f493623cc58f9454ab4eae41e395c5cc
+                           .group:00000000 wm4.stm32n6xx_hal_bsec.h.21.1ee89319140541f82434908b4267aa30
+                           .group:00000000 wm4.stm32n6xx_hal_dcmipp.h.21.e2b87dce83d7d722d696a597f6ac56bf
+                           .group:00000000 wm4.stm32n6xx_hal_dma2d.h.21.75c8d46cdbb72970123b3f34ae2043d7
+                           .group:00000000 wm4.stm32n6xx_hal_exti.h.21.e0efb23591051684dc14f1f2431c6aab
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.21.3f483626ff64c5bf027265bb2e1d1331
+                           .group:00000000 wm4.stm32n6xx_hal_i2c_ex.h.21.79e9196c22282cdaf6b4047893638c45
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.741.1084702632703acc669e4282b3043372
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.21.ae1eb09930e7e550e48e418ac5849e4d
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.1002.b13ede7fc94ed5ad1c6768a157d2149a
+                           .group:00000000 wm4.stm32n6xx_ll_usb.h.21.daaf86158046f2cf02166c495d637480
+                           .group:00000000 wm4.stm32n6xx_hal_pcd.h.155.27040aac6844effe2af8c180caf1dd2e
+                           .group:00000000 wm4.stm32n6xx_hal_pwr.h.21.cdb73e4869c3fed3fc84f901ec0e5f0a
+                           .group:00000000 wm4.stm32n6xx_hal_pwr_ex.h.21.1a673224a58b0c1e5fad8eeda6514208
+                           .group:00000000 wm4.stm32n6xx_hal_ramcfg.h.21.a62dfbb4d2c14e9a8c634a215e37bd3d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.21.9f810303326e2d91749800e9911f8e4d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.906.8ad9375f39dce09dc0a4db0025ee7a76
+                           .group:00000000 wm4.stm32n6xx_hal_tim.h.21.839dd2b2a70382fb2c44f8f293a84d5f
+                           .group:00000000 wm4.stm32n6xx_hal_tim_ex.h.21.e372d5ac63c13441211ea4ecbd353150
+                           .group:00000000 wm4.stm32n6xx_hal_uart.h.21.230f549bfa0d5ebfd77bfb311b2aca15
+                           .group:00000000 wm4.stm32n6xx_hal_uart_ex.h.21.a0d5511e1d0703b7b5278c8f5472b96d
+                           .group:00000000 wm4.stm32n6xx_hal_xspi.h.21.7fd922d3bdb871475cf18436a68935bb
+                           .group:00000000 wm4.stm32n6xx_hal_cacheaxi.h.21.7c3375b7903ec42376e4883320997f74
+                           .group:00000000 wm4.stm32n6xx_hal.h.81.e79d59262ba173c33cf1d69281830d15
+                           .group:00000000 wm4.stdio.h.27.3fc80220048df77954e38daec3bb9670
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4.stdio.h.47.dc31ec4674d7bcb103c9f08809549f45
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.stdlib.h.13.4ed386f5c1a80d71e72172885d946ef2
+                           .group:00000000 wm4.alloca.h.8.dfc0c703c47ec3e69746825b17d9e66d
+                           .group:00000000 wm4.stdlib.h.56.f4862cfbf4363a1db01842d5bdf72c18
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4.stdbool.h.29.4a1c88fe569adb8d03217dd16982ca34
+                           .group:00000000 wm4.isp_core.h.110.8c4344a3506ac8fadc31ee17c3f6f7d7
+                           .group:00000000 wm4.isp_services.h.55.aa3787e002060687ddf24cf4424c9532
+
+UNDEFINED SYMBOLS
+ISP_SVC_IQParam_Get
+pow
+log10

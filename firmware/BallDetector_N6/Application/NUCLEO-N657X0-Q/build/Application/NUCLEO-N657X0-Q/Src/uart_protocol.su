@@ -1,0 +1,9 @@
+Src/uart_protocol.c:32:13:tx	0	static
+Src/uart_protocol.c:83:12:rx_exact.constprop	8	static
+Src/uart_protocol.c:18:10:proto_crc16_ccitt	16	static
+Src/uart_protocol.c:30:6:proto_init	0	static
+Src/uart_protocol.c:37:6:proto_send_frame	32	static
+Src/uart_protocol.c:51:6:proto_send_info	16	static
+Src/uart_protocol.c:59:6:proto_send_log	8	static
+Src/uart_protocol.c:64:6:proto_send_infer_dec	200	static
+Src/uart_protocol.c:97:5:proto_recv_frame	64	static

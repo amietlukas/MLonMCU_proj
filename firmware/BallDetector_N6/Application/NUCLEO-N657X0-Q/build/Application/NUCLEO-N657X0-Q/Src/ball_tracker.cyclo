@@ -1,0 +1,6 @@
+Src/ball_tracker.c:54:10:BallTracker_GetX	1
+Src/ball_tracker.c:55:10:BallTracker_State	1
+Src/ball_tracker.c:56:10:BallTracker_TickCount	1
+Src/ball_tracker.c:58:6:BallTracker_Measure	1
+Src/ball_tracker.c:92:6:BallTracker_ControlTick	25
+Src/ball_tracker.c:143:6:BallTracker_Init	1

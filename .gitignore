@@ -40,24 +40,31 @@ venv_tflite/
 **/datasets/**
 !**/datasets/**/.gitkeep
 !**/datasets/**/README.md
+!**/datasets/**/README.md
 
 # version control
 /local_version
 
-# pred and other folders
+# pred and other files and folders
 **/pred_images/**
 Classifier_CMSISNN/
+Classifier_eval/
 **/Classifier_CMSISNN/**
 **/n6_viz/**
 **/results/**
-STM32N6-GettingStarted-ImageClassification/
-STM32N6-GettingStarted-ObjectDetection/
+external/
+archive/
+firmware/BallDetector_N6/bench_deploy.sh
+presentation/ball_detection/dataset_examples
+presentation/classifier/dataset_examples
+presentation/classifier/notebooks
 
 # stedgeai outputs
 **/st_ai_output/**
 **/st_ai_ws/**
 
 # Earlier N6 project copies (huge vendor-FW copies) — not committed
+BallDetector_N6_eval/
 firmware/BallDetector_N6_cam/
 firmware/BallDetector_N6_cam_build/
 

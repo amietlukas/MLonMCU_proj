@@ -1,0 +1,107 @@
+ /**
+ ******************************************************************************
+ * @file    app_config.h
+ * @author  GPM Application Team
+ *
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
+
+#ifndef APP_CONFIG
+#define APP_CONFIG
+
+#include "arm_math.h"
+
+#define USE_DCACHE
+
+/*Defines: CMW_MIRRORFLIP_NONE; CMW_MIRRORFLIP_FLIP; CMW_MIRRORFLIP_MIRROR; CMW_MIRRORFLIP_FLIP_MIRROR;*/
+#define CAMERA_FLIP CMW_MIRRORFLIP_NONE
+
+/* The camera module is mounted rotated 90deg. Two modes to compare:
+ *   1 = capture the sensor's native 3:4 view (cropped, no stretch) and rotate
+ *       it 90deg CCW into the 4:3 NN input so detection sees an upright image.
+ *       The UVC display stays sideways; box overlay is mapped back (incl. crop).
+ *   0 = original: straight HWC->CHW transpose, no rotation (sideways to the NN).
+ * Flip this define and rebuild to A/B the two. */
+#ifndef NN_ROTATE_90
+#define NN_ROTATE_90 (1)
+#endif
+
+/* 1 = enable USB/UVC live video feed and LCD overlay buffers.
+ * 0 = headless tracking: keep camera NN pipe + Bluetooth/motor/servo, but skip
+ *     the display pipe and screen/USB buffers so large models can use cpuRAM1. */
+#ifndef APP_UVC
+#define APP_UVC (1)
+#endif
+
+/* Servo tracking strategy (toggle + rebuild to A/B them):
+ *   TRACKER_SIMPLE    = the proven direct-pulse proportional controller (low-pass
+ *                       the detected x, nudge CCR1 toward center). Fast, robust.
+ *   TRACKER_ALPHABETA = the alpha-beta filter + track lifecycle in ball_tracker.c
+ *                       (position+velocity estimate, coast through dropouts).
+ * Test SIMPLE first; switch to ALPHABETA once its gains are tuned. */
+#define TRACKER_SIMPLE     (0)
+#define TRACKER_ALPHABETA  (1)
+#ifndef TRACKER_MODE
+#define TRACKER_MODE TRACKER_SIMPLE
+#endif
+
+/* Debug isolation: 1 = run ONLY Bluetooth-receive + motor control (skip the
+ * camera/NN entirely) and echo every received command on UART1. Use this to
+ * verify the HC-06 link and motor commands in isolation. Set back to 0 to
+ * restore the full detection + UVC + motor application. */
+#ifndef BT_MOTOR_ISOLATE
+#define BT_MOTOR_ISOLATE (0)
+#endif
+
+#define ASPECT_RATIO_CROP       (1) /* Crop both pipes to nn input aspect ratio; Original aspect ratio kept */
+#define ASPECT_RATIO_FIT        (2) /* Resize both pipe to NN input aspect ratio; Original aspect ratio not kept */
+#define ASPECT_RATIO_FULLSCREEN (3) /* Resize camera image to NN input size and display a maximized image. See Doc/Build-Options.md#aspect-ratio-mode */
+#define ASPECT_RATIO_MODE ASPECT_RATIO_FULLSCREEN
+
+/* Model Related Info */
+#define POSTPROCESS_TYPE POSTPROCESS_OD_YOLO_V2_UI
+
+#define COLOR_BGR (0)
+#define COLOR_RGB (1)
+#define COLOR_MODE COLOR_RGB
+
+#define NB_CLASSES 2
+#define CLASSES_TABLE const char* classes_table[NB_CLASSES] = {\
+"person",   "not_person"}
+
+/* I/O configuration */
+#define AI_OD_YOLOV2_PP_NB_CLASSES        (1)
+#define AI_OD_YOLOV2_PP_NB_ANCHORS        (5)
+#define AI_OD_YOLOV2_PP_GRID_WIDTH        (7)
+#define AI_OD_YOLOV2_PP_GRID_HEIGHT       (7)
+#define AI_OD_YOLOV2_PP_NB_INPUT_BOXES    (AI_OD_YOLOV2_PP_GRID_WIDTH * AI_OD_YOLOV2_PP_GRID_HEIGHT)
+
+/* Anchor boxes */
+static const float32_t AI_OD_YOLOV2_PP_ANCHORS[2*AI_OD_YOLOV2_PP_NB_ANCHORS] = {
+    0.9883000000f,     3.3606000000f,
+    2.1194000000f,     5.3759000000f,
+    3.0520000000f,     9.1336000000f,
+    5.5517000000f,     9.3066000000f,
+    9.7260000000f,     11.1422000000f,
+  };
+
+/* --------  Tuning below can be modified by the application --------- */
+#define AI_OD_YOLOV2_PP_CONF_THRESHOLD    (0.6f)
+#define AI_OD_YOLOV2_PP_IOU_THRESHOLD     (0.3f)
+#define AI_OD_YOLOV2_PP_MAX_BOXES_LIMIT   (10)
+
+/* Display */
+#define WELCOME_MSG_1         "quantized_tiny_yolo_v2_224_.tflite"
+#define WELCOME_MSG_2         ((char *[2]) {"Model Running in STM32 MCU", "internal memory"})
+
+#endif

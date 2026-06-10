@@ -1,0 +1,1471 @@
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ball_tracker.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "Src/ball_tracker.c"
+  25              		.section	.text.BallTracker_GetX,"ax",%progbits
+  26              		.align	1
+  27              		.global	BallTracker_GetX
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	BallTracker_GetX:
+  33              	.LFB862:
+   1:Src/ball_tracker.c **** /**
+   2:Src/ball_tracker.c ****  ******************************************************************************
+   3:Src/ball_tracker.c ****  * @file    ball_tracker.c
+   4:Src/ball_tracker.c ****  * @brief   1-D ball tracker + 50 Hz servo control (see ball_tracker.h).
+   5:Src/ball_tracker.c ****  ******************************************************************************
+   6:Src/ball_tracker.c ****  */
+   7:Src/ball_tracker.c **** #include "main.h"
+   8:Src/ball_tracker.c **** #include "ball_tracker.h"
+   9:Src/ball_tracker.c **** #include "servo_control.h"
+  10:Src/ball_tracker.c **** 
+  11:Src/ball_tracker.c **** /* Control runs in the TIM7 ISR. We integrate with MEASURED elapsed time (not a
+  12:Src/ball_tracker.c ****  * fixed period) so the servo moves the correct amount whatever the actual ISR
+  13:Src/ball_tracker.c ****  * rate turns out to be (the NPU inference can starve the timer). */
+  14:Src/ball_tracker.c **** #define TICK_TARGET_HZ   50.0f
+  15:Src/ball_tracker.c **** 
+  16:Src/ball_tracker.c **** /* ---- alpha-beta filter gains (position / velocity correction) ------------ *
+  17:Src/ball_tracker.c ****  * Control rate == detection rate (~12 Hz, inference-bound), so prediction buys
+  18:Src/ball_tracker.c ****  * nothing and adds noise -> BETA=0 disables velocity, leaving a clean smoothed
+  19:Src/ball_tracker.c ****  * proportional controller (robust, like the original) plus the lifecycle. */
+  20:Src/ball_tracker.c **** #define TRK_ALPHA        0.25f
+  21:Src/ball_tracker.c **** #define TRK_BETA         0.0f
+  22:Src/ball_tracker.c **** 
+  23:Src/ball_tracker.c **** /* ---- control law (pan rate from position error + velocity feedforward) --- */
+  24:Src/ball_tracker.c **** #define TRK_SIGN         (-1.0f)   /* pan direction toward ball (verified)      */
+  25:Src/ball_tracker.c **** #define TRK_KP           60.0f     /* deg/s per unit of error                   */
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 2
+
+
+  26:Src/ball_tracker.c **** #define TRK_KV           0.0f      /* velocity feedforward off (tune later)     */
+  27:Src/ball_tracker.c **** #define TRK_OMEGA_MAX    95.0f     /* max pan rate (matches the faster SIMPLE path) */
+  28:Src/ball_tracker.c **** #define TRK_DEADZONE     0.05f     /* |x-0.5| below this = centered, no pan      */
+  29:Src/ball_tracker.c **** #define TRK_COAST_TAU    0.5f      /* coast pan-rate decay time constant (s)     */
+  30:Src/ball_tracker.c **** 
+  31:Src/ball_tracker.c **** /* ---- lifecycle ----------------------------------------------------------- */
+  32:Src/ball_tracker.c **** #define TRK_CONFIRM      3          /* consecutive hits to confirm a track       */
+  33:Src/ball_tracker.c **** #define TRK_COAST_START  0.20f      /* s without a hit -> start coasting         */
+  34:Src/ball_tracker.c **** #define TRK_COAST_MAX    0.50f      /* s coasting -> declare lost, hold          */
+  35:Src/ball_tracker.c **** #define TRK_COAST_DECAY  0.96f      /* per-tick pan-rate decay while coasting     */
+  36:Src/ball_tracker.c **** 
+  37:Src/ball_tracker.c **** /* Tracker state -- written ONLY by BallTracker_ControlTick (main-loop context). */
+  38:Src/ball_tracker.c **** static volatile float    g_x     = 0.5f;   /* filtered horizontal position */
+  39:Src/ball_tracker.c **** static volatile float    g_v     = 0.0f;   /* velocity (units/s)           */
+  40:Src/ball_tracker.c **** static volatile int      g_state = TRK_IDLE;
+  41:Src/ball_tracker.c **** static float    g_omega = 0.0f;            /* current pan rate (deg/s)     */
+  42:Src/ball_tracker.c **** static float    g_theta = 90.0f;           /* servo angle the tracker owns */
+  43:Src/ball_tracker.c **** static int      g_hits  = 0;
+  44:Src/ball_tracker.c **** static float    g_age   = 0.0f;            /* s since last associated hit  */
+  45:Src/ball_tracker.c **** static uint32_t g_ticks = 0;
+  46:Src/ball_tracker.c **** 
+  47:Src/ball_tracker.c **** /* Mailbox: main loop -> ISR. seq incremented last so the ISR sees a coherent
+  48:Src/ball_tracker.c ****  * (present, x) once it observes a new seq. */
+  49:Src/ball_tracker.c **** static volatile float    g_mbx_x       = 0.5f;
+  50:Src/ball_tracker.c **** static volatile uint8_t  g_mbx_present = 0;
+  51:Src/ball_tracker.c **** static volatile uint32_t g_mbx_seq     = 0;
+  52:Src/ball_tracker.c **** static uint32_t          g_last_seq    = 0;
+  53:Src/ball_tracker.c **** 
+  54:Src/ball_tracker.c **** float    BallTracker_GetX(void)      { return g_x; }
+  34              		.loc 1 54 38 view -0
+  35              		.cfi_startproc
+  36              		@ args = 0, pretend = 0, frame = 0
+  37              		@ frame_needed = 0, uses_anonymous_args = 0
+  38              		@ link register save eliminated.
+  39              		.loc 1 54 40 view .LVU1
+  40              		.loc 1 54 47 is_stmt 0 view .LVU2
+  41 0000 014B     		ldr	r3, .L2
+  42 0002 93ED000A 		vldr.32	s0, [r3]
+  43              		.loc 1 54 52 view .LVU3
+  44 0006 7047     		bx	lr
+  45              	.L3:
+  46              		.align	2
+  47              	.L2:
+  48 0008 00000000 		.word	g_x
+  49              		.cfi_endproc
+  50              	.LFE862:
+  52              		.section	.text.BallTracker_State,"ax",%progbits
+  53              		.align	1
+  54              		.global	BallTracker_State
+  55              		.syntax unified
+  56              		.thumb
+  57              		.thumb_func
+  59              	BallTracker_State:
+  60              	.LFB863:
+  55:Src/ball_tracker.c **** int      BallTracker_State(void)     { return g_state; }
+  61              		.loc 1 55 38 is_stmt 1 view -0
+  62              		.cfi_startproc
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 3
+
+
+  63              		@ args = 0, pretend = 0, frame = 0
+  64              		@ frame_needed = 0, uses_anonymous_args = 0
+  65              		@ link register save eliminated.
+  66              		.loc 1 55 40 view .LVU5
+  67              		.loc 1 55 47 is_stmt 0 view .LVU6
+  68 0000 014B     		ldr	r3, .L5
+  69 0002 1868     		ldr	r0, [r3]
+  70              		.loc 1 55 56 view .LVU7
+  71 0004 7047     		bx	lr
+  72              	.L6:
+  73 0006 00BF     		.align	2
+  74              	.L5:
+  75 0008 00000000 		.word	g_state
+  76              		.cfi_endproc
+  77              	.LFE863:
+  79              		.section	.text.BallTracker_TickCount,"ax",%progbits
+  80              		.align	1
+  81              		.global	BallTracker_TickCount
+  82              		.syntax unified
+  83              		.thumb
+  84              		.thumb_func
+  86              	BallTracker_TickCount:
+  87              	.LFB864:
+  56:Src/ball_tracker.c **** uint32_t BallTracker_TickCount(void) { return g_ticks; }
+  88              		.loc 1 56 38 is_stmt 1 view -0
+  89              		.cfi_startproc
+  90              		@ args = 0, pretend = 0, frame = 0
+  91              		@ frame_needed = 0, uses_anonymous_args = 0
+  92              		@ link register save eliminated.
+  93              		.loc 1 56 40 view .LVU9
+  94              		.loc 1 56 56 is_stmt 0 view .LVU10
+  95 0000 014B     		ldr	r3, .L8
+  96 0002 1868     		ldr	r0, [r3]
+  97 0004 7047     		bx	lr
+  98              	.L9:
+  99 0006 00BF     		.align	2
+ 100              	.L8:
+ 101 0008 00000000 		.word	g_ticks
+ 102              		.cfi_endproc
+ 103              	.LFE864:
+ 105              		.section	.text.BallTracker_Measure,"ax",%progbits
+ 106              		.align	1
+ 107              		.global	BallTracker_Measure
+ 108              		.syntax unified
+ 109              		.thumb
+ 110              		.thumb_func
+ 112              	BallTracker_Measure:
+ 113              	.LVL0:
+ 114              	.LFB865:
+  57:Src/ball_tracker.c **** 
+  58:Src/ball_tracker.c **** void BallTracker_Measure(int present, float x_center)
+  59:Src/ball_tracker.c **** {
+ 115              		.loc 1 59 1 is_stmt 1 view -0
+ 116              		.cfi_startproc
+ 117              		@ args = 0, pretend = 0, frame = 0
+ 118              		@ frame_needed = 0, uses_anonymous_args = 0
+ 119              		@ link register save eliminated.
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 4
+
+
+  60:Src/ball_tracker.c ****   g_mbx_x       = x_center;
+ 120              		.loc 1 60 3 view .LVU12
+  61:Src/ball_tracker.c ****   g_mbx_present = (uint8_t)(present ? 1 : 0);
+ 121              		.loc 1 61 19 is_stmt 0 view .LVU13
+ 122 0000 0038     		subs	r0, r0, #0
+ 123              		.loc 1 61 19 view .LVU14
+ 124 0002 18BF     		it	ne
+ 125 0004 0120     		movne	r0, #1
+ 126              	.LVL1:
+  60:Src/ball_tracker.c ****   g_mbx_x       = x_center;
+ 127              		.loc 1 60 17 view .LVU15
+ 128 0006 064A     		ldr	r2, .L11
+ 129              		.loc 1 61 17 view .LVU16
+ 130 0008 064B     		ldr	r3, .L11+4
+  60:Src/ball_tracker.c ****   g_mbx_x       = x_center;
+ 131              		.loc 1 60 17 view .LVU17
+ 132 000a 82ED000A 		vstr.32	s0, [r2]
+ 133              		.loc 1 61 3 is_stmt 1 view .LVU18
+ 134              		.loc 1 61 17 is_stmt 0 view .LVU19
+ 135 000e 1870     		strb	r0, [r3]
+  62:Src/ball_tracker.c ****   __DMB();
+ 136              		.loc 1 62 3 is_stmt 1 view .LVU20
+ 137              	.LBB4:
+ 138              	.LBI4:
+ 139              		.file 2 "../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h"
+   1:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V6.0.0
+   5:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     27. July 2024
+   6:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2023 Arm Limited. All rights reserved.
+   9:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  10:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  18:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC system_header   /* treat file as system include file */
+  29:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  30:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #include <arm_acle.h>
+  31:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  32:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 5
+
+
+  33:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  34:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  35:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  36:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  37:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  38:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  39:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  40:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  41:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  42:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  43:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  44:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  45:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  46:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  47:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE
+  48:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  49:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  50:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  51:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  52:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  53:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   CMSIS_DEPRECATED
+  54:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define CMSIS_DEPRECATED                       __attribute__((deprecated))
+  55:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  56:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  57:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  58:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  59:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  60:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  61:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  62:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  63:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  64:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  65:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  66:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  67:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  68:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  69:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  70:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  71:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  72:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  73:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  74:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  75:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  76:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  77:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  78:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  79:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  80:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  81:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  82:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  83:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  84:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  85:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  86:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  87:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  88:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  89:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 6
+
+
+  90:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  91:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  92:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  93:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+  94:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  95:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+  96:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  97:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  98:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  99:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 100:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 101:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 102:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 103:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 104:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 105:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 106:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 107:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 108:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 109:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __COMPILER_BARRIER
+ 110:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
+ 111:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 112:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __NO_INIT
+ 113:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_INIT                              __attribute__ ((section (".noinit")))
+ 114:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 115:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __ALIAS
+ 116:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIAS(x)                             __attribute__ ((alias(x)))
+ 117:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 118:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 119:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /* ##########################  Core Instruction Access  ######################### */
+ 120:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /** \defgroup CMSIS_Core_InstructionInterface CMSIS Core Instruction Interface
+ 121:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   Access to dedicated instructions
+ 122:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 123:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** */
+ 124:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 125:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /* Define macros for porting to both thumb1 and thumb2.
+ 126:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * For thumb1, use low register (r0-r7), specified by constraint "l"
+ 127:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  * Otherwise, use general registers, specified by constraint "r" */
+ 128:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #if defined (__thumb__) && !defined (__thumb2__)
+ 129:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_OUT_REG(r) "=l" (r)
+ 130:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_RW_REG(r) "+l" (r)
+ 131:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_USE_REG(r) "l" (r)
+ 132:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #else
+ 133:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_OUT_REG(r) "=r" (r)
+ 134:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_RW_REG(r) "+r" (r)
+ 135:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_USE_REG(r) "r" (r)
+ 136:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 137:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 138:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 139:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   No Operation
+ 140:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \details No Operation does nothing. This instruction can be used for code alignment purposes.
+ 141:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 142:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __NOP()         __ASM volatile ("nop")
+ 143:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 144:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 145:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 146:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Wait For Interrupt
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 7
+
+
+ 147:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Wait For Interrupt is a hint instruction that suspends execution until one of a number o
+ 148:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 149:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __WFI()         __ASM volatile ("wfi":::"memory")
+ 150:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 151:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 152:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 153:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Wait For Event
+ 154:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Wait For Event is a hint instruction that permits the processor to enter
+ 155:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****            a low-power state until one of a number of events occurs.
+ 156:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 157:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __WFE()         __ASM volatile ("wfe":::"memory")
+ 158:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 159:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 160:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 161:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Send Event
+ 162:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Send Event is a hint instruction. It causes an event to be signaled to the CPU.
+ 163:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 164:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** #define __SEV()         __ASM volatile ("sev")
+ 165:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 166:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 167:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 168:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Instruction Synchronization Barrier
+ 169:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Instruction Synchronization Barrier flushes the pipeline in the processor,
+ 170:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****            so that all instructions following the ISB are fetched from cache or memory,
+ 171:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****            after the instruction has been completed.
+ 172:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 173:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __ISB(void)
+ 174:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 175:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("isb 0xF":::"memory");
+ 176:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 177:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 178:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 179:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 180:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Data Synchronization Barrier
+ 181:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Acts as a special kind of Data Memory Barrier.
+ 182:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****            It completes when all explicit memory accesses before this instruction complete.
+ 183:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 184:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __DSB(void)
+ 185:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 186:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("dsb 0xF":::"memory");
+ 187:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 188:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 189:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 190:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 191:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Data Memory Barrier
+ 192:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Ensures the apparent order of the explicit memory operations before
+ 193:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****            and after the instruction, without ensuring their completion.
+ 194:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 195:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __DMB(void)
+ 140              		.loc 2 195 27 view .LVU21
+ 141              	.LBB5:
+ 196:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 197:../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("dmb 0xF":::"memory");
+ 142              		.loc 2 197 3 view .LVU22
+ 143              		.syntax unified
+ 144              	@ 197 "../../STM32Cube_FW_N6/Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 145 0010 BFF35F8F 		dmb 0xF
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 8
+
+
+ 146              	@ 0 "" 2
+ 147              		.thumb
+ 148              		.syntax unified
+ 149              	.LBE5:
+ 150              	.LBE4:
+  63:Src/ball_tracker.c ****   g_mbx_seq++;
+ 151              		.loc 1 63 3 view .LVU23
+ 152              		.loc 1 63 12 is_stmt 0 view .LVU24
+ 153 0014 044A     		ldr	r2, .L11+8
+ 154 0016 1368     		ldr	r3, [r2]
+ 155 0018 0133     		adds	r3, r3, #1
+ 156 001a 1360     		str	r3, [r2]
+  64:Src/ball_tracker.c **** }
+ 157              		.loc 1 64 1 view .LVU25
+ 158 001c 7047     		bx	lr
+ 159              	.L12:
+ 160 001e 00BF     		.align	2
+ 161              	.L11:
+ 162 0020 00000000 		.word	g_mbx_x
+ 163 0024 00000000 		.word	g_mbx_present
+ 164 0028 00000000 		.word	g_mbx_seq
+ 165              		.cfi_endproc
+ 166              	.LFE865:
+ 168              		.section	.text.BallTracker_ControlTick,"ax",%progbits
+ 169              		.align	1
+ 170              		.global	BallTracker_ControlTick
+ 171              		.syntax unified
+ 172              		.thumb
+ 173              		.thumb_func
+ 175              	BallTracker_ControlTick:
+ 176              	.LFB867:
+  65:Src/ball_tracker.c **** 
+  66:Src/ball_tracker.c **** /* Apply one detection-frame result to the filter + lifecycle (ISR context). */
+  67:Src/ball_tracker.c **** static void tracker_apply_measurement(int present, float mx)
+  68:Src/ball_tracker.c **** {
+  69:Src/ball_tracker.c ****   if (present) {
+  70:Src/ball_tracker.c ****     if (g_state == TRK_IDLE) {                 /* seed a tentative track */
+  71:Src/ball_tracker.c ****       g_x = mx; g_v = 0.0f; g_hits = 1; g_age = 0.0f;
+  72:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+  73:Src/ball_tracker.c ****       g_theta = (float)Servo_GetAngle();       /* resync to actual servo angle */
+  74:Src/ball_tracker.c ****       return;
+  75:Src/ball_tracker.c ****     }
+  76:Src/ball_tracker.c ****     /* alpha-beta correction (dt = time since last hit, clamped). */
+  77:Src/ball_tracker.c ****     float dtm = g_age; if (dtm < 0.005f) dtm = 0.005f; if (dtm > 0.5f) dtm = 0.5f;
+  78:Src/ball_tracker.c ****     float r = mx - g_x;
+  79:Src/ball_tracker.c ****     g_x += TRK_ALPHA * r;
+  80:Src/ball_tracker.c ****     g_v += (TRK_BETA / dtm) * r;
+  81:Src/ball_tracker.c ****     g_age = 0.0f;
+  82:Src/ball_tracker.c ****     if (g_hits < TRK_CONFIRM) g_hits++;
+  83:Src/ball_tracker.c ****     if (g_state == TRK_TENTATIVE && g_hits >= TRK_CONFIRM) g_state = TRK_CONFIRMED;
+  84:Src/ball_tracker.c ****     if (g_state == TRK_COAST) g_state = TRK_CONFIRMED;   /* re-acquired */
+  85:Src/ball_tracker.c ****   } else {
+  86:Src/ball_tracker.c ****     /* miss: a tentative track needs consecutive hits, so drop it; a confirmed
+  87:Src/ball_tracker.c ****      * track is handled by the coast timeout (age keeps growing below). */
+  88:Src/ball_tracker.c ****     if (g_state == TRK_TENTATIVE) { g_state = TRK_IDLE; g_hits = 0; g_v = 0.0f; }
+  89:Src/ball_tracker.c ****   }
+  90:Src/ball_tracker.c **** }
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 9
+
+
+  91:Src/ball_tracker.c **** 
+  92:Src/ball_tracker.c **** void BallTracker_ControlTick(void)
+  93:Src/ball_tracker.c **** {
+ 177              		.loc 1 93 1 is_stmt 1 view -0
+ 178              		.cfi_startproc
+ 179              		@ args = 0, pretend = 0, frame = 0
+ 180              		@ frame_needed = 0, uses_anonymous_args = 0
+  94:Src/ball_tracker.c ****   g_ticks++;
+ 181              		.loc 1 94 3 view .LVU27
+  93:Src/ball_tracker.c ****   g_ticks++;
+ 182              		.loc 1 93 1 is_stmt 0 view .LVU28
+ 183 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 184              		.cfi_def_cfa_offset 24
+ 185              		.cfi_offset 3, -24
+ 186              		.cfi_offset 4, -20
+ 187              		.cfi_offset 5, -16
+ 188              		.cfi_offset 6, -12
+ 189              		.cfi_offset 7, -8
+ 190              		.cfi_offset 14, -4
+ 191              		.loc 1 94 10 view .LVU29
+ 192 0002 A74A     		ldr	r2, .L59
+  93:Src/ball_tracker.c ****   g_ticks++;
+ 193              		.loc 1 93 1 view .LVU30
+ 194 0004 2DED028B 		vpush.64	{d8}
+ 195              		.cfi_def_cfa_offset 32
+ 196              		.cfi_offset 80, -32
+ 197              		.cfi_offset 81, -28
+ 198              		.loc 1 94 10 view .LVU31
+ 199 0008 1368     		ldr	r3, [r2]
+ 200 000a 0133     		adds	r3, r3, #1
+ 201 000c 1360     		str	r3, [r2]
+  95:Src/ball_tracker.c **** 
+  96:Src/ball_tracker.c ****   /* Measured elapsed time since the last tick (rate-agnostic integration). */
+  97:Src/ball_tracker.c ****   static uint32_t last_ms = 0;
+ 202              		.loc 1 97 3 is_stmt 1 view .LVU32
+  98:Src/ball_tracker.c ****   uint32_t now = HAL_GetTick();
+ 203              		.loc 1 98 3 view .LVU33
+ 204              		.loc 1 98 18 is_stmt 0 view .LVU34
+ 205 000e FFF7FEFF 		bl	HAL_GetTick
+ 206              	.LVL2:
+  99:Src/ball_tracker.c ****   float dt = (last_ms == 0) ? (1.0f / TICK_TARGET_HZ) : (float)(now - last_ms) * 0.001f;
+ 207              		.loc 1 99 3 is_stmt 1 view .LVU35
+ 208              		.loc 1 99 23 is_stmt 0 view .LVU36
+ 209 0012 A44A     		ldr	r2, .L59+4
+ 210 0014 DFEDA47A 		vldr.32	s15, .L59+8
+ 211 0018 1368     		ldr	r3, [r2]
+ 212              		.loc 1 99 55 view .LVU37
+ 213 001a 002B     		cmp	r3, #0
+ 214 001c 00F0DE80 		beq	.L40
+ 215              		.loc 1 99 69 discriminator 1 view .LVU38
+ 216 0020 C31A     		subs	r3, r0, r3
+ 217 0022 08EE103A 		vmov	s16, r3	@ int
+ 218              		.loc 1 99 57 discriminator 1 view .LVU39
+ 219 0026 B8EE488A 		vcvt.f32.u32	s16, s16
+ 220              		.loc 1 99 55 discriminator 1 view .LVU40
+ 221 002a 28EE278A 		vmul.f32	s16, s16, s15
+ 222              	.L14:
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 10
+
+
+ 223              	.LVL3:
+ 100:Src/ball_tracker.c ****   last_ms = now;
+ 224              		.loc 1 100 3 is_stmt 1 discriminator 4 view .LVU41
+ 101:Src/ball_tracker.c ****   if (dt < 0.001f) dt = 0.001f;
+ 225              		.loc 1 101 6 is_stmt 0 discriminator 4 view .LVU42
+ 226 002e B4EEE78A 		vcmpe.f32	s16, s15
+ 227 0032 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 100:Src/ball_tracker.c ****   last_ms = now;
+ 228              		.loc 1 100 11 discriminator 4 view .LVU43
+ 229 0036 1060     		str	r0, [r2]
+ 230              		.loc 1 101 3 is_stmt 1 discriminator 4 view .LVU44
+ 231              		.loc 1 101 6 is_stmt 0 discriminator 4 view .LVU45
+ 232 0038 00F1D380 		bmi	.L41
+ 102:Src/ball_tracker.c ****   if (dt > 0.10f)  dt = 0.10f;
+ 233              		.loc 1 102 3 is_stmt 1 view .LVU46
+ 234              		.loc 1 102 6 is_stmt 0 view .LVU47
+ 235 003c DFED9B7A 		vldr.32	s15, .L59+12
+ 236              		.loc 1 102 23 view .LVU48
+ 237 0040 B4EE678A 		vcmp.f32	s16, s15
+ 238 0044 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 239 0048 37FE888A 		vselgt.f32	s16, s15, s16
+ 240              	.LVL4:
+ 241              	.L15:
+ 103:Src/ball_tracker.c **** 
+ 104:Src/ball_tracker.c ****   /* Consume a new measurement, if any. */
+ 105:Src/ball_tracker.c ****   if (g_mbx_seq != g_last_seq) {
+ 242              		.loc 1 105 3 is_stmt 1 view .LVU49
+ 243              		.loc 1 105 17 is_stmt 0 view .LVU50
+ 244 004c 984A     		ldr	r2, .L59+16
+ 245 004e 994B     		ldr	r3, .L59+20
+ 246 0050 1068     		ldr	r0, [r2]
+ 247              	.LVL5:
+ 248              		.loc 1 105 6 view .LVU51
+ 249 0052 1968     		ldr	r1, [r3]
+ 250 0054 DFED988A 		vldr.32	s17, .L59+24
+ 251 0058 8842     		cmp	r0, r1
+ 252 005a 984C     		ldr	r4, .L59+28
+ 253 005c 984D     		ldr	r5, .L59+32
+ 254 005e 994E     		ldr	r6, .L59+36
+ 255 0060 994F     		ldr	r7, .L59+40
+ 256 0062 22D0     		beq	.L17
+ 106:Src/ball_tracker.c ****     g_last_seq = g_mbx_seq;
+ 257              		.loc 1 106 5 is_stmt 1 view .LVU52
+ 258              		.loc 1 106 16 is_stmt 0 view .LVU53
+ 259 0064 1268     		ldr	r2, [r2]
+ 260 0066 1A60     		str	r2, [r3]
+ 107:Src/ball_tracker.c ****     tracker_apply_measurement((int)g_mbx_present, g_mbx_x);
+ 261              		.loc 1 107 5 is_stmt 1 view .LVU54
+ 262 0068 984B     		ldr	r3, .L59+44
+ 263 006a 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 264 006c 984B     		ldr	r3, .L59+48
+ 265 006e 93ED007A 		vldr.32	s14, [r3]
+ 266              	.LVL6:
+ 267              	.LBB10:
+ 268              	.LBI10:
+  67:Src/ball_tracker.c **** {
+ 269              		.loc 1 67 13 view .LVU55
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 11
+
+
+ 270              	.LBB11:
+  69:Src/ball_tracker.c ****     if (g_state == TRK_IDLE) {                 /* seed a tentative track */
+ 271              		.loc 1 69 3 view .LVU56
+  69:Src/ball_tracker.c ****     if (g_state == TRK_IDLE) {                 /* seed a tentative track */
+ 272              		.loc 1 69 6 is_stmt 0 view .LVU57
+ 273 0072 02F0FF03 		and	r3, r2, #255
+ 274 0076 002A     		cmp	r2, #0
+ 275 0078 00F0F680 		beq	.L18
+ 276              	.LBB12:
+  70:Src/ball_tracker.c ****       g_x = mx; g_v = 0.0f; g_hits = 1; g_age = 0.0f;
+ 277              		.loc 1 70 5 is_stmt 1 view .LVU58
+  70:Src/ball_tracker.c ****       g_x = mx; g_v = 0.0f; g_hits = 1; g_age = 0.0f;
+ 278              		.loc 1 70 17 is_stmt 0 view .LVU59
+ 279 007c 2268     		ldr	r2, [r4]
+ 280              	.LVL7:
+  70:Src/ball_tracker.c ****       g_x = mx; g_v = 0.0f; g_hits = 1; g_age = 0.0f;
+ 281              		.loc 1 70 17 view .LVU60
+ 282 007e 954B     		ldr	r3, .L59+52
+  70:Src/ball_tracker.c ****       g_x = mx; g_v = 0.0f; g_hits = 1; g_age = 0.0f;
+ 283              		.loc 1 70 8 view .LVU61
+ 284 0080 002A     		cmp	r2, #0
+ 285 0082 40F0B180 		bne	.L19
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 286              		.loc 1 71 7 is_stmt 1 view .LVU62
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 287              		.loc 1 71 36 is_stmt 0 view .LVU63
+ 288 0086 0122     		movs	r2, #1
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 289              		.loc 1 71 11 view .LVU64
+ 290 0088 85ED007A 		vstr.32	s14, [r5]
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 291              		.loc 1 71 17 is_stmt 1 view .LVU65
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 292              		.loc 1 71 36 is_stmt 0 view .LVU66
+ 293 008c 1A60     		str	r2, [r3]
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 294              		.loc 1 71 21 view .LVU67
+ 295 008e C6ED008A 		vstr.32	s17, [r6]
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 296              		.loc 1 71 29 is_stmt 1 view .LVU68
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 297              		.loc 1 71 41 view .LVU69
+  71:Src/ball_tracker.c ****       g_state = TRK_TENTATIVE;
+ 298              		.loc 1 71 47 is_stmt 0 view .LVU70
+ 299 0092 C7ED008A 		vstr.32	s17, [r7]
+  72:Src/ball_tracker.c ****       g_theta = (float)Servo_GetAngle();       /* resync to actual servo angle */
+ 300              		.loc 1 72 7 is_stmt 1 view .LVU71
+  72:Src/ball_tracker.c ****       g_theta = (float)Servo_GetAngle();       /* resync to actual servo angle */
+ 301              		.loc 1 72 15 is_stmt 0 view .LVU72
+ 302 0096 2260     		str	r2, [r4]
+  73:Src/ball_tracker.c ****       return;
+ 303              		.loc 1 73 7 is_stmt 1 view .LVU73
+  73:Src/ball_tracker.c ****       return;
+ 304              		.loc 1 73 24 is_stmt 0 view .LVU74
+ 305 0098 FFF7FEFF 		bl	Servo_GetAngle
+ 306              	.LVL8:
+  73:Src/ball_tracker.c ****       return;
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 12
+
+
+ 307              		.loc 1 73 24 view .LVU75
+ 308 009c 07EE900A 		vmov	s15, r0	@ int
+  73:Src/ball_tracker.c ****       return;
+ 309              		.loc 1 73 17 view .LVU76
+ 310 00a0 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 311 00a4 8C4B     		ldr	r3, .L59+56
+ 312 00a6 C3ED007A 		vstr.32	s15, [r3]
+  74:Src/ball_tracker.c ****     }
+ 313              		.loc 1 74 7 is_stmt 1 view .LVU77
+ 314              	.LVL9:
+ 315              	.L17:
+  74:Src/ball_tracker.c ****     }
+ 316              		.loc 1 74 7 is_stmt 0 view .LVU78
+ 317              	.LBE12:
+ 318              	.LBE11:
+ 319              	.LBE10:
+ 108:Src/ball_tracker.c ****   }
+ 109:Src/ball_tracker.c **** 
+ 110:Src/ball_tracker.c ****   /* Predict the estimate forward and age the track. */
+ 111:Src/ball_tracker.c ****   g_x += g_v * dt;
+ 320              		.loc 1 111 3 is_stmt 1 view .LVU79
+ 321              		.loc 1 111 14 is_stmt 0 view .LVU80
+ 322 00aa 96ED007A 		vldr.32	s14, [r6]
+ 323              		.loc 1 111 7 view .LVU81
+ 324 00ae D5ED007A 		vldr.32	s15, [r5]
+ 325 00b2 E7EE087A 		vfma.f32	s15, s14, s16
+ 326 00b6 C5ED007A 		vstr.32	s15, [r5]
+ 112:Src/ball_tracker.c ****   if (g_x < 0.0f) g_x = 0.0f;
+ 327              		.loc 1 112 3 is_stmt 1 view .LVU82
+ 328              		.loc 1 112 11 is_stmt 0 view .LVU83
+ 329 00ba D5ED007A 		vldr.32	s15, [r5]
+ 330              		.loc 1 112 6 view .LVU84
+ 331 00be F5EEC07A 		vcmpe.f32	s15, #0
+ 332 00c2 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 333              		.loc 1 112 19 is_stmt 1 view .LVU85
+ 334              		.loc 1 112 23 is_stmt 0 view .LVU86
+ 335 00c6 48BF     		it	mi
+ 336 00c8 C5ED008A 		vstrmi.32	s17, [r5]
+ 113:Src/ball_tracker.c ****   if (g_x > 1.0f) g_x = 1.0f;
+ 337              		.loc 1 113 3 is_stmt 1 view .LVU87
+ 338              		.loc 1 113 6 is_stmt 0 view .LVU88
+ 339 00cc F7EE007A 		vmov.f32	s15, #1.0e+0
+ 340              		.loc 1 113 11 view .LVU89
+ 341 00d0 95ED007A 		vldr.32	s14, [r5]
+ 342              		.loc 1 113 6 view .LVU90
+ 343 00d4 B4EEE77A 		vcmpe.f32	s14, s15
+ 344 00d8 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 345              		.loc 1 113 19 is_stmt 1 view .LVU91
+ 346              		.loc 1 113 23 is_stmt 0 view .LVU92
+ 347 00dc C8BF     		it	gt
+ 348 00de C5ED007A 		vstrgt.32	s15, [r5]
+ 114:Src/ball_tracker.c ****   g_age += dt;
+ 349              		.loc 1 114 3 is_stmt 1 view .LVU93
+ 350              		.loc 1 114 9 is_stmt 0 view .LVU94
+ 351 00e2 D7ED007A 		vldr.32	s15, [r7]
+ 352 00e6 78EE277A 		vadd.f32	s15, s16, s15
+ 115:Src/ball_tracker.c **** 
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 13
+
+
+ 116:Src/ball_tracker.c ****   /* Lifecycle by elapsed time without a hit. */
+ 117:Src/ball_tracker.c ****   if (g_state == TRK_CONFIRMED && g_age > TRK_COAST_START) g_state = TRK_COAST;
+ 353              		.loc 1 117 15 view .LVU95
+ 354 00ea 2368     		ldr	r3, [r4]
+ 114:Src/ball_tracker.c ****   g_age += dt;
+ 355              		.loc 1 114 9 view .LVU96
+ 356 00ec C7ED007A 		vstr.32	s15, [r7]
+ 357              		.loc 1 117 3 is_stmt 1 view .LVU97
+ 358              		.loc 1 117 6 is_stmt 0 view .LVU98
+ 359 00f0 022B     		cmp	r3, #2
+ 360 00f2 08D1     		bne	.L28
+ 361              		.loc 1 117 32 discriminator 1 view .LVU99
+ 362 00f4 9FED797A 		vldr.32	s14, .L59+60
+ 363 00f8 F4EEC77A 		vcmpe.f32	s15, s14
+ 364 00fc F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 365              		.loc 1 117 60 is_stmt 1 discriminator 1 view .LVU100
+ 366              		.loc 1 117 68 is_stmt 0 discriminator 1 view .LVU101
+ 367 0100 C4BF     		itt	gt
+ 368 0102 0323     		movgt	r3, #3
+ 369 0104 2360     		strgt	r3, [r4]
+ 370              	.L28:
+ 118:Src/ball_tracker.c ****   if (g_state == TRK_COAST && g_age > TRK_COAST_MAX) {
+ 371              		.loc 1 118 3 is_stmt 1 view .LVU102
+ 372              		.loc 1 118 15 is_stmt 0 view .LVU103
+ 373 0106 2368     		ldr	r3, [r4]
+ 374              		.loc 1 118 6 view .LVU104
+ 375 0108 032B     		cmp	r3, #3
+ 376 010a 754B     		ldr	r3, .L59+64
+ 377 010c 0ED1     		bne	.L30
+ 378              		.loc 1 118 28 discriminator 1 view .LVU105
+ 379 010e B6EE007A 		vmov.f32	s14, #5.0e-1
+ 380 0112 F4EEC77A 		vcmpe.f32	s15, s14
+ 381 0116 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 382 011a 07DD     		ble	.L30
+ 119:Src/ball_tracker.c ****     g_state = TRK_IDLE; g_omega = 0.0f; g_v = 0.0f; g_hits = 0;
+ 383              		.loc 1 119 5 is_stmt 1 view .LVU106
+ 384              		.loc 1 119 13 is_stmt 0 view .LVU107
+ 385 011c 0022     		movs	r2, #0
+ 386              		.loc 1 119 33 view .LVU108
+ 387 011e C3ED008A 		vstr.32	s17, [r3]
+ 388              		.loc 1 119 13 view .LVU109
+ 389 0122 2260     		str	r2, [r4]
+ 390              		.loc 1 119 25 is_stmt 1 view .LVU110
+ 391              		.loc 1 119 41 view .LVU111
+ 392              		.loc 1 119 45 is_stmt 0 view .LVU112
+ 393 0124 C6ED008A 		vstr.32	s17, [r6]
+ 394              		.loc 1 119 53 is_stmt 1 view .LVU113
+ 395              		.loc 1 119 60 is_stmt 0 view .LVU114
+ 396 0128 6A49     		ldr	r1, .L59+52
+ 397 012a 0A60     		str	r2, [r1]
+ 398              	.L30:
+ 120:Src/ball_tracker.c ****   }
+ 121:Src/ball_tracker.c **** 
+ 122:Src/ball_tracker.c ****   /* Control law -> pan rate -> integrate into servo angle. */
+ 123:Src/ball_tracker.c ****   if (g_state == TRK_CONFIRMED) {
+ 399              		.loc 1 123 3 is_stmt 1 view .LVU115
+ 400              		.loc 1 123 15 is_stmt 0 view .LVU116
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 14
+
+
+ 401 012c 2268     		ldr	r2, [r4]
+ 402              		.loc 1 123 6 view .LVU117
+ 403 012e 022A     		cmp	r2, #2
+ 404 0130 40F0A380 		bne	.L32
+ 405              	.LBB15:
+ 124:Src/ball_tracker.c ****     float err = g_x - 0.5f;
+ 406              		.loc 1 124 5 is_stmt 1 view .LVU118
+ 407              		.loc 1 124 11 is_stmt 0 view .LVU119
+ 408 0134 B6EE007A 		vmov.f32	s14, #5.0e-1
+ 409              		.loc 1 124 21 view .LVU120
+ 410 0138 D5ED007A 		vldr.32	s15, [r5]
+ 411              		.loc 1 124 11 view .LVU121
+ 412 013c 77EEC77A 		vsub.f32	s15, s15, s14
+ 413              	.LVL10:
+ 125:Src/ball_tracker.c ****     if (err < TRK_DEADZONE && err > -TRK_DEADZONE) err = 0.0f;
+ 414              		.loc 1 125 5 is_stmt 1 view .LVU122
+ 415              		.loc 1 125 8 is_stmt 0 view .LVU123
+ 416 0140 9FED687A 		vldr.32	s14, .L59+68
+ 417 0144 F4EEC77A 		vcmpe.f32	s15, s14
+ 418 0148 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 419 014c 09D5     		bpl	.L33
+ 420              		.loc 1 125 56 discriminator 1 view .LVU124
+ 421 014e 9FED667A 		vldr.32	s14, .L59+72
+ 422 0152 F4EE477A 		vcmp.f32	s15, s14
+ 423 0156 9FED587A 		vldr.32	s14, .L59+24
+ 424 015a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 425 015e 77FE277A 		vselgt.f32	s15, s14, s15
+ 426              	.LVL11:
+ 427              	.L33:
+ 126:Src/ball_tracker.c ****     g_omega = TRK_SIGN * (TRK_KP * err + TRK_KV * g_v);
+ 428              		.loc 1 126 5 is_stmt 1 view .LVU125
+ 429              		.loc 1 126 49 is_stmt 0 view .LVU126
+ 430 0162 96ED007A 		vldr.32	s14, [r6]
+ 431              		.loc 1 126 40 view .LVU127
+ 432 0166 DFED616A 		vldr.32	s13, .L59+76
+ 433              		.loc 1 126 49 view .LVU128
+ 434 016a 27EE287A 		vmul.f32	s14, s14, s17
+ 435              		.loc 1 126 40 view .LVU129
+ 436 016e A7EEA67A 		vfma.f32	s14, s15, s13
+ 127:Src/ball_tracker.c ****     if (g_omega >  TRK_OMEGA_MAX) g_omega =  TRK_OMEGA_MAX;
+ 437              		.loc 1 127 5 is_stmt 1 view .LVU130
+ 438              		.loc 1 127 8 is_stmt 0 view .LVU131
+ 439 0172 DFED5F6A 		vldr.32	s13, .L59+80
+ 440 0176 B4EEE67A 		vcmpe.f32	s14, s13
+ 441 017a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 442 017e DFED5D7A 		vldr.32	s15, .L59+84
+ 443              	.LVL12:
+ 444              		.loc 1 127 8 view .LVU132
+ 445 0182 07D4     		bmi	.L36
+ 128:Src/ball_tracker.c ****     if (g_omega < -TRK_OMEGA_MAX) g_omega = -TRK_OMEGA_MAX;
+ 446              		.loc 1 128 5 is_stmt 1 view .LVU133
+ 126:Src/ball_tracker.c ****     g_omega = TRK_SIGN * (TRK_KP * err + TRK_KV * g_v);
+ 447              		.loc 1 126 24 is_stmt 0 view .LVU134
+ 448 0184 B4EE677A 		vcmp.f32	s14, s15
+ 449 0188 B1EE476A 		vneg.f32	s12, s14
+ 450 018c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 451 0190 76FE867A 		vselgt.f32	s15, s13, s12
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 15
+
+
+ 452              	.LVL13:
+ 453              	.L36:
+ 126:Src/ball_tracker.c ****     g_omega = TRK_SIGN * (TRK_KP * err + TRK_KV * g_v);
+ 454              		.loc 1 126 24 view .LVU135
+ 455              	.LBE15:
+ 129:Src/ball_tracker.c ****   } else if (g_state == TRK_COAST) {
+ 130:Src/ball_tracker.c ****     g_omega -= g_omega * (dt / TRK_COAST_TAU);   /* time-based decay of pan rate */
+ 131:Src/ball_tracker.c ****   } else {
+ 132:Src/ball_tracker.c ****     g_omega = 0.0f;                              /* IDLE/TENTATIVE: hold (manual ok) */
+ 133:Src/ball_tracker.c ****   }
+ 134:Src/ball_tracker.c **** 
+ 135:Src/ball_tracker.c ****   if (g_state == TRK_CONFIRMED || g_state == TRK_COAST) {
+ 456              		.loc 1 135 15 view .LVU136
+ 457 0194 2268     		ldr	r2, [r4]
+ 458              	.LBB16:
+ 128:Src/ball_tracker.c ****     if (g_omega < -TRK_OMEGA_MAX) g_omega = -TRK_OMEGA_MAX;
+ 459              		.loc 1 128 43 view .LVU137
+ 460 0196 C3ED007A 		vstr.32	s15, [r3]
+ 461              	.LBE16:
+ 462              		.loc 1 135 3 is_stmt 1 view .LVU138
+ 463              		.loc 1 135 6 is_stmt 0 view .LVU139
+ 464 019a 022A     		cmp	r2, #2
+ 465 019c 02D0     		beq	.L37
+ 466              		.loc 1 135 43 discriminator 1 view .LVU140
+ 467 019e 2268     		ldr	r2, [r4]
+ 468              		.loc 1 135 32 discriminator 1 view .LVU141
+ 469 01a0 032A     		cmp	r2, #3
+ 470 01a2 79D1     		bne	.L13
+ 471              	.L37:
+ 136:Src/ball_tracker.c ****     g_theta += g_omega * dt;
+ 472              		.loc 1 136 5 is_stmt 1 view .LVU142
+ 473              		.loc 1 136 13 is_stmt 0 view .LVU143
+ 474 01a4 4C4A     		ldr	r2, .L59+56
+ 475 01a6 D3ED007A 		vldr.32	s15, [r3]
+ 476 01aa 92ED000A 		vldr.32	s0, [r2]
+ 477 01ae A7EE880A 		vfma.f32	s0, s15, s16
+ 137:Src/ball_tracker.c ****     if (g_theta < 0.0f)   g_theta = 0.0f;
+ 478              		.loc 1 137 5 is_stmt 1 view .LVU144
+ 479              		.loc 1 137 8 is_stmt 0 view .LVU145
+ 480 01b2 B5EEC00A 		vcmpe.f32	s0, #0
+ 481 01b6 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 482 01ba 6AD4     		bmi	.L48
+ 138:Src/ball_tracker.c ****     if (g_theta > 180.0f) g_theta = 180.0f;
+ 483              		.loc 1 138 5 is_stmt 1 view .LVU146
+ 484              		.loc 1 138 8 is_stmt 0 view .LVU147
+ 485 01bc DFED4E7A 		vldr.32	s15, .L59+88
+ 486 01c0 B4EE670A 		vcmp.f32	s0, s15
+ 487 01c4 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 488 01c8 37FE800A 		vselgt.f32	s0, s15, s0
+ 489              	.L39:
+ 139:Src/ball_tracker.c ****     Servo_SetAngleF(g_theta);
+ 140:Src/ball_tracker.c ****   }
+ 141:Src/ball_tracker.c **** }
+ 490              		.loc 1 141 1 view .LVU148
+ 491 01cc BDEC028B 		vldm	sp!, {d8}
+ 492              		.cfi_remember_state
+ 493              		.cfi_restore 80
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 16
+
+
+ 494              		.cfi_restore 81
+ 495              		.cfi_def_cfa_offset 24
+ 496              	.LVL14:
+ 497              		.loc 1 141 1 view .LVU149
+ 498 01d0 BDE8F840 		pop	{r3, r4, r5, r6, r7, lr}
+ 499              		.cfi_restore 14
+ 500              		.cfi_restore 7
+ 501              		.cfi_restore 6
+ 502              		.cfi_restore 5
+ 503              		.cfi_restore 4
+ 504              		.cfi_restore 3
+ 505              		.cfi_def_cfa_offset 0
+ 136:Src/ball_tracker.c ****     if (g_theta < 0.0f)   g_theta = 0.0f;
+ 506              		.loc 1 136 13 view .LVU150
+ 507 01d4 82ED000A 		vstr.32	s0, [r2]
+ 139:Src/ball_tracker.c ****     Servo_SetAngleF(g_theta);
+ 508              		.loc 1 139 5 is_stmt 1 view .LVU151
+ 509 01d8 FFF7FEBF 		b	Servo_SetAngleF
+ 510              	.LVL15:
+ 511              	.L40:
+ 512              		.cfi_restore_state
+  99:Src/ball_tracker.c ****   last_ms = now;
+ 513              		.loc 1 99 55 is_stmt 0 view .LVU152
+ 514 01dc 9FED478A 		vldr.32	s16, .L59+92
+ 515 01e0 25E7     		b	.L14
+ 516              	.LVL16:
+ 517              	.L41:
+ 101:Src/ball_tracker.c ****   if (dt > 0.10f)  dt = 0.10f;
+ 518              		.loc 1 101 23 view .LVU153
+ 519 01e2 9FED318A 		vldr.32	s16, .L59+8
+ 520              	.LVL17:
+ 101:Src/ball_tracker.c ****   if (dt > 0.10f)  dt = 0.10f;
+ 521              		.loc 1 101 23 view .LVU154
+ 522 01e6 31E7     		b	.L15
+ 523              	.LVL18:
+ 524              	.L19:
+ 525              	.LBB17:
+ 526              	.LBB14:
+ 527              	.LBB13:
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 528              		.loc 1 77 5 is_stmt 1 view .LVU155
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 529              		.loc 1 77 11 is_stmt 0 view .LVU156
+ 530 01e8 D7ED007A 		vldr.32	s15, [r7]
+ 531              	.LVL19:
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 532              		.loc 1 77 24 is_stmt 1 view .LVU157
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 533              		.loc 1 77 27 is_stmt 0 view .LVU158
+ 534 01ec DFED446A 		vldr.32	s13, .L59+96
+ 535 01f0 F4EEE67A 		vcmpe.f32	s15, s13
+ 536 01f4 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 537 01f8 33D4     		bmi	.L43
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 538              		.loc 1 77 56 is_stmt 1 view .LVU159
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 539              		.loc 1 77 59 is_stmt 0 view .LVU160
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 17
+
+
+ 540 01fa F6EE006A 		vmov.f32	s13, #5.0e-1
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 541              		.loc 1 77 76 view .LVU161
+ 542 01fe F4EE667A 		vcmp.f32	s15, s13
+ 543 0202 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 544 0206 76FEA77A 		vselgt.f32	s15, s13, s15
+ 545              	.LVL20:
+ 546              	.L20:
+  78:Src/ball_tracker.c ****     g_x += TRK_ALPHA * r;
+ 547              		.loc 1 78 5 is_stmt 1 view .LVU162
+  78:Src/ball_tracker.c ****     g_x += TRK_ALPHA * r;
+ 548              		.loc 1 78 18 is_stmt 0 view .LVU163
+ 549 020a D5ED006A 		vldr.32	s13, [r5]
+  79:Src/ball_tracker.c ****     g_v += (TRK_BETA / dtm) * r;
+ 550              		.loc 1 79 9 view .LVU164
+ 551 020e B5EE006A 		vmov.f32	s12, #2.5e-1
+  78:Src/ball_tracker.c ****     g_x += TRK_ALPHA * r;
+ 552              		.loc 1 78 11 view .LVU165
+ 553 0212 37EE667A 		vsub.f32	s14, s14, s13
+ 554              	.LVL21:
+  79:Src/ball_tracker.c ****     g_v += (TRK_BETA / dtm) * r;
+ 555              		.loc 1 79 5 is_stmt 1 view .LVU166
+  79:Src/ball_tracker.c ****     g_v += (TRK_BETA / dtm) * r;
+ 556              		.loc 1 79 9 is_stmt 0 view .LVU167
+ 557 0216 D5ED006A 		vldr.32	s13, [r5]
+ 558 021a E7EE066A 		vfma.f32	s13, s14, s12
+ 559 021e C5ED006A 		vstr.32	s13, [r5]
+  80:Src/ball_tracker.c ****     g_age = 0.0f;
+ 560              		.loc 1 80 5 is_stmt 1 view .LVU168
+  80:Src/ball_tracker.c ****     g_age = 0.0f;
+ 561              		.loc 1 80 9 is_stmt 0 view .LVU169
+ 562 0222 D6ED006A 		vldr.32	s13, [r6]
+  80:Src/ball_tracker.c ****     g_age = 0.0f;
+ 563              		.loc 1 80 22 view .LVU170
+ 564 0226 88EEA76A 		vdiv.f32	s12, s17, s15
+  80:Src/ball_tracker.c ****     g_age = 0.0f;
+ 565              		.loc 1 80 9 view .LVU171
+ 566 022a F0EE667A 		vmov.f32	s15, s13
+ 567              	.LVL22:
+  80:Src/ball_tracker.c ****     g_age = 0.0f;
+ 568              		.loc 1 80 9 view .LVU172
+ 569 022e E7EE067A 		vfma.f32	s15, s14, s12
+ 570 0232 C6ED007A 		vstr.32	s15, [r6]
+  81:Src/ball_tracker.c ****     if (g_hits < TRK_CONFIRM) g_hits++;
+ 571              		.loc 1 81 5 is_stmt 1 view .LVU173
+  82:Src/ball_tracker.c ****     if (g_state == TRK_TENTATIVE && g_hits >= TRK_CONFIRM) g_state = TRK_CONFIRMED;
+ 572              		.loc 1 82 16 is_stmt 0 view .LVU174
+ 573 0236 1A68     		ldr	r2, [r3]
+  81:Src/ball_tracker.c ****     if (g_hits < TRK_CONFIRM) g_hits++;
+ 574              		.loc 1 81 11 view .LVU175
+ 575 0238 C7ED008A 		vstr.32	s17, [r7]
+  82:Src/ball_tracker.c ****     if (g_state == TRK_TENTATIVE && g_hits >= TRK_CONFIRM) g_state = TRK_CONFIRMED;
+ 576              		.loc 1 82 5 is_stmt 1 view .LVU176
+  82:Src/ball_tracker.c ****     if (g_state == TRK_TENTATIVE && g_hits >= TRK_CONFIRM) g_state = TRK_CONFIRMED;
+ 577              		.loc 1 82 8 is_stmt 0 view .LVU177
+ 578 023c 022A     		cmp	r2, #2
+  82:Src/ball_tracker.c ****     if (g_state == TRK_TENTATIVE && g_hits >= TRK_CONFIRM) g_state = TRK_CONFIRMED;
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 18
+
+
+ 579              		.loc 1 82 31 is_stmt 1 view .LVU178
+  82:Src/ball_tracker.c ****     if (g_state == TRK_TENTATIVE && g_hits >= TRK_CONFIRM) g_state = TRK_CONFIRMED;
+ 580              		.loc 1 82 37 is_stmt 0 view .LVU179
+ 581 023e DCBF     		itt	le
+ 582 0240 0132     		addle	r2, r2, #1
+ 583 0242 1A60     		strle	r2, [r3]
+  83:Src/ball_tracker.c ****     if (g_state == TRK_COAST) g_state = TRK_CONFIRMED;   /* re-acquired */
+ 584              		.loc 1 83 5 is_stmt 1 view .LVU180
+  83:Src/ball_tracker.c ****     if (g_state == TRK_COAST) g_state = TRK_CONFIRMED;   /* re-acquired */
+ 585              		.loc 1 83 17 is_stmt 0 view .LVU181
+ 586 0244 2268     		ldr	r2, [r4]
+  83:Src/ball_tracker.c ****     if (g_state == TRK_COAST) g_state = TRK_CONFIRMED;   /* re-acquired */
+ 587              		.loc 1 83 8 view .LVU182
+ 588 0246 012A     		cmp	r2, #1
+ 589 0248 04D1     		bne	.L22
+  83:Src/ball_tracker.c ****     if (g_state == TRK_COAST) g_state = TRK_CONFIRMED;   /* re-acquired */
+ 590              		.loc 1 83 34 view .LVU183
+ 591 024a 1B68     		ldr	r3, [r3]
+ 592 024c 022B     		cmp	r3, #2
+  83:Src/ball_tracker.c ****     if (g_state == TRK_COAST) g_state = TRK_CONFIRMED;   /* re-acquired */
+ 593              		.loc 1 83 60 is_stmt 1 view .LVU184
+  83:Src/ball_tracker.c ****     if (g_state == TRK_COAST) g_state = TRK_CONFIRMED;   /* re-acquired */
+ 594              		.loc 1 83 68 is_stmt 0 view .LVU185
+ 595 024e C4BF     		itt	gt
+ 596 0250 0223     		movgt	r3, #2
+ 597 0252 2360     		strgt	r3, [r4]
+ 598              	.L22:
+  84:Src/ball_tracker.c ****   } else {
+ 599              		.loc 1 84 5 is_stmt 1 view .LVU186
+  84:Src/ball_tracker.c ****   } else {
+ 600              		.loc 1 84 17 is_stmt 0 view .LVU187
+ 601 0254 2368     		ldr	r3, [r4]
+  84:Src/ball_tracker.c ****   } else {
+ 602              		.loc 1 84 8 view .LVU188
+ 603 0256 032B     		cmp	r3, #3
+ 604 0258 7FF427AF 		bne	.L17
+  84:Src/ball_tracker.c ****   } else {
+ 605              		.loc 1 84 31 is_stmt 1 view .LVU189
+  84:Src/ball_tracker.c ****   } else {
+ 606              		.loc 1 84 39 is_stmt 0 view .LVU190
+ 607 025c 0223     		movs	r3, #2
+ 608 025e 2360     		str	r3, [r4]
+ 609 0260 23E7     		b	.L17
+ 610              	.LVL23:
+ 611              	.L43:
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 612              		.loc 1 77 46 view .LVU191
+ 613 0262 F0EE667A 		vmov.f32	s15, s13
+ 614              	.LVL24:
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 615              		.loc 1 77 46 view .LVU192
+ 616 0266 D0E7     		b	.L20
+ 617              	.LVL25:
+ 618              	.L18:
+  77:Src/ball_tracker.c ****     float r = mx - g_x;
+ 619              		.loc 1 77 46 view .LVU193
+ 620              	.LBE13:
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 19
+
+
+  88:Src/ball_tracker.c ****   }
+ 621              		.loc 1 88 5 is_stmt 1 view .LVU194
+  88:Src/ball_tracker.c ****   }
+ 622              		.loc 1 88 17 is_stmt 0 view .LVU195
+ 623 0268 2268     		ldr	r2, [r4]
+ 624              	.LVL26:
+  88:Src/ball_tracker.c ****   }
+ 625              		.loc 1 88 8 view .LVU196
+ 626 026a 012A     		cmp	r2, #1
+  88:Src/ball_tracker.c ****   }
+ 627              		.loc 1 88 37 is_stmt 1 view .LVU197
+  88:Src/ball_tracker.c ****   }
+ 628              		.loc 1 88 64 is_stmt 0 view .LVU198
+ 629 026c 01BF     		itttt	eq
+ 630 026e 194A     		ldreq	r2, .L59+52
+  88:Src/ball_tracker.c ****   }
+ 631              		.loc 1 88 45 view .LVU199
+ 632 0270 2360     		streq	r3, [r4]
+  88:Src/ball_tracker.c ****   }
+ 633              		.loc 1 88 57 is_stmt 1 view .LVU200
+  88:Src/ball_tracker.c ****   }
+ 634              		.loc 1 88 64 is_stmt 0 view .LVU201
+ 635 0272 1360     		streq	r3, [r2]
+  88:Src/ball_tracker.c ****   }
+ 636              		.loc 1 88 69 is_stmt 1 view .LVU202
+  88:Src/ball_tracker.c ****   }
+ 637              		.loc 1 88 73 is_stmt 0 view .LVU203
+ 638 0274 C6ED008A 		vstreq.32	s17, [r6]
+ 639 0278 17E7     		b	.L17
+ 640              	.LVL27:
+ 641              	.L32:
+  88:Src/ball_tracker.c ****   }
+ 642              		.loc 1 88 73 view .LVU204
+ 643              	.LBE14:
+ 644              	.LBE17:
+ 129:Src/ball_tracker.c ****     g_omega -= g_omega * (dt / TRK_COAST_TAU);   /* time-based decay of pan rate */
+ 645              		.loc 1 129 10 is_stmt 1 view .LVU205
+ 129:Src/ball_tracker.c ****     g_omega -= g_omega * (dt / TRK_COAST_TAU);   /* time-based decay of pan rate */
+ 646              		.loc 1 129 22 is_stmt 0 view .LVU206
+ 647 027a 2268     		ldr	r2, [r4]
+ 129:Src/ball_tracker.c ****     g_omega -= g_omega * (dt / TRK_COAST_TAU);   /* time-based decay of pan rate */
+ 648              		.loc 1 129 13 view .LVU207
+ 649 027c 032A     		cmp	r2, #3
+ 130:Src/ball_tracker.c ****   } else {
+ 650              		.loc 1 130 5 is_stmt 1 view .LVU208
+ 130:Src/ball_tracker.c ****   } else {
+ 651              		.loc 1 130 13 is_stmt 0 view .LVU209
+ 652 027e 05BF     		ittet	eq
+ 653 0280 D3ED007A 		vldreq.32	s15, [r3]
+ 130:Src/ball_tracker.c ****   } else {
+ 654              		.loc 1 130 30 view .LVU210
+ 655 0284 38EE087A 		vaddeq.f32	s14, s16, s16
+ 656 0288 DFED0B7A 		vldrne.32	s15, .L59+24
+ 130:Src/ball_tracker.c ****   } else {
+ 657              		.loc 1 130 13 view .LVU211
+ 658 028c E7EEC77A 		vfmseq.f32	s15, s15, s14
+ 659 0290 80E7     		b	.L36
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 20
+
+
+ 660              	.L48:
+ 130:Src/ball_tracker.c ****   } else {
+ 661              		.loc 1 130 13 view .LVU212
+ 662 0292 9FED090A 		vldr.32	s0, .L59+24
+ 663 0296 99E7     		b	.L39
+ 664              	.L13:
+ 665              		.loc 1 141 1 view .LVU213
+ 666 0298 BDEC028B 		vldm	sp!, {d8}
+ 667              		.cfi_restore 80
+ 668              		.cfi_restore 81
+ 669              		.cfi_def_cfa_offset 24
+ 670              	.LVL28:
+ 671              		.loc 1 141 1 view .LVU214
+ 672 029c F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 673              	.L60:
+ 674 029e 00BF     		.align	2
+ 675              	.L59:
+ 676 02a0 00000000 		.word	g_ticks
+ 677 02a4 00000000 		.word	last_ms.0
+ 678 02a8 6F12833A 		.word	981668463
+ 679 02ac CDCCCC3D 		.word	1036831949
+ 680 02b0 00000000 		.word	g_mbx_seq
+ 681 02b4 00000000 		.word	g_last_seq
+ 682 02b8 00000000 		.word	0
+ 683 02bc 00000000 		.word	g_state
+ 684 02c0 00000000 		.word	g_x
+ 685 02c4 00000000 		.word	g_v
+ 686 02c8 00000000 		.word	g_age
+ 687 02cc 00000000 		.word	g_mbx_present
+ 688 02d0 00000000 		.word	g_mbx_x
+ 689 02d4 00000000 		.word	g_hits
+ 690 02d8 00000000 		.word	g_theta
+ 691 02dc CDCC4C3E 		.word	1045220557
+ 692 02e0 00000000 		.word	g_omega
+ 693 02e4 CDCC4C3D 		.word	1028443341
+ 694 02e8 CDCC4CBD 		.word	-1119040307
+ 695 02ec 00007042 		.word	1114636288
+ 696 02f0 0000BEC2 		.word	-1027735552
+ 697 02f4 0000BE42 		.word	1119748096
+ 698 02f8 00003443 		.word	1127481344
+ 699 02fc 0AD7A33C 		.word	1017370378
+ 700 0300 0AD7A33B 		.word	1000593162
+ 701              		.cfi_endproc
+ 702              	.LFE867:
+ 704              		.section	.text.BallTracker_Init,"ax",%progbits
+ 705              		.align	1
+ 706              		.global	BallTracker_Init
+ 707              		.syntax unified
+ 708              		.thumb
+ 709              		.thumb_func
+ 711              	BallTracker_Init:
+ 712              	.LFB868:
+ 142:Src/ball_tracker.c **** 
+ 143:Src/ball_tracker.c **** void BallTracker_Init(void)
+ 144:Src/ball_tracker.c **** {
+ 713              		.loc 1 144 1 is_stmt 1 view -0
+ 714              		.cfi_startproc
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 21
+
+
+ 715              		@ args = 0, pretend = 0, frame = 0
+ 716              		@ frame_needed = 0, uses_anonymous_args = 0
+ 145:Src/ball_tracker.c ****   /* Control runs from the main loop (BallTracker_ControlTick), not a timer ISR:
+ 146:Src/ball_tracker.c ****    * the NPU inference masks interrupts globally for ~72 ms, so a high-rate tick
+ 147:Src/ball_tracker.c ****    * is impossible during inference. Main-loop pacing (~12 Hz, the real ceiling)
+ 148:Src/ball_tracker.c ****    * with measured-dt integration is deterministic and simpler. */
+ 149:Src/ball_tracker.c ****   g_state = TRK_IDLE;
+ 717              		.loc 1 149 3 view .LVU216
+ 144:Src/ball_tracker.c ****   /* Control runs from the main loop (BallTracker_ControlTick), not a timer ISR:
+ 718              		.loc 1 144 1 is_stmt 0 view .LVU217
+ 719 0000 10B5     		push	{r4, lr}
+ 720              		.cfi_def_cfa_offset 8
+ 721              		.cfi_offset 4, -8
+ 722              		.cfi_offset 14, -4
+ 723              		.loc 1 149 11 view .LVU218
+ 724 0002 0024     		movs	r4, #0
+ 725 0004 0C4B     		ldr	r3, .L62
+ 726 0006 1C60     		str	r4, [r3]
+ 150:Src/ball_tracker.c ****   g_theta = (float)Servo_GetAngle();
+ 727              		.loc 1 150 3 is_stmt 1 view .LVU219
+ 728              		.loc 1 150 20 is_stmt 0 view .LVU220
+ 729 0008 FFF7FEFF 		bl	Servo_GetAngle
+ 730              	.LVL29:
+ 731 000c 07EE900A 		vmov	s15, r0	@ int
+ 732              		.loc 1 150 13 view .LVU221
+ 733 0010 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 151:Src/ball_tracker.c ****   g_x = 0.5f; g_v = 0.0f; g_omega = 0.0f; g_hits = 0; g_age = 0.0f;
+ 734              		.loc 1 151 7 view .LVU222
+ 735 0014 4FF07C52 		mov	r2, #1056964608
+ 150:Src/ball_tracker.c ****   g_theta = (float)Servo_GetAngle();
+ 736              		.loc 1 150 13 view .LVU223
+ 737 0018 084B     		ldr	r3, .L62+4
+ 738 001a C3ED007A 		vstr.32	s15, [r3]
+ 739              		.loc 1 151 3 is_stmt 1 view .LVU224
+ 740              		.loc 1 151 7 is_stmt 0 view .LVU225
+ 741 001e 084B     		ldr	r3, .L62+8
+ 742 0020 1A60     		str	r2, [r3]	@ float
+ 743              		.loc 1 151 15 is_stmt 1 view .LVU226
+ 744              		.loc 1 151 19 is_stmt 0 view .LVU227
+ 745 0022 0023     		movs	r3, #0
+ 746 0024 074A     		ldr	r2, .L62+12
+ 747 0026 1360     		str	r3, [r2]	@ float
+ 748              		.loc 1 151 27 is_stmt 1 view .LVU228
+ 749              		.loc 1 151 35 is_stmt 0 view .LVU229
+ 750 0028 074A     		ldr	r2, .L62+16
+ 751 002a 1360     		str	r3, [r2]	@ float
+ 752              		.loc 1 151 43 is_stmt 1 view .LVU230
+ 753              		.loc 1 151 50 is_stmt 0 view .LVU231
+ 754 002c 074A     		ldr	r2, .L62+20
+ 755 002e 1460     		str	r4, [r2]
+ 756              		.loc 1 151 55 is_stmt 1 view .LVU232
+ 757              		.loc 1 151 61 is_stmt 0 view .LVU233
+ 758 0030 074A     		ldr	r2, .L62+24
+ 759 0032 1360     		str	r3, [r2]	@ float
+ 152:Src/ball_tracker.c **** }
+ 760              		.loc 1 152 1 view .LVU234
+ 761 0034 10BD     		pop	{r4, pc}
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 22
+
+
+ 762              	.L63:
+ 763 0036 00BF     		.align	2
+ 764              	.L62:
+ 765 0038 00000000 		.word	g_state
+ 766 003c 00000000 		.word	g_theta
+ 767 0040 00000000 		.word	g_x
+ 768 0044 00000000 		.word	g_v
+ 769 0048 00000000 		.word	g_omega
+ 770 004c 00000000 		.word	g_hits
+ 771 0050 00000000 		.word	g_age
+ 772              		.cfi_endproc
+ 773              	.LFE868:
+ 775              		.section	.bss.last_ms.0,"aw",%nobits
+ 776              		.align	2
+ 779              	last_ms.0:
+ 780 0000 00000000 		.space	4
+ 781              		.section	.bss.g_last_seq,"aw",%nobits
+ 782              		.align	2
+ 785              	g_last_seq:
+ 786 0000 00000000 		.space	4
+ 787              		.section	.bss.g_mbx_seq,"aw",%nobits
+ 788              		.align	2
+ 791              	g_mbx_seq:
+ 792 0000 00000000 		.space	4
+ 793              		.section	.bss.g_mbx_present,"aw",%nobits
+ 796              	g_mbx_present:
+ 797 0000 00       		.space	1
+ 798              		.section	.data.g_mbx_x,"aw"
+ 799              		.align	2
+ 802              	g_mbx_x:
+ 803 0000 0000003F 		.word	1056964608
+ 804              		.section	.bss.g_ticks,"aw",%nobits
+ 805              		.align	2
+ 808              	g_ticks:
+ 809 0000 00000000 		.space	4
+ 810              		.section	.bss.g_age,"aw",%nobits
+ 811              		.align	2
+ 814              	g_age:
+ 815 0000 00000000 		.space	4
+ 816              		.section	.bss.g_hits,"aw",%nobits
+ 817              		.align	2
+ 820              	g_hits:
+ 821 0000 00000000 		.space	4
+ 822              		.section	.data.g_theta,"aw"
+ 823              		.align	2
+ 826              	g_theta:
+ 827 0000 0000B442 		.word	1119092736
+ 828              		.section	.bss.g_omega,"aw",%nobits
+ 829              		.align	2
+ 832              	g_omega:
+ 833 0000 00000000 		.space	4
+ 834              		.section	.bss.g_state,"aw",%nobits
+ 835              		.align	2
+ 838              	g_state:
+ 839 0000 00000000 		.space	4
+ 840              		.section	.bss.g_v,"aw",%nobits
+ 841              		.align	2
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 23
+
+
+ 844              	g_v:
+ 845 0000 00000000 		.space	4
+ 846              		.section	.data.g_x,"aw"
+ 847              		.align	2
+ 850              	g_x:
+ 851 0000 0000003F 		.word	1056964608
+ 852              		.text
+ 853              	.Letext0:
+ 854              		.file 3 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 855              		.file 4 "/opt/st/stm32cubeide_1.17.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-
+ 856              		.file 5 "Inc/servo_control.h"
+ 857              		.file 6 "../../STM32Cube_FW_N6/Drivers/STM32N6xx_HAL_Driver/Inc/stm32n6xx_hal.h"
+ 858              		.file 7 "Inc/ball_tracker.h"
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 24
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ball_tracker.c
+/tmp/claude-1000/cctNtDeN.s:26     .text.BallTracker_GetX:00000000 $t
+/tmp/claude-1000/cctNtDeN.s:32     .text.BallTracker_GetX:00000000 BallTracker_GetX
+/tmp/claude-1000/cctNtDeN.s:48     .text.BallTracker_GetX:00000008 $d
+/tmp/claude-1000/cctNtDeN.s:850    .data.g_x:00000000 g_x
+/tmp/claude-1000/cctNtDeN.s:53     .text.BallTracker_State:00000000 $t
+/tmp/claude-1000/cctNtDeN.s:59     .text.BallTracker_State:00000000 BallTracker_State
+/tmp/claude-1000/cctNtDeN.s:75     .text.BallTracker_State:00000008 $d
+/tmp/claude-1000/cctNtDeN.s:838    .bss.g_state:00000000 g_state
+/tmp/claude-1000/cctNtDeN.s:80     .text.BallTracker_TickCount:00000000 $t
+/tmp/claude-1000/cctNtDeN.s:86     .text.BallTracker_TickCount:00000000 BallTracker_TickCount
+/tmp/claude-1000/cctNtDeN.s:101    .text.BallTracker_TickCount:00000008 $d
+/tmp/claude-1000/cctNtDeN.s:808    .bss.g_ticks:00000000 g_ticks
+/tmp/claude-1000/cctNtDeN.s:106    .text.BallTracker_Measure:00000000 $t
+/tmp/claude-1000/cctNtDeN.s:112    .text.BallTracker_Measure:00000000 BallTracker_Measure
+/tmp/claude-1000/cctNtDeN.s:162    .text.BallTracker_Measure:00000020 $d
+/tmp/claude-1000/cctNtDeN.s:802    .data.g_mbx_x:00000000 g_mbx_x
+/tmp/claude-1000/cctNtDeN.s:796    .bss.g_mbx_present:00000000 g_mbx_present
+/tmp/claude-1000/cctNtDeN.s:791    .bss.g_mbx_seq:00000000 g_mbx_seq
+/tmp/claude-1000/cctNtDeN.s:169    .text.BallTracker_ControlTick:00000000 $t
+/tmp/claude-1000/cctNtDeN.s:175    .text.BallTracker_ControlTick:00000000 BallTracker_ControlTick
+/tmp/claude-1000/cctNtDeN.s:676    .text.BallTracker_ControlTick:000002a0 $d
+/tmp/claude-1000/cctNtDeN.s:779    .bss.last_ms.0:00000000 last_ms.0
+/tmp/claude-1000/cctNtDeN.s:785    .bss.g_last_seq:00000000 g_last_seq
+/tmp/claude-1000/cctNtDeN.s:844    .bss.g_v:00000000 g_v
+/tmp/claude-1000/cctNtDeN.s:814    .bss.g_age:00000000 g_age
+/tmp/claude-1000/cctNtDeN.s:820    .bss.g_hits:00000000 g_hits
+/tmp/claude-1000/cctNtDeN.s:826    .data.g_theta:00000000 g_theta
+/tmp/claude-1000/cctNtDeN.s:832    .bss.g_omega:00000000 g_omega
+/tmp/claude-1000/cctNtDeN.s:705    .text.BallTracker_Init:00000000 $t
+/tmp/claude-1000/cctNtDeN.s:711    .text.BallTracker_Init:00000000 BallTracker_Init
+/tmp/claude-1000/cctNtDeN.s:765    .text.BallTracker_Init:00000038 $d
+/tmp/claude-1000/cctNtDeN.s:776    .bss.last_ms.0:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:782    .bss.g_last_seq:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:788    .bss.g_mbx_seq:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:797    .bss.g_mbx_present:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:799    .data.g_mbx_x:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:805    .bss.g_ticks:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:811    .bss.g_age:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:817    .bss.g_hits:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:823    .data.g_theta:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:829    .bss.g_omega:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:835    .bss.g_state:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:841    .bss.g_v:00000000 $d
+/tmp/claude-1000/cctNtDeN.s:847    .data.g_x:00000000 $d
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.stm32n6xx_hal_conf.h.21.a3ee9875a8d50695591dfaa6b0d72c91
+                           .group:00000000 wm4.stddef.h.39.3e0425629195acf083c9561151306b4d
+                           .group:00000000 wm4.arm_cmse.h.103.a0d15a79c4c9a67da8d5831704d7248e
+                           .group:00000000 wm4.stm32n6xx.h.34.c523a1ffdf274a69e8802892c6776332
+                           .group:00000000 wm4.stm32n657xx.h.26.acd272cb67318cc1a4791ce2f0720ca6
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.features.h.33.3e67abe6fb64142d4f6fa9496796153c
+                           .group:00000000 wm4._default_types.h.15.247e5cd201eca3442cbf5404108c4935
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 25
+
+
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.cmsis_version.h.30.d128735bf87720f7436b74fefeb5043c
+                           .group:00000000 wm4.core_cm55.h.67.25006a3ce7048d64bcddd2996d5fac93
+                           .group:00000000 wm4.arm_acle.h.28.ce8f475a5cc50333e54ae4adeb8c0298
+                           .group:00000000 wm4.cmsis_gcc.h.39.eba7438bc45fd1a6e6376b63ffe44436
+                           .group:00000000 wm4.cmsis_gcc_m.h.24.e590ec51aeda3a1242400351d73f5dce
+                           .group:00000000 wm4.core_cm55.h.213.0528f46a674315ef8d35c4477e230358
+                           .group:00000000 wm4.armv8m_mpu.h.24.bf28cc25bee30a7ff9d2f7a44a5e2230
+                           .group:00000000 wm4.armv8m_pmu.h.24.6ded195d2625055391fd378c0e1d2519
+                           .group:00000000 wm4.core_cm55.h.4477.396e822ef855bcfb932819ad48de1c4c
+                           .group:00000000 wm4.armv7m_cachel1.h.24.936dd92d6e204a8d0b17d5e4ea4a356e
+                           .group:00000000 wm4.stm32n657xx.h.575.78d331c417ec710388ced647138f735f
+                           .group:00000000 wm4.stm32n6xx.h.116.b4247d9785590e7c5ec9234ffb2153bf
+                           .group:00000000 wm4.stm32_hal_legacy.h.22.e62aae2fd3ae33360b6781c8a72e5b18
+                           .group:00000000 wm4.newlib.h.7.f9f25f80f86429f653675286e7973cb9
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.math.h.13.35ad80917fddb38312d53499dad31194
+                           .group:00000000 wm4.stm32n6xx_hal_def.h.63.3a8f01490e8852464e9fcb69092e9c75
+                           .group:00000000 wm4.stm32n6xx_ll_bus.h.38.2366a295ee4cdb04833997d3787fcd2d
+                           .group:00000000 wm4.stm32n6xx_ll_rcc.h.21.656bd5637db608589ad16ea57d39430c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.194.69b522b1afdf59a82d05a1f71efe03c7
+                           .group:00000000 wm4.stm32n6xx_hal_rcc_ex.h.21.cc6be0a7d168882a1a6f470236ba784c
+                           .group:00000000 wm4.stm32n6xx_hal_rcc.h.4361.4b490a4a19722e68c21f88cb8a774a30
+                           .group:00000000 wm4.stm32n6xx_hal_gpio.h.21.89d54af663b98eb8fc098192053f7eeb
+                           .group:00000000 wm4.stm32n6xx_hal_gpio_ex.h.22.f7e795fb05a69a19b87d946b47c8db8b
+                           .group:00000000 wm4.stm32n6xx_hal_rif.h.21.33f2c553a8a3fc14dca8c470b213ab19
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.21.61e48c5c2e8d25d22177834b232fe45c
+                           .group:00000000 wm4.stm32n6xx_hal_dma_ex.h.21.82f854ecdb6a463b06d0b4e5c217c368
+                           .group:00000000 wm4.stm32n6xx_hal_dma.h.1020.87e2180c009560b617c1f8208140c950
+                           .group:00000000 wm4.stm32n6xx_hal_cortex.h.21.f493623cc58f9454ab4eae41e395c5cc
+                           .group:00000000 wm4.stm32n6xx_hal_bsec.h.21.1ee89319140541f82434908b4267aa30
+                           .group:00000000 wm4.stm32n6xx_hal_dcmipp.h.21.e2b87dce83d7d722d696a597f6ac56bf
+                           .group:00000000 wm4.stm32n6xx_hal_dma2d.h.21.75c8d46cdbb72970123b3f34ae2043d7
+                           .group:00000000 wm4.stm32n6xx_hal_exti.h.21.e0efb23591051684dc14f1f2431c6aab
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.21.3f483626ff64c5bf027265bb2e1d1331
+                           .group:00000000 wm4.stm32n6xx_hal_i2c_ex.h.21.79e9196c22282cdaf6b4047893638c45
+                           .group:00000000 wm4.stm32n6xx_hal_i2c.h.741.1084702632703acc669e4282b3043372
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.21.ae1eb09930e7e550e48e418ac5849e4d
+                           .group:00000000 wm4.stm32n6xx_hal_ltdc.h.1002.b13ede7fc94ed5ad1c6768a157d2149a
+                           .group:00000000 wm4.stm32n6xx_ll_usb.h.21.daaf86158046f2cf02166c495d637480
+                           .group:00000000 wm4.stm32n6xx_hal_pcd.h.155.27040aac6844effe2af8c180caf1dd2e
+                           .group:00000000 wm4.stm32n6xx_hal_pwr.h.21.cdb73e4869c3fed3fc84f901ec0e5f0a
+                           .group:00000000 wm4.stm32n6xx_hal_pwr_ex.h.21.1a673224a58b0c1e5fad8eeda6514208
+                           .group:00000000 wm4.stm32n6xx_hal_ramcfg.h.21.a62dfbb4d2c14e9a8c634a215e37bd3d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.21.9f810303326e2d91749800e9911f8e4d
+                           .group:00000000 wm4.stm32n6xx_hal_spi.h.906.8ad9375f39dce09dc0a4db0025ee7a76
+                           .group:00000000 wm4.stm32n6xx_hal_tim.h.21.839dd2b2a70382fb2c44f8f293a84d5f
+                           .group:00000000 wm4.stm32n6xx_hal_tim_ex.h.21.e372d5ac63c13441211ea4ecbd353150
+ARM GAS  /tmp/claude-1000/cctNtDeN.s 			page 26
+
+
+                           .group:00000000 wm4.stm32n6xx_hal_uart.h.21.230f549bfa0d5ebfd77bfb311b2aca15
+                           .group:00000000 wm4.stm32n6xx_hal_uart_ex.h.21.a0d5511e1d0703b7b5278c8f5472b96d
+                           .group:00000000 wm4.stm32n6xx_hal_xspi.h.21.7fd922d3bdb871475cf18436a68935bb
+                           .group:00000000 wm4.stm32n6xx_hal_cacheaxi.h.21.7c3375b7903ec42376e4883320997f74
+                           .group:00000000 wm4.stm32n6xx_hal.h.81.e79d59262ba173c33cf1d69281830d15
+                           .group:00000000 wm4.ball_tracker.h.18.9f76abdc4dd4f12ed95dce1bf64f33d1
+                           .group:00000000 wm4.servo_control.h.19.7e9fa17c2438d534182a61718f1f0c19
+
+UNDEFINED SYMBOLS
+HAL_GetTick
+Servo_GetAngle
+Servo_SetAngleF

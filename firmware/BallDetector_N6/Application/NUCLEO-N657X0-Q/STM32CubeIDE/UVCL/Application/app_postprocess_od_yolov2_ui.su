@@ -1,0 +1,2 @@
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/ai-postprocessing-wrapper/app_postprocess_od_yolov2_ui.c:29:9:app_postprocess_init	8	static
+/mnt/core/MLonMCU_proj/firmware/BallDetector_N6/Middlewares/ai-postprocessing-wrapper/app_postprocess_od_yolov2_ui.c:51:9:app_postprocess_run	16	static

@@ -1,0 +1,428 @@
+ARM GAS  /tmp/claude-1000/ccvzMnWd.s 			page 1
+
+
+   1              		.arch armv8.1-m.main
+   2              		.fpu fpv5-d16
+   3              		.arch_extension dsp
+   4              		.arch_extension fp
+   5              		.arch_extension fp.dp
+   6              		.arch_extension mve
+   7              		.arch_extension mve.fp
+   8              		.eabi_attribute 5, "cortex-m55"
+   9              		.eabi_attribute 28, 1
+  10              		.eabi_attribute 20, 1
+  11              		.eabi_attribute 21, 1
+  12              		.eabi_attribute 23, 3
+  13              		.eabi_attribute 24, 1
+  14              		.eabi_attribute 25, 1
+  15              		.eabi_attribute 26, 1
+  16              		.eabi_attribute 30, 4
+  17              		.eabi_attribute 34, 1
+  18              		.eabi_attribute 38, 1
+  19              		.eabi_attribute 18, 4
+  20              		.file	"ux_device_class_video_entry.c"
+  21              		.text
+  22              	.Ltext0:
+  23              		.cfi_sections	.debug_frame
+  24              		.file 1 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_
+  25              		.section	.text._ux_device_class_video_entry,"ax",%progbits
+  26              		.align	1
+  27              		.global	_ux_device_class_video_entry
+  28              		.syntax unified
+  29              		.thumb
+  30              		.thumb_func
+  32              	_ux_device_class_video_entry:
+  33              	.LVL0:
+  34              	.LFB3:
+   1:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**************************************************************************/
+   2:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+   3:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*       Copyright (c) Microsoft Corporation. All rights reserved.        */
+   4:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+   5:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*       This software is licensed under the Microsoft Software License   */
+   6:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*       Terms for Microsoft Azure RTOS. Full text of the license can be  */
+   7:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*       found in the LICENSE file at https://aka.ms/AzureRTOS_EULA       */
+   8:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*       and in the root directory of this software.                      */
+   9:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  10:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**************************************************************************/
+  11:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  12:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**************************************************************************/
+  13:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**************************************************************************/
+  14:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**                                                                       */
+  15:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /** USBX Component                                                        */
+  16:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**                                                                       */
+  17:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**   Device Video Class                                                  */
+  18:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**                                                                       */
+  19:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**************************************************************************/
+  20:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**************************************************************************/
+  21:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  22:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** #define UX_SOURCE_CODE
+  23:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  24:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ARM GAS  /tmp/claude-1000/ccvzMnWd.s 			page 2
+
+
+  25:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /* Include necessary system files.  */
+  26:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  27:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** #include "ux_api.h"
+  28:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** #include "ux_device_class_video.h"
+  29:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** #include "ux_device_stack.h"
+  30:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  31:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  32:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**************************************************************************/
+  33:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  34:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  FUNCTION                                               RELEASE        */
+  35:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  36:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    _ux_device_class_video_entry                        PORTABLE C      */
+  37:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                           6.3.0        */
+  38:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  AUTHOR                                                                */
+  39:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  40:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    Chaoqiong Xiao, Microsoft Corporation                               */
+  41:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  42:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  DESCRIPTION                                                           */
+  43:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  44:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    This function is the entry point of the video class. It             */
+  45:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    will be called by the device stack enumeration module when the      */
+  46:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    host has sent a SET_CONFIGURATION command and the video interface   */
+  47:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    needs to be mounted.                                                */
+  48:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  49:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  INPUT                                                                 */
+  50:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  51:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    command                               Pointer to class command      */
+  52:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  53:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  OUTPUT                                                                */
+  54:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  55:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    Completion Status                                                   */
+  56:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  57:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  CALLS                                                                 */
+  58:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  59:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    _ux_device_class_video_initialize         Initialize video class    */
+  60:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    _ux_device_class_video_uninitialize       Uninitialize video class  */
+  61:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    _ux_device_class_video_activate           Activate video class      */
+  62:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    _ux_device_class_video_change             Change video interface    */
+  63:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    _ux_device_class_video_deactivate         Deactivate video class    */
+  64:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    _ux_device_class_video_control_request    Request control           */
+  65:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  66:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  CALLED BY                                                             */
+  67:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  68:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    Device Stack                                                        */
+  69:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  70:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  RELEASE HISTORY                                                       */
+  71:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  72:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*    DATE              NAME                      DESCRIPTION             */
+  73:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  74:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  04-25-2022     Chaoqiong Xiao           Initial Version 6.1.11        */
+  75:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*  10-31-2023     Yajun xia                Modified comment(s),          */
+  76:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                            added error checks support, */
+  77:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                            resulting in version 6.3.0  */
+  78:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /*                                                                        */
+  79:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** /**************************************************************************/
+  80:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** UINT  _ux_device_class_video_entry(UX_SLAVE_CLASS_COMMAND *command)
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** {
+ARM GAS  /tmp/claude-1000/ccvzMnWd.s 			page 3
+
+
+  35              		.loc 1 81 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  82:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  83:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** UINT        status;
+  39              		.loc 1 83 1 view .LVU1
+  84:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  85:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  86:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     /* The command request will tell us we need to do here, either a enumeration
+  87:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****        query, an activation or a deactivation.  */
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     switch (command -> ux_slave_class_command_request)
+  40              		.loc 1 88 5 view .LVU2
+  81:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  41              		.loc 1 81 1 is_stmt 0 view .LVU3
+  42 0000 08B5     		push	{r3, lr}
+  43              		.cfi_def_cfa_offset 8
+  44              		.cfi_offset 3, -8
+  45              		.cfi_offset 14, -4
+  46              		.loc 1 88 5 view .LVU4
+  47 0002 0368     		ldr	r3, [r0]
+  48 0004 013B     		subs	r3, r3, #1
+  49 0006 062B     		cmp	r3, #6
+  50 0008 25D8     		bhi	.L12
+  51 000a DFE803F0 		tbb	[pc, r3]
+  52              	.L4:
+  53 000e 0C       		.byte	(.L10-.L4)/2
+  54 000f 15       		.byte	(.L9-.L4)/2
+  55 0010 1D       		.byte	(.L8-.L4)/2
+  56 0011 21       		.byte	(.L7-.L4)/2
+  57 0012 04       		.byte	(.L6-.L4)/2
+  58 0013 19       		.byte	(.L5-.L4)/2
+  59 0014 08       		.byte	(.L3-.L4)/2
+  60 0015 00       		.p2align 1
+  61              	.L6:
+  89:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     {
+  90:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  91:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     case UX_SLAVE_CLASS_COMMAND_INITIALIZE:
+  92:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** #if defined(UX_DEVICE_CLASS_VIDEO_ENABLE_ERROR_CHECKING)
+  93:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  94:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Call the init function of the Video class.  */
+  95:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         status =  _uxe_device_class_video_initialize(command);
+  96:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** #else
+  97:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  98:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Call the init function of the Video class.  */
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         status =  _ux_device_class_video_initialize(command);
+  62              		.loc 1 99 9 is_stmt 1 view .LVU5
+ 100:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** #endif  /* UX_DEVICE_CLASS_VIDEO_ENABLE_ERROR_CHECKING */
+ 101:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 102:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Return the completion status.  */
+ 103:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         return(status);
+ 104:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 105:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     case UX_SLAVE_CLASS_COMMAND_UNINITIALIZE:
+ 106:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 107:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Call the init function of the Video class.  */
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         status =  _ux_device_class_video_uninitialize(command);
+ 109:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ARM GAS  /tmp/claude-1000/ccvzMnWd.s 			page 4
+
+
+ 110:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Return the completion status.  */
+ 111:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         return(status);
+ 112:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 113:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     case UX_SLAVE_CLASS_COMMAND_QUERY:
+ 114:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 115:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Check the CLASS definition in the interface descriptor. */
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         if (command -> ux_slave_class_command_class == UX_DEVICE_CLASS_VIDEO_CLASS)
+ 117:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         {
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****             if (command -> ux_slave_class_command_subclass == UX_DEVICE_CLASS_VIDEO_SUBCLASS_CONTRO
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****                 return(UX_SUCCESS);
+ 120:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****             if (command -> ux_slave_class_command_subclass == UX_DEVICE_CLASS_VIDEO_SUBCLASS_STREAM
+ 121:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****                 return(UX_SUCCESS);
+ 122:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         }
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         return(UX_NO_CLASS_MATCH);
+ 124:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 125:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     case UX_SLAVE_CLASS_COMMAND_ACTIVATE:
+ 126:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 127:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* The activate command is used when the host has sent a SET_CONFIGURATION command
+ 128:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****            and this interface has to be mounted. Both Bulk endpoints have to be mounted
+ 129:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****            and the video thread needs to be activated.  */
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         status =  _ux_device_class_video_activate(command);
+ 131:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 132:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Return the completion status.  */
+ 133:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         return(status);
+ 134:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 135:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     case UX_SLAVE_CLASS_COMMAND_CHANGE:
+ 136:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 137:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* The change command is used when the host has sent a SET_INTERFACE command
+ 138:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****            to go from Alternate Setting 0 to 1 or revert to the default mode.  */
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         status =  _ux_device_class_video_change(command);
+ 140:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 141:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Return the completion status.  */
+ 142:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         return(status);
+ 143:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 144:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     case UX_SLAVE_CLASS_COMMAND_DEACTIVATE:
+ 145:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 146:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* The deactivate command is used when the device has been extracted.
+ 147:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****            The device endpoints have to be dismounted and the video thread canceled.  */
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         status =  _ux_device_class_video_deactivate(command);
+ 149:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 150:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Return the completion status.  */
+ 151:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         return(status);
+ 152:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 153:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     case UX_SLAVE_CLASS_COMMAND_REQUEST:
+ 154:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 155:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* The request command is used when the host sends a command on the control endpoint.  */
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         _ux_device_class_video_control_request(command);
+ 157:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 158:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Return the completion status.  */
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         return(UX_SUCCESS);
+ 160:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 161:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     default:
+ 162:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 163:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         /* Return an error.  */
+ 164:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         return(UX_FUNCTION_NOT_SUPPORTED);
+ 165:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     }
+ 166:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** }
+ARM GAS  /tmp/claude-1000/ccvzMnWd.s 			page 5
+
+
+  63              		.loc 1 166 1 is_stmt 0 view .LVU6
+  64 0016 BDE80840 		pop	{r3, lr}
+  65              		.cfi_remember_state
+  66              		.cfi_restore 14
+  67              		.cfi_restore 3
+  68              		.cfi_def_cfa_offset 0
+  99:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** #endif  /* UX_DEVICE_CLASS_VIDEO_ENABLE_ERROR_CHECKING */
+  69              		.loc 1 99 19 view .LVU7
+  70 001a FFF7FEBF 		b	_ux_device_class_video_initialize
+  71              	.LVL1:
+  72              	.L3:
+  73              		.cfi_restore_state
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  74              		.loc 1 108 9 is_stmt 1 view .LVU8
+  75              		.loc 1 166 1 is_stmt 0 view .LVU9
+  76 001e BDE80840 		pop	{r3, lr}
+  77              		.cfi_remember_state
+  78              		.cfi_restore 14
+  79              		.cfi_restore 3
+  80              		.cfi_def_cfa_offset 0
+ 108:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+  81              		.loc 1 108 19 view .LVU10
+  82 0022 FFF7FEBF 		b	_ux_device_class_video_uninitialize
+  83              	.LVL2:
+  84              	.L10:
+  85              		.cfi_restore_state
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         {
+  86              		.loc 1 116 9 is_stmt 1 view .LVU11
+ 116:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****         {
+  87              		.loc 1 116 12 is_stmt 0 view .LVU12
+  88 0026 4369     		ldr	r3, [r0, #20]
+  89 0028 0E2B     		cmp	r3, #14
+  90 002a 16D1     		bne	.L14
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****                 return(UX_SUCCESS);
+  91              		.loc 1 118 13 is_stmt 1 view .LVU13
+ 118:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****                 return(UX_SUCCESS);
+  92              		.loc 1 118 16 is_stmt 0 view .LVU14
+  93 002c 8369     		ldr	r3, [r0, #24]
+  94 002e 013B     		subs	r3, r3, #1
+  95 0030 012B     		cmp	r3, #1
+  96 0032 12D8     		bhi	.L14
+  97              	.LVL3:
+  98              	.L11:
+ 119:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****             if (command -> ux_slave_class_command_subclass == UX_DEVICE_CLASS_VIDEO_SUBCLASS_STREAM
+  99              		.loc 1 119 23 view .LVU15
+ 100 0034 0020     		movs	r0, #0
+ 101              	.L1:
+ 102              		.loc 1 166 1 view .LVU16
+ 103 0036 08BD     		pop	{r3, pc}
+ 104              	.LVL4:
+ 105              	.L9:
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 106              		.loc 1 130 9 is_stmt 1 view .LVU17
+ 107              		.loc 1 166 1 is_stmt 0 view .LVU18
+ 108 0038 BDE80840 		pop	{r3, lr}
+ 109              		.cfi_remember_state
+ 110              		.cfi_restore 14
+ARM GAS  /tmp/claude-1000/ccvzMnWd.s 			page 6
+
+
+ 111              		.cfi_restore 3
+ 112              		.cfi_def_cfa_offset 0
+ 130:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 113              		.loc 1 130 19 view .LVU19
+ 114 003c FFF7FEBF 		b	_ux_device_class_video_activate
+ 115              	.LVL5:
+ 116              	.L5:
+ 117              		.cfi_restore_state
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 118              		.loc 1 139 9 is_stmt 1 view .LVU20
+ 119              		.loc 1 166 1 is_stmt 0 view .LVU21
+ 120 0040 BDE80840 		pop	{r3, lr}
+ 121              		.cfi_remember_state
+ 122              		.cfi_restore 14
+ 123              		.cfi_restore 3
+ 124              		.cfi_def_cfa_offset 0
+ 139:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 125              		.loc 1 139 19 view .LVU22
+ 126 0044 FFF7FEBF 		b	_ux_device_class_video_change
+ 127              	.LVL6:
+ 128              	.L8:
+ 129              		.cfi_restore_state
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 130              		.loc 1 148 9 is_stmt 1 view .LVU23
+ 131              		.loc 1 166 1 is_stmt 0 view .LVU24
+ 132 0048 BDE80840 		pop	{r3, lr}
+ 133              		.cfi_remember_state
+ 134              		.cfi_restore 14
+ 135              		.cfi_restore 3
+ 136              		.cfi_def_cfa_offset 0
+ 148:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 137              		.loc 1 148 19 view .LVU25
+ 138 004c FFF7FEBF 		b	_ux_device_class_video_deactivate
+ 139              	.LVL7:
+ 140              	.L7:
+ 141              		.cfi_restore_state
+ 156:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 142              		.loc 1 156 9 is_stmt 1 view .LVU26
+ 143 0050 FFF7FEFF 		bl	_ux_device_class_video_control_request
+ 144              	.LVL8:
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 145              		.loc 1 159 9 view .LVU27
+ 159:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 146              		.loc 1 159 15 is_stmt 0 view .LVU28
+ 147 0054 EEE7     		b	.L11
+ 148              	.LVL9:
+ 149              	.L12:
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     {
+ 150              		.loc 1 88 5 view .LVU29
+ 151 0056 5420     		movs	r0, #84
+ 152              	.LVL10:
+  88:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c ****     {
+ 153              		.loc 1 88 5 view .LVU30
+ 154 0058 EDE7     		b	.L1
+ 155              	.LVL11:
+ 156              	.L14:
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ARM GAS  /tmp/claude-1000/ccvzMnWd.s 			page 7
+
+
+ 157              		.loc 1 123 15 view .LVU31
+ 158 005a 5720     		movs	r0, #87
+ 159              	.LVL12:
+ 123:../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/src/ux_device_class_video_entry.c **** 
+ 160              		.loc 1 123 15 view .LVU32
+ 161 005c EBE7     		b	.L1
+ 162              		.cfi_endproc
+ 163              	.LFE3:
+ 165              		.text
+ 166              	.Letext0:
+ 167              		.file 2 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/ports/generic/inc/ux_port.h"
+ 168              		.file 3 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/inc/ux_api.h"
+ 169              		.file 4 "../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/usbx_device_classes/inc/ux_device_class_
+ARM GAS  /tmp/claude-1000/ccvzMnWd.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ux_device_class_video_entry.c
+/tmp/claude-1000/ccvzMnWd.s:26     .text._ux_device_class_video_entry:00000000 $t
+/tmp/claude-1000/ccvzMnWd.s:32     .text._ux_device_class_video_entry:00000000 _ux_device_class_video_entry
+/tmp/claude-1000/ccvzMnWd.s:53     .text._ux_device_class_video_entry:0000000e $d
+/tmp/claude-1000/ccvzMnWd.s:60     .text._ux_device_class_video_entry:00000015 $d
+/tmp/claude-1000/ccvzMnWd.s:60     .text._ux_device_class_video_entry:00000016 $t
+                           .group:00000000 wm4.0.a2ca1da993d590e83950ebad3705fb38
+                           .group:00000000 wm4.ux_user.h.114.1a24f49ab4050de1d28cc96eed1ff7ed
+                           .group:00000000 wm4._newlib_version.h.4.6d111ab2e95434b664b53815e5c8ccba
+                           .group:00000000 wm4.newlib.h.27.13c3dcbbace0888e13b51843af197034
+                           .group:00000000 wm4.ieeefp.h.77.e319ff9772e492f98c04d1a82284446b
+                           .group:00000000 wm4.features.h.22.7877b139107948f7dadcf3660cc79cfd
+                           .group:00000000 wm4.config.h.224.10ee1ad185d877c6e334e6581faab44d
+                           .group:00000000 wm4._ansi.h.31.de524f58584151836e90d8620a16f8e8
+                           .group:00000000 wm4.stdio.h.31.7c0e28c411445f3f9c5b11accf882760
+                           .group:00000000 wm4._default_types.h.6.959254cf5f09734ea7516c89e8bb21bd
+                           .group:00000000 wm4.stddef.h.185.cbb642e1ccd385e8aa504b15cb7fb086
+                           .group:00000000 wm4.cdefs.h.49.f93868eb904b9ca05b5c0257d31128ca
+                           .group:00000000 wm4.stddef.h.39.0e5f0dabba1c666ccadf0408e0d47322
+                           .group:00000000 wm4.stdarg.h.34.3a23a216c0c293b3d2ea2e89281481e6
+                           .group:00000000 wm4._types.h.20.dd0d04dca3800a0d2a6129b87f3adbb2
+                           .group:00000000 wm4.stddef.h.158.5f30652bb2ea05b142c1bbee9108c999
+                           .group:00000000 wm4._types.h.127.3bdfe3ff8ea2d0985b03d9cbe93480e3
+                           .group:00000000 wm4.reent.h.17.e292bf8b0bec6c96e131a54347145a30
+                           .group:00000000 wm4.lock.h.2.1461d1fff82dffe8bfddc23307f6484f
+                           .group:00000000 wm4.reent.h.77.89f7dde66c62b1f1dee32bdb6ab2d544
+                           .group:00000000 wm4.stdio.h.67.0cf8a9c281ab0b348aef5c02e7e48825
+                           .group:00000000 wm4.stdio.h.2.4aa87247282eca6c8f36f9de33d8df1a
+                           .group:00000000 wm4.stdio.h.87.a1e20d2651f9bfb66e51bfbe849db00a
+                           .group:00000000 wm4.string.h.8.c4b8571ce60dff2817f43fec8b86aecd
+                           .group:00000000 wm4.stddef.h.158.bfed30416c9480cd13bc4a25427d538f
+                           .group:00000000 wm4.string.h.177.59a005921fa78485abc80a0267de5752
+                           .group:00000000 wm4._intsup.h.10.48bafbb683905c4daa4565a85aeeb264
+                           .group:00000000 wm4._stdint.h.10.c24fa3af3bc1706662bb5593a907e841
+                           .group:00000000 wm4.stdint.h.23.d53047a68f4a85177f80b422d52785ed
+                           .group:00000000 wm4.ux_port.h.89.ae1c293eff4e595cc9e7c7479e747a1e
+                           .group:00000000 wm4.ux_api.h.182.effb4a50eb02f24d1d1ad0a575ebbb0c
+                           .group:00000000 wm4.ux_utility.h.69.3aa9e2ccef0e2a41f2d49c9bf54d4b38
+                           .group:00000000 wm4.ux_system.h.63.42f8c9cffcc26e0f12b75458b49daed3
+                           .group:00000000 wm4.ux_device_class_video.h.57.e296a1f83e6a8abae51743ceeafe6df3
+
+UNDEFINED SYMBOLS
+_ux_device_class_video_initialize
+_ux_device_class_video_uninitialize
+_ux_device_class_video_activate
+_ux_device_class_video_change
+_ux_device_class_video_deactivate
+_ux_device_class_video_control_request

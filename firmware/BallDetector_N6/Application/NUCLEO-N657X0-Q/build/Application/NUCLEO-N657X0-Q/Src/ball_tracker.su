@@ -1,0 +1,6 @@
+Src/ball_tracker.c:54:10:BallTracker_GetX	0	static
+Src/ball_tracker.c:55:10:BallTracker_State	0	static
+Src/ball_tracker.c:56:10:BallTracker_TickCount	0	static
+Src/ball_tracker.c:58:6:BallTracker_Measure	0	static,ignoring_inline_asm
+Src/ball_tracker.c:92:6:BallTracker_ControlTick	32	static
+Src/ball_tracker.c:143:6:BallTracker_Init	8	static

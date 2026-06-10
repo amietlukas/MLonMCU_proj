@@ -1,0 +1,2 @@
+../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c:80:7:_ux_utility_descriptor_parse	24	static
+../../STM32Cube_FW_N6/Middlewares/ST/usbx/common/core/src/ux_utility_descriptor_parse.c:171:7:_ux_utility_descriptor_parse_size	12	static
